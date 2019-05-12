@@ -10,6 +10,7 @@ Gui - configures the main window and all the widgets.
 """
 import wx
 import wx.glcanvas as wxcanvas
+import datetime
 from OpenGL import GL, GLUT
 
 from names import Names
@@ -179,7 +180,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         else:
             self.Refresh()  # triggers the paint event
 
-    def render_text(self, text, x_pos, y_pos):
+    def render_text(self, text, x_pos, y_pos):  
         """Handle text drawing operations."""
         GL.glColor3f(0.0, 0.0, 0.0)  # text is black
         GL.glRasterPos2f(x_pos, y_pos)
@@ -224,6 +225,7 @@ class Gui(wx.Frame):
         fileMenu = wx.Menu()
         menuBar = wx.MenuBar()
         fileMenu.Append(wx.ID_ABOUT, "&About")
+        fileMenu.Append(wx.ID_SAVE, "&Save")
         fileMenu.Append(wx.ID_EXIT, "&Exit")
         menuBar.Append(fileMenu, "&File")
         self.SetMenuBar(menuBar)
@@ -232,31 +234,146 @@ class Gui(wx.Frame):
         self.canvas = MyGLCanvas(self, devices, monitors)
 
         # Configure the widgets
-        self.text = wx.StaticText(self, wx.ID_ANY, "Cycles")
-        self.spin = wx.SpinCtrl(self, wx.ID_ANY, "10")
-        self.run_button = wx.Button(self, wx.ID_ANY, "Run")
-        self.text_box = wx.TextCtrl(self, wx.ID_ANY, "",
-                                    style=wx.TE_PROCESS_ENTER)
+        #  Top sizer
+        self.load_file_button = wx.Button(self, wx.ID_ANY, "Load file")
+        self.load_file_text_box = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
+
+        #  Activity log sizer
+        self.activity_log_title = wx.StaticText(self, wx.ID_ANY, "Activity log")
+        self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, "", style= wx.TE_MULTILINE | wx.TE_READONLY | wx.ALIGN_TOP)
+
+        #  Console sizer
+        self.console = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
+
+        #  Side Sizer
+        #   Switches
+        toggle_button_size = wx.Size(50, wx.DefaultSize.GetHeight())
+        self.switches_select = wx.ComboBox(self, wx.ID_ANY, style = wx.CB_SORT)
+        self.switches_set_button = wx.ToggleButton(self, wx.ID_ANY, "1", style=wx.BORDER_NONE, size=toggle_button_size)
+        self.switches_clear_button = wx.ToggleButton(self, wx.ID_ANY, "0", style=wx.BORDER_NONE, size=toggle_button_size)
+        self.switches_set_button.Disable()
+        self.switches_clear_button.Disable()
+
+        #   Monitors
+        self.monitors_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT)
+        self.monitors_set_button = wx.ToggleButton(self, wx.ID_ANY, "SET", style=wx.BORDER_NONE, size=toggle_button_size)
+        self.monitors_zap_button = wx.ToggleButton(self, wx.ID_ANY, "ZAP", style=wx.BORDER_NONE, size=toggle_button_size)
+        self.monitors_set_button.Disable()
+        self.monitors_zap_button.Disable()
+
+        #   Simulation
+        self.simulation_cycles_spin = wx.SpinCtrl(self, wx.ID_ANY, "10")
+        self.simulation_run_button = wx.Button(self, wx.ID_ANY, "Run")
+        self.simulation_continue_button = wx.Button(self, wx.ID_ANY, "Continue")
+
+        #  StatiROWSc Strings
+        console_title = wx.StaticText(self, wx.ID_ANY, "Console")
+        side_title = wx.StaticText(self, wx.ID_ANY, "Properties")
+        switches_title = wx.StaticText(self, wx.ID_ANY, "Change State of Switch")
+        monitors_title = wx.StaticText(self, wx.ID_ANY, "Set or Zap Monitors")
+        run_simulation_title = wx.StaticText(self, wx.ID_ANY, "Simulate")
+
+        #  Lines
+        line_side = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_switches = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_switches_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_monitors = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_monitors_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_run_simulation = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_run_simulation_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
 
         # Bind events to widgets
+        #  Menu
         self.Bind(wx.EVT_MENU, self.on_menu)
-        self.spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
-        self.run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
-        self.text_box.Bind(wx.EVT_TEXT_ENTER, self.on_text_box)
+
+        #  Console
+        self.console.Bind(wx.EVT_TEXT_ENTER, self.on_console)
+
+        #  Switches
+
+        #  Monitors
+
+        #  Run simulation
+        self.simulation_cycles_spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
+        self.simulation_run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
 
         # Configure sizers for layout
-        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        top_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        central_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        activity_log_sizer = wx.BoxSizer(wx.VERTICAL)
+        console_sizer = wx.BoxSizer(wx.VERTICAL)
         side_sizer = wx.BoxSizer(wx.VERTICAL)
+        side_title_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        switches_title_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        switches_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        monitors_title_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        simulation_title_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        simulation_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        line_sizer_side = wx.BoxSizer(wx.VERTICAL)
+        line_sizer_switches = wx.BoxSizer(wx.VERTICAL)
+        line_sizer_monitors = wx.BoxSizer(wx.VERTICAL)
+        line_sizer_run_simulation = wx.BoxSizer(wx.VERTICAL)
 
-        main_sizer.Add(self.canvas, 5, wx.EXPAND | wx.ALL, 5)
-        main_sizer.Add(side_sizer, 1, wx.ALL, 5)
+        main_sizer.Add(top_sizer, 0, wx.TOP | wx.EXPAND, 5)
+        main_sizer.Add(central_sizer, 10, wx.EXPAND, 5)
+        main_sizer.Add(activity_log_sizer, 5, wx.ALL | wx.EXPAND, 5)
+        main_sizer.Add(console_sizer, 1, wx.ALL | wx.EXPAND, 5)
+        
+        top_sizer.Add(self.load_file_button, 0, wx.LEFT| wx.TOP, 5)
+        top_sizer.Add(self.load_file_text_box, 1, wx.ALL , 5)
 
-        side_sizer.Add(self.text, 1, wx.TOP, 10)
-        side_sizer.Add(self.spin, 1, wx.ALL, 5)
-        side_sizer.Add(self.run_button, 1, wx.ALL, 5)
-        side_sizer.Add(self.text_box, 1, wx.ALL, 5)
+        central_sizer.Add(self.canvas, 5, wx.EXPAND | wx.ALL, 5)
+        central_sizer.Add(side_sizer, 1, wx.ALL, 5)
+        
+        activity_log_sizer.Add(self.activity_log_title, 0, wx.TOP| wx. BOTTOM, 10)
+        activity_log_sizer.Add(self.activity_log_text, 2, wx.EXPAND, 5)
 
-        self.SetSizeHints(600, 600)
+        console_sizer.Add(console_title, 1, wx.TOP, 5)
+        console_sizer.Add(self.console, 1, wx.EXPAND, 5)
+
+        side_sizer.Add(side_title_sizer, 0, wx.TOP | wx.EXPAND, 1)
+        side_sizer.Add(switches_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(switches_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(line_switches_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        side_sizer.Add(monitors_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(monitors_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(line_monitors_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        side_sizer.Add(simulation_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(simulation_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(line_run_simulation_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+
+        side_title_sizer.Add(side_title, 0, wx.TOP, 0)
+        side_title_sizer.Add(line_sizer_side, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 3)
+
+        switches_title_sizer.Add(switches_title, 0, wx.LEFT | wx.TOP, 10)
+        switches_title_sizer.Add(line_sizer_switches, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
+
+        switches_sizer.Add(self.switches_select, 2, wx.TOP | wx.LEFT | wx.EXPAND, 12)
+        switches_sizer.Add(self.switches_set_button, 0, wx.TOP | wx.LEFT, 12)
+        switches_sizer.Add(self.switches_clear_button, 0, wx.TOP | wx.RIGHT, 12)
+
+        monitors_title_sizer.Add(monitors_title, 0, wx.LEFT | wx.TOP, 10)
+        monitors_title_sizer.Add(line_sizer_monitors, 1,  wx.TOP | wx.RIGHT | wx.EXPAND, 10)
+
+        monitors_sizer.Add(self.monitors_select, 2, wx.TOP | wx.LEFT | wx.EXPAND, 12)
+        monitors_sizer.Add(self.monitors_set_button, 0, wx.TOP | wx.LEFT, 12)
+        monitors_sizer.Add(self.monitors_zap_button, 0, wx.TOP | wx.RIGHT, 12)
+
+        simulation_title_sizer.Add(run_simulation_title, 0, wx.LEFT | wx.TOP, 10)
+        simulation_title_sizer.Add(line_sizer_run_simulation, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
+
+        simulation_sizer.Add(self.simulation_cycles_spin, 4, wx.LEFT| wx.TOP | wx.EXPAND, 12)
+        simulation_sizer.Add(self.simulation_run_button, 0, wx.LEFT| wx.TOP, 12)
+        simulation_sizer.Add(self.simulation_continue_button, 0, wx.LEFT| wx.TOP, 12)
+
+        line_sizer_side.Add(line_side, 0, wx.ALL | wx.EXPAND, 5)
+        line_sizer_switches.Add(line_switches, 0, wx.ALL | wx.EXPAND, 5)
+        line_sizer_monitors.Add(line_monitors, 0, wx.ALL | wx.EXPAND, 5)
+        line_sizer_run_simulation.Add(line_run_simulation, 0, wx.ALL | wx.EXPAND, 5)
+        
+        self.SetSizeHints(900, 600)
         self.SetSizer(main_sizer)
 
     def on_menu(self, event):
@@ -270,7 +387,7 @@ class Gui(wx.Frame):
 
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
-        spin_value = self.spin.GetValue()
+        spin_value = self.simulation_cycles_spin.GetValue()
         text = "".join(["New spin control value: ", str(spin_value)])
         self.canvas.render(text)
 
@@ -279,8 +396,11 @@ class Gui(wx.Frame):
         text = "Run button pressed."
         self.canvas.render(text)
 
-    def on_text_box(self, event):
+    def on_console(self, event):
         """Handle the event when the user enters text."""
-        text_box_value = self.text_box.GetValue()
-        text = "".join(["New text box value: ", text_box_value])
-        self.canvas.render(text)
+        text_box_value = self.console.GetValue()
+        text = "".join([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: "), text_box_value])
+        self.activity_log_text.AppendText(text+'\n')
+        self.console.SetValue("")
+        
+        
