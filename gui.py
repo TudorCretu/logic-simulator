@@ -221,6 +221,8 @@ class Gui(wx.Frame):
         """Initialise widgets and layout."""
         super().__init__(parent=None, title=title, size=(800, 600))
 
+        self.completed_cycles = 0
+
         # Configure the file menu
         fileMenu = wx.Menu()
         menuBar = wx.MenuBar()
@@ -230,6 +232,13 @@ class Gui(wx.Frame):
         menuBar.Append(fileMenu, "&File")
         self.SetMenuBar(menuBar)
 
+        # List of switches
+        self.names = names
+        self.devices = devices
+        self.network = network
+        self.monitors = monitors
+        # self.switches = devices.find_devices("SWITCH") #TODO Uncomment when devices is implemented
+
         # Canvas for drawing signals
         self.canvas = MyGLCanvas(self, devices, monitors)
 
@@ -237,6 +246,7 @@ class Gui(wx.Frame):
         #  Top sizer
         self.load_file_button = wx.Button(self, wx.ID_ANY, "Load file")
         self.load_file_text_box = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
+        self.load_file_text_box.SetValue(path)
 
         #  Activity log sizer
         self.activity_log_title = wx.StaticText(self, wx.ID_ANY, "Activity log")
@@ -249,8 +259,8 @@ class Gui(wx.Frame):
         #   Switches
         toggle_button_size = wx.Size(50, wx.DefaultSize.GetHeight())
         self.switches_select = wx.ComboBox(self, wx.ID_ANY, style = wx.CB_SORT)
-        self.switches_set_button = wx.ToggleButton(self, wx.ID_ANY, "1", style=wx.BORDER_NONE, size=toggle_button_size)
-        self.switches_clear_button = wx.ToggleButton(self, wx.ID_ANY, "0", style=wx.BORDER_NONE, size=toggle_button_size)
+        self.switches_set_button = wx.ToggleButton(self, wx.ID_ANY, "HIGH", style=wx.BORDER_NONE, size=toggle_button_size)
+        self.switches_clear_button = wx.ToggleButton(self, wx.ID_ANY, "LOW", style=wx.BORDER_NONE, size=toggle_button_size)
         self.switches_set_button.Disable()
         self.switches_clear_button.Disable()
 
@@ -286,16 +296,27 @@ class Gui(wx.Frame):
         #  Menu
         self.Bind(wx.EVT_MENU, self.on_menu)
 
+        #  Load file
+        self.load_file_button.Bind(wx.EVT_BUTTON, self.on_load_file_button)
+        self.load_file_text_box.Bind(wx.EVT_TEXT_ENTER, self.on_load_file_text_box)
+
         #  Console
         self.console.Bind(wx.EVT_TEXT_ENTER, self.on_console)
 
         #  Switches
+        self.switches_select.Bind(wx.EVT_TEXT, self.on_switches_select)
+        self.switches_set_button.Bind(wx.EVT_TOGGLEBUTTON, self.on_switches_set)
+        self.switches_clear_button.Bind(wx.EVT_TOGGLEBUTTON, self.on_switches_clear)
 
         #  Monitors
+        self.monitors_select.Bind(wx.EVT_TEXT, self.on_monitors_select)
+        self.monitors_set_button.Bind(wx.EVT_TOGGLEBUTTON, self.on_monitors_set)
+        self.monitors_zap_button.Bind(wx.EVT_TOGGLEBUTTON, self.on_monitors_zap)
 
         #  Run simulation
         self.simulation_cycles_spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
         self.simulation_run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
+        self.simulation_continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
 
         # Configure sizers for layout
         main_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -394,13 +415,134 @@ class Gui(wx.Frame):
     def on_run_button(self, event):
         """Handle the event when the user clicks the run button."""
         text = "Run button pressed."
+        self.completed_cycles = int(self.simulation_cycles_spin.GetValue())
+        self.canvas.render(text)
+
+    def on_continue_button(self, event):
+        """Handle the event when the user clicks the continue button."""
+        text = "Continue button pressed."
+        self.completed_cycles += int(self.simulation_cycles_spin.GetValue())
         self.canvas.render(text)
 
     def on_console(self, event):
-        """Handle the event when the user enters text."""
+        """Handle the event when the user enters a command in the console."""
         text_box_value = self.console.GetValue()
         text = "".join([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: "), text_box_value])
         self.activity_log_text.AppendText(text+'\n')
         self.console.SetValue("")
         
-        
+    def on_switches_select(self, event):
+        """Handle the event when the user types text in switches text box.
+        If the text in the box matches the name of a switch, then the set
+        and clear buttons enable according to the current value of the switch.
+        """
+        device_name = self.switches_select.GetValue()
+        device_id = self.names.query(device_name)
+        if device_id is not None and device_id in self.switches:
+            device = self.devices.get_device(device_id)
+            if device.switch_state is self.devices.HIGH:
+                self.switches_set_button.Disable()
+                self.switches_clear_button.Enable()
+            else:
+                self.switches_set_button.Enable()
+                self.switches_clear_button.Disable()
+        else:
+            self.switches_set_button.Disable()
+            self.switches_clear_button.Disable()
+
+    def on_switches_set(self, event):
+        """Handle the event when the user sets a switch."""
+        device_name = self.switches_select.GetValue()
+        device_id = self.names.query(device_name)
+        if device_id is not None and device_id in self.switches:
+            self.devices.set_switch(device_id, self.devices.HIGH)
+            self.switches_set_button.Disable()
+            self.switches_clear_button.Enable()
+        else:
+            self.canvas.render("DEBUG: ON SWITCHES SET, device_id not in switches")
+
+    def on_switches_clear(self, event):
+        """Handle the event when the user clears a switch."""
+        device_name = self.switches_select.GetValue()
+        device_id = self.names.query(device_name)
+        if device_id is not None and device_id in self.switches:
+            self.devices.set_switch(device_id, self.devices.HIGH)
+            self.switches_set_button.Enable()
+            self.switches_clear_button.Disable()
+        else:
+            self.canvas.render("DEBUG: ON SWITCHES CLEAR, device_id not in switches")
+
+
+    def on_monitors_select(self, event):
+        """Handle the event when the user types text in monitors text box.
+        If the text in the box matches the name of a signal, then the set
+        and zap buttons enable according to if the if it's monitored or not.
+        """
+        signal_name = self.switches_select.GetValue()
+        monitored, unmonitored = self.monitors.get_signal_names()
+        if signal_name in monitored:
+            self.monitors_set_button.Disable()
+            self.monitors_zap_button.Enable()
+        elif signal_name in unmonitored:
+            self.monitors_set_button.Enable()
+            self.monitors_zap_button.Disable()
+        else:
+            self.monitors_set_button.Disable()
+            self.monitors_zap_button.Disable()
+
+    def on_monitors_set(self, event):
+        """Handle the event when the user sets a monitor."""
+        signal_name = self.switches_select.GetValue()
+        ids = self.devices.get_signal_ids(self, signal_name)
+        if ids is not None:
+            [device_id, output_id] = ids
+            self.monitors.make_monitor(self, device_id, output_id, cycles_completed=0)
+        else:
+            self.canvas.render("DEBUG: ON MONITORS SET, ids is None")
+
+    def on_monitors_zap(self, event):
+        """Handle the event when the user clears a monitor."""
+        signal_name = self.switches_select.GetValue()
+        ids = self.devices.get_signal_ids(self, signal_name)
+        if ids is not None:
+            [device_id, output_id] = ids
+            self.monitors.remove_monitor(self, device_id, output_id)
+        else:
+            self.canvas.render("DEBUG: ON MONITORS ZAP, ids is None")
+
+    def on_load_file_button(self, event):
+        """Handle the load file button"""
+        # if self.contentNotSaved:
+        #     if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
+        #                      wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+        #         return
+
+        # otherwise ask the user what new file to open
+        with wx.FileDialog(self, "Open another definition file", wildcard="*.def",
+                           style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return  # the user changed their mind
+
+            # Proceed loading the file chosen by the user
+            path = fileDialog.GetPath()
+            self.open_file(path)
+
+    def on_load_file_text_box(self, event):
+        """Handle the event when user enters a filepath into load_file_text_box"""
+        # if self.contentNotSaved:
+        #     if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
+        #                      wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+        #         return
+
+        # otherwise ask the user what new file to open
+        path = self.load_file_text_box.GetValue()
+        self.open_file(path)
+
+    def open_file(self, pathname):
+        try:
+            with open(pathname, 'r') as file:
+                self.load_file_text_box.SetValue(pathname)
+                # self.doLoadDataOrWhatever(file)
+        except IOError:
+            wx.LogError("Cannot open file '%s'." % pathname)
