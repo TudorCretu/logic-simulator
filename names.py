@@ -5,7 +5,7 @@ use this module either directly or indirectly.
 
 Classes
 -------
-Names - maps variable names and string names to unique integers.
+Names - maps variable names and string names to unique integers. 
 """
 
 
