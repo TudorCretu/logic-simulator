@@ -39,7 +39,7 @@ class Parser:
 	self.devices = devices
 	self.network = network
 	self.monitors = monitors
-	se;f.scanner = scanner
+	self.scanner = scanner
 
     def parse_network(self):
         """Parse the circuit definition file."""
