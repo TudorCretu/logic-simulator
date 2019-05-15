@@ -80,6 +80,9 @@ class Names:
         
         If the name_id is not an index in the names list, return None.
         """
-        
-
+        try:
+            return self.my_names[name_string]
+        except IndexError:
+            return None
+     
 
