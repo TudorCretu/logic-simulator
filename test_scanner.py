@@ -30,6 +30,65 @@ def new_definition_file():
     new_names = Names()
 
 
+def test_string_symbol():
+    """Test if initial white space is ignored."""
+    names = Names()
+    string_io = StringIO("symbol")
+    scanner = Scanner(string_io, names)
+    assert scanner.get_symbol() == "symbol"
+
+
+def test_punctuation_symbol():
+    """Test if initial white space is ignored."""
+    names = Names()
+    string_io = StringIO("/")
+    scanner = Scanner(string_io, names)
+    assert scanner.get_symbol() == "/"
+
+
+def test_string_punctuation_sequence():
+    names = Names()
+    string_io = StringIO("symbol/symbol")
+    scanner = Scanner(string_io, names)
+    assert scanner.get_symbol() == "symbol"
+    assert scanner.get_symbol() == "/"
+    assert scanner.get_symbol() == "symbol"
+
+
+def test_number_symbol():
+    """Test if initial the number."""
+    names = Names()
+    string_io = StringIO("symbol/1234/symbol")
+    scanner = Scanner(string_io, names)
+    assert scanner.get_symbol() == "symbol"
+    assert scanner.get_symbol() == "/"
+    assert scanner.get_symbol() == "1234"
+    assert scanner.get_symbol() == '/'
+    assert scanner.get_symbol() == 'symbol'
+
+
+def test_keywords_symbol():
+    """Test if the keywords DEVICES, CONNECTIONS, MONITORS are recognised correctly."""
+    names = Names()
+    string_io = StringIO("DEVICESsymbol/1234,CONNECTIONSsymbol/5678.MONITORSsymbol/90;")
+    scanner = Scanner(string_io, names)
+    assert scanner.get_symbol() == "DEVICES"
+    assert scanner.get_symbol() == "symbol"
+    assert scanner.get_symbol() == "/"
+    assert scanner.get_symbol() == "1234"
+    assert scanner.get_symbol() == ","
+    assert scanner.get_symbol() == "CONNECTIONS"
+    assert scanner.get_symbol() == "symbol"
+    assert scanner.get_symbol() == "/"
+    assert scanner.get_symbol() == "5678"
+    assert scanner.get_symbol() == "."
+    assert scanner.get_symbol() == "MONITORS"
+    assert scanner.get_symbol() == "symbol"
+    assert scanner.get_symbol() == "/"
+    assert scanner.get_symbol() == "90"
+    assert scanner.get_symbol() == ";"
+
+
 def test_initial_whitespace():
     """Test if initial white space is ignored."""
     names = Names()
@@ -38,12 +97,13 @@ def test_initial_whitespace():
     assert scanner.get_symbol() == "symbol"
 
 
-def test_middle_whitespace():
-    """Test if final white space is ignored."""
+def test_interior_whitespace():
+    """Test if interior white space is ignored."""
     names = Names()
-    string_io = StringIO("symbol  \f  \t  \n \t \r \n \v next")
+    string_io = StringIO("symbol  \f  \t  \n \t \r \n \v / \n \t next")
     scanner = Scanner(string_io, names)
     assert scanner.get_symbol() == "symbol"
+    assert scanner.get_symbol() == "/"
     assert scanner.get_symbol() == "next"
 
 
@@ -57,11 +117,19 @@ def test_final_whitespace():
 
 
 def test_comment():
-    """Test if definition_file_1 is scanned correctly."""
+    """Test if comments are ignored correctly."""
     names = Names()
-    string_io = StringIO("Some ")
+    string_io = StringIO("Some / symbol # some comment 1234 / " + os.linesep + "Some / other / symbols # some other comments / ; ")
     scanner = Scanner(string_io, names)
-    print(scanner.get_symbol())
+    assert scanner.get_symbol() == "Some"
+    assert scanner.get_symbol() == "/"
+    assert scanner.get_symbol() == "symbol"
+    assert scanner.get_symbol() == "Some"
+    assert scanner.get_symbol() == "/"
+    assert scanner.get_symbol() == "other"
+    assert scanner.get_symbol() == "/"
+    assert scanner.get_symbol() == "symbols"
+    assert scanner.get_symbol() == ""
 
 
 def test_definition_file_1():
