@@ -56,6 +56,10 @@ class Names:
 
         If the name string is not present in the names list, return None.
         """
+        try:
+            return self.my_names.index(name_string))
+        except ValueError:
+            return None
 
     def lookup(self, name_string_list):
         """Return a list of name IDs for each name string in name_string_list.
@@ -66,7 +70,7 @@ class Names:
         for name in name_string_list:
             try:
                 ids.append(self.my_names.index(name_string))
-            except:
+            except ValueError:
                 self.my_names.append(name_string)
                 ids.append(len(self.my_names) - 1)       
         return ids
