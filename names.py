@@ -5,7 +5,7 @@ use this module either directly or indirectly.
 
 Classes
 -------
-Names - maps variable names and string names to unique integers. 
+Names - maps variable names and string names to unique integers.
 """
 
 
@@ -57,7 +57,7 @@ class Names:
         If the name string is not present in the names list, return None.
         """
         try:
-            return self.my_names.index(name_string))
+            return self.names.index(name_string)
         except ValueError:
             return None
 
@@ -69,20 +69,19 @@ class Names:
         ids = []
         for name in name_string_list:
             try:
-                ids.append(self.my_names.index(name_string))
+                ids.append(self.names.index(name))
             except ValueError:
-                self.my_names.append(name_string)
-                ids.append(len(self.my_names) - 1)       
+                self.names.append(name)
+                ids.append(len(self.names) - 1)
         return ids
 
     def get_name_string(self, name_id):
         """Return the corresponding name string for name_id.
-        
+
         If the name_id is not an index in the names list, return None.
         """
         try:
-            return self.my_names[name_string]
+            return self.names[name_id]
         except IndexError:
             return None
-     
 
