@@ -36,6 +36,7 @@ def test_string_symbol():
     string_io = StringIO("symbol")
     scanner = Scanner(string_io, names)
     assert scanner.get_symbol() == "symbol"
+    assert scanner.get_symbol() == ""
 
 
 def test_punctuation_symbol():
@@ -44,6 +45,17 @@ def test_punctuation_symbol():
     string_io = StringIO("/")
     scanner = Scanner(string_io, names)
     assert scanner.get_symbol() == "/"
+    assert scanner.get_symbol() == ""
+
+
+def test_number_symbol():
+    """Test if initial white space is ignored."""
+    names = Names()
+    string_io = StringIO("1234")
+    scanner = Scanner(string_io, names)
+    assert scanner.get_symbol() == "1234"
+    assert scanner.get_symbol() == ""
+
 
 
 def test_string_punctuation_sequence():
@@ -53,9 +65,10 @@ def test_string_punctuation_sequence():
     assert scanner.get_symbol() == "symbol"
     assert scanner.get_symbol() == "/"
     assert scanner.get_symbol() == "symbol"
+    assert scanner.get_symbol() == ""
 
 
-def test_number_symbol():
+def test_string_punctuation_number_symbol():
     """Test if initial the number."""
     names = Names()
     string_io = StringIO("symbol/1234/symbol")
@@ -65,6 +78,7 @@ def test_number_symbol():
     assert scanner.get_symbol() == "1234"
     assert scanner.get_symbol() == '/'
     assert scanner.get_symbol() == 'symbol'
+    assert scanner.get_symbol() == ""
 
 
 def test_keywords_symbol():
@@ -87,6 +101,7 @@ def test_keywords_symbol():
     assert scanner.get_symbol() == "/"
     assert scanner.get_symbol() == "90"
     assert scanner.get_symbol() == ";"
+    assert scanner.get_symbol() == ""
 
 
 def test_initial_whitespace():
@@ -95,6 +110,7 @@ def test_initial_whitespace():
     string_io = StringIO("  \f  \t  \n \t \r \n \v symbol")
     scanner = Scanner(string_io, names)
     assert scanner.get_symbol() == "symbol"
+    assert scanner.get_symbol() == ""
 
 
 def test_interior_whitespace():
@@ -105,6 +121,8 @@ def test_interior_whitespace():
     assert scanner.get_symbol() == "symbol"
     assert scanner.get_symbol() == "/"
     assert scanner.get_symbol() == "next"
+    assert scanner.get_symbol() == ""
+
 
 
 def test_final_whitespace():
@@ -220,6 +238,8 @@ def test_definition_file_1():
     assert scanner.get_symbol() == "QBAR"
     assert scanner.get_symbol() == ";"
 
+    assert scanner.get_symbol() == ""
+
 
 def test_definition_file_2():
     """Test if definition_file_2 is scanned correctly."""
@@ -316,3 +336,5 @@ def test_definition_file_2():
     assert scanner.get_symbol() == "MONITORS"
     assert scanner.get_symbol() == "NOR1"
     assert scanner.get_symbol() == ";"
+
+    assert scanner.get_symbol() == ""
