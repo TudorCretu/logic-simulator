@@ -36,15 +36,26 @@ class Parser:
     def __init__(self, names, devices, network, monitors, scanner):
         """Initialise constants."""
         self.names = names
-	self.devices = devices
-	self.network = network
-	self.monitors = monitors
-	self.scanner = scanner
+        self.devices = devices
+        self.network = network
+        self.monitors = monitors
+        self.scanner = scanner
 
     def parse_network(self):
         """Parse the circuit definition file."""
         # For now just return True, so that userint and gui can run in the
         # skeleton code. When complete, should return False when there are
         # errors in the circuit definition file.
-        
-	return True
+
+        #[BACKSLASH, COMMA, SEMICOLON, EQUALS, KEYWORD, NUMBER, NAME, EOF]
+        #[0        , 1    , 2        , 3     , 4      , 5     , 6   , 7] (TypeNumber)
+
+        symbol_list = []
+        while True:
+            current = self.scanner.getsymbol()
+            if current.type == 7: # EOF
+                break
+            symbol_list.append(current)
+
+        if symbol_list[0].type != 4:
+            raise SyntaxError
