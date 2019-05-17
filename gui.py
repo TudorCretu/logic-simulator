@@ -99,10 +99,11 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         # Clear everything
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        # Draw specified text at position (10, 10)
+        # Draw monitors text
         self.render_text(text, 10, 10)
 
-        # Draw a sample signal trace
+        # Draw
+        # Draw signals
         GL.glColor3f(0.0, 0.0, 1.0)  # signal trace is blue
         GL.glBegin(GL.GL_LINE_STRIP)
         for i in range(10):
