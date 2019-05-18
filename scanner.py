@@ -10,8 +10,8 @@ Symbol - encapsulates a symbol and stores its properties.
 """
 
 import sys
-
-
+from names import Names
+from io import StringIO
 
 
 class Symbol:
@@ -87,7 +87,7 @@ class Scanner:
                 symbol.type = self.KEYWORD
             else:
                 symbol.type = self.NAME
-                [symbol.id] = self.names.lookup([name_string])
+            [symbol.id] = self.names.lookup([name_string])
 
         elif self.current_character.isdigit():
             symbol.id = self.get_number()
