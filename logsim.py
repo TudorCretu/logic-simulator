@@ -65,14 +65,18 @@ def main(arg_list):
                 userint.command_interface()
         elif option == "-t":  # manually create the devices, network, and monitors for testing
             if path == "1":
-                names, devices, network, monitors = test_gui_1()
+                names, devices, network, monitors = test_1()
+            elif path == "2":
+                names, devices, network, monitors = test_2()
             else:
                 print("Error: invalid test number.\n")
                 sys.exit()
+            # userint = UserInterface(names, devices, network, monitors)
+            # userint.command_interface()
+
             # Initialise an instance of the gui.Gui() class
             app = wx.App()
-            gui = Gui("Logic Simulator", path, names, devices, network,
-                      monitors)
+            gui = Gui("Logic Simulator", path, names, devices, network, monitors)
             gui.Show(True)
             app.MainLoop()
 
@@ -90,36 +94,64 @@ def main(arg_list):
         if parser.parse_network():
             # Initialise an instance of the gui.Gui() class
             app = wx.App()
-            gui = Gui("Logic Simulator", path, names, devices, network,
-                      monitors)
+            gui = Gui("Logic Simulator", path, names, devices, network, monitors)
             gui.Show(True)
             app.MainLoop()
 
-def test_gui_1():
+def test_1():
     names = Names()
     devices = Devices(names)
     network = Network(names, devices)
     monitors = Monitors(names, devices, network)
 
-    devices.make_device(1, devices.SWITCH, 1)
-    devices.make_device(2, devices.SWITCH, 1)
-    devices.make_device(3, devices.SWITCH, 1)
-    devices.make_device(4, devices.SWITCH, 0)
-    devices.make_device(5, devices.D_TYPE)
-    devices.make_device(6, devices.CLOCK, 2)
-    devices.make_device(7, devices.XOR, 2)
+    [SW1, SW2, SW3, SW4, D1, CK1, XOR1] = \
+        names.lookup(["SW1", "SW2", "SW3", "SW4", "D1", "CK1", "XOR1"])
+    print(names.query("SW1"))
+    devices.make_device(SW1, devices.SWITCH, 1)
+    devices.make_device(SW2, devices.SWITCH, 1)
+    devices.make_device(SW3, devices.SWITCH, 1)
+    devices.make_device(SW4, devices.SWITCH, 0)
+    devices.make_device(D1, devices.D_TYPE)
+    devices.make_device(CK1, devices.CLOCK, 2)
+    devices.make_device(XOR1, devices.XOR)
 
-    network.make_connection(1, None, 7, names.query("I1"))
-    network.make_connection(2, None, 7, names.query("I2"))
-    network.make_connection(7, None, 5, names.query("DATA"))
-    network.make_connection(6, None, 5, names.query("CLK"))
-    network.make_connection(3, None, 5, names.query("SET"))
-    network.make_connection(4, None, 5, names.query("CLEAR"))
+    network.make_connection(SW1, None, XOR1, names.query("I1"))
+    network.make_connection(SW2, None, XOR1, names.query("I2"))
+    network.make_connection(XOR1, None, D1, names.query("DATA"))
+    network.make_connection(CK1, None, D1, names.query("CLK"))
+    network.make_connection(SW3, None, D1, names.query("SET"))
+    network.make_connection(SW4, None, D1, names.query("CLEAR"))
 
-    monitors.make_monitor(5, names.query("Q"))
-    monitors.make_monitor(5, names.query("QBAR"))
+    monitors.make_monitor(D1, names.query("Q"))
+    monitors.make_monitor(D1, names.query("QBAR"))
 
     return names, devices, network, monitors
 
+def test_2():
+    names = Names()
+    devices = Devices(names)
+    network = Network(names, devices)
+    monitors = Monitors(names, devices, network)
+
+    CK1, CK2, AND1, NAND1, OR1, NOR1 = names.lookup(["CK1", "CK2", "AND1", "NAND1", "OR1", "NOR1"])
+    devices.make_device(CK1, devices.CLOCK, 2)
+    devices.make_device(CK2, devices.CLOCK, 1)
+    devices.make_device(AND1, devices.AND, 2)
+    devices.make_device(NAND1, devices.NAND, 2)
+    devices.make_device(OR1, devices.OR, 2)
+    devices.make_device(NOR1, devices.NOR, 2)
+
+    network.make_connection(CK1, None, AND1, names.query("I1"))
+    network.make_connection(CK2, None, AND1, names.query("I2"))
+    network.make_connection(CK2, None, NAND1, names.query("I2"))
+    network.make_connection(CK2, None, OR1, names.query("I2"))
+    network.make_connection(CK2, None, NOR1, names.query("I2"))
+    network.make_connection(AND1, None, NAND1, names.query("I1"))
+    network.make_connection(NAND1, None, OR1, names.query("I1"))
+    network.make_connection(OR1, None, NOR1, names.query("I1"))
+
+    monitors.make_monitor(NOR1, None)
+
+    return names, devices, network, monitors
 if __name__ == "__main__":
     main(sys.argv[1:])
