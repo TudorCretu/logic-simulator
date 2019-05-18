@@ -6,8 +6,8 @@ from names import Names
 
 def test_unique_error_codes():
     n = Names()
-    assert n.unique_error_codes(6) == range(0,6)
-    assert n.error_code_count == 6
+    assert n.unique_error_codes(3) == [0,1,2]
+    assert n.error_code_count == 3
     with pytest.raises(TypeError):
         n.unique_error_codes(-1)
         n.unique_error_codes("name")

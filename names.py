@@ -50,8 +50,8 @@ class Names:
         if num_error_codes <= 0:
             raise TypeError("Expected num_error_codes to be positive.")
         self.error_code_count += num_error_codes
-        return range(self.error_code_count - num_error_codes,
-                     self.error_code_count)
+        return list(range(self.error_code_count - num_error_codes,
+                     self.error_code_count))
 
     def query(self, name_string):
         """Return the corresponding name ID for name_string.
