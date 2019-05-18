@@ -1,0 +1,4 @@
+names = Names()
+scanner = Scanner("test_definition_files/test_model_3.txt",names)
+print(scanner.get_symbol().type)
+print(scanner.get_symbol().type)
