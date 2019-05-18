@@ -61,7 +61,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         # Initialise variables for panning
         self.pan_x = 0
-        self.pan_y = 0
+        self.pan_y = 300
         self.last_mouse_x = 0  # previous mouse x position
         self.last_mouse_y = 0  # previous mouse y position
 
@@ -72,6 +72,24 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_SIZE, self.on_size)
         self.Bind(wx.EVT_MOUSE_EVENTS, self.on_mouse)
+
+        # Simulation instances
+        self.devices = devices
+        self.monitors = monitors
+
+        # Simulation variables
+        self.completed_cycles = 0
+        self.clock_display_frequency = 1
+        self.monitors_number = len(monitors.monitors_dictionary)
+
+        # Layout variables
+        self.monitor_height = 40
+        self.cycle_width = 40
+        self.cycle_start_x = 65
+        self.cycle_axis_y = -30
+        self.cycle_axis_y_padding = -7
+        self.completed_cycles = 10
+
 
     def init_gl(self):
         """Configure and initialise the OpenGL context."""
@@ -99,11 +117,16 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         # Clear everything
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        # Draw monitors text
-        self.render_text(text, 10, 10)
+        # Draw monitors names
+        self.draw_monitors_names()
+        # self.render_text(text, 10, 10)
 
-        # Draw
+        # Draw cycles (time)  axis
+        self.draw_cycles_axis()
+
         # Draw signals
+        self.draw_monitored_signals()
+
         GL.glColor3f(0.0, 0.0, 1.0)  # signal trace is blue
         GL.glBegin(GL.GL_LINE_STRIP)
         for i in range(10):
@@ -170,6 +193,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init = False
             text = "".join(["Negative mouse wheel rotation. Zoom is now: ",
                             str(self.zoom)])
+
         if event.GetWheelRotation() > 0:
             self.zoom /= (1.0 - (
                 event.GetWheelRotation() / (20 * event.GetWheelDelta())))
@@ -177,22 +201,120 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             text = "".join(["Positive mouse wheel rotation. Zoom is now: ",
                             str(self.zoom)])
         if text:
+            print(text)
             self.render(text)
         else:
             self.Refresh()  # triggers the paint event
 
-    def render_text(self, text, x_pos, y_pos):  
-        """Handle text drawing operations."""
-        GL.glColor3f(0.0, 0.0, 0.0)  # text is black
-        GL.glRasterPos2f(x_pos, y_pos)
-        font = GLUT.GLUT_BITMAP_HELVETICA_12
+    def draw_monitors_names(self):
+        return
 
+    def draw_cycles_axis(self):
+        char_width = self.text_width(str(0))
+
+        # Draw title
+        self.render_text("Count", 3, self.cycle_axis_y - self.cycle_axis_y_padding/2)
+
+        # Draw numbers
+        for i in range(0, self.completed_cycles + 1, self.clock_display_frequency):
+            self.render_text(str(i), self.cycle_start_x + i * self.cycle_width, self.cycle_axis_y - self.cycle_axis_y_padding)
+
+        # Draw the horizontal axis
+        GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
+        cycle_axis_x_offset = 15
+        # GL.glLineStipple(2, 0x0FFF)
+        GL.glLineWidth(2.0)
+        # GL.glEnable(GL.GL_LINE_STIPPLE)
+        for i in range(1, self.completed_cycles + 1, self.clock_display_frequency):
+            GL.glBegin(GL.GL_LINES)
+            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i-1/2)+char_width/2, self.cycle_axis_y)
+            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i+1/2)-char_width/2, self.cycle_axis_y)
+            GL.glEnd()
+        GL.glPopAttrib()
+
+        # Draw the Vertical axis
+        GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
+        cycle_axis_x_offset = 15
+        GL.glLineStipple(2, 0x000F)
+        GL.glLineWidth(1.0)
+        GL.glColor3f(0.4, 0.4, 0.4)  # signal trace is blue
+        GL.glEnable(GL.GL_LINE_STIPPLE)
+        for i in range(0, self.completed_cycles, self.clock_display_frequency):
+            char_width = self.text_width(str(i))
+            GL.glBegin(GL.GL_LINES)
+            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i + 1 / 2) ,
+                          self.cycle_axis_y)
+            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i + 1 / 2) ,
+                          self.cycle_axis_y - self.monitor_height * self.monitors_number)
+            GL.glEnd()
+        GL.glPopAttrib()
+        return
+
+    def draw_monitored_signals(self):
+        # margin = self.monitors.get_margin()
+        monitor_number = 0
+        monitors_start_y = 50
+        for device_id, output_id in self.monitors.monitors_dictionary:
+            y_0 = self.monitor_height * monitor_number + monitors_start_y
+            self.draw_signal(device_id, output_id, y_0)
+
+    def draw_signal(self, device_id, output_id, y_0):
+        monitor_name = self.devices.get_signal_name(device_id, output_id)
+        name_length = len(monitor_name)
+        signal_list = self.monitors.monitors_dictionary[(device_id, output_id)]
+        # print(monitor_name + (margin - name_length) * " ", end=": ")
+        monitors_start_x = 50
+        x_0 = monitors_start_x
+        color = (0, 0, 1)
+        for signal in signal_list:
+            if signal == self.devices.HIGH:
+                self.render_line(x_0, y_0 + self.monitor_height, x_0 + self.cycle_width, y_0 + self.monitor_height, color)
+                x_0 += self.cycle_width
+                print("-", end="")
+            elif signal == self.devices.LOW:
+                self.render_line(x_0, y_0, x_0+self.cycle_width, y_0, color)
+                x_0 += self.cycle_width
+                print("_", end="")
+            elif signal == self.devices.RISING:
+                self.render_line(x_0, y_0, x_0, y_0+self.monitor_height, color)
+                print("/", end="")
+            elif signal == self.devices.FALLING:
+                self.render_line(x_0, y_0+self.monitor_height, x_0, y_0, color)
+                print("\\", end="")
+            elif signal == self.devices.BLANK:
+                self.render_line(x_0, y_0+self.monitor_height/2, x_0+self.cycle_width, y_0+self.monitor_height/2, color=(0.5,0.5,0.5))
+                x_0 += self.cycle_width
+                print(" ", end="")
+        print("\n", end="")
+
+    def render_line(self, x_start, y_start, x_end, y_end, color = (0, 0, 1)):
+        GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
+        GL.glColor3f(*color)
+        GL.glBegin(GL.GL_LINE_STRIP)
+        GL.glVertex2f(x_start, y_start)
+        GL.glVertex2f(x_end, y_end)
+        GL.glEnd()
+        GL.glPopAttrib()
+
+
+    def render_text(self, text, x_pos, y_pos, color = (0, 0, 0), font=GLUT.GLUT_BITMAP_HELVETICA_18):
+        """Handle text drawing operations."""
+        GL.glColor3f(*color)
+        GL.glRasterPos2f(x_pos, y_pos)
         for character in text:
             if character == '\n':
                 y_pos = y_pos - 20
                 GL.glRasterPos2f(x_pos, y_pos)
             else:
                 GLUT.glutBitmapCharacter(font, ord(character))
+
+    def text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18):
+        width = 0
+        for character in text:
+            if character != '\n':
+                width += GLUT.glutBitmapWidth(font, ord(character))
+        return width
+
 
 
 class Gui(wx.Frame):
@@ -238,7 +360,7 @@ class Gui(wx.Frame):
         self.devices = devices
         self.network = network
         self.monitors = monitors
-        # self.switches = devices.find_devices("SWITCH") #TODO Uncomment when devices is implemented
+        self.switches = devices.find_devices(devices.SWITCH)
 
         # Canvas for drawing signals
         self.canvas = MyGLCanvas(self, devices, monitors)
@@ -259,14 +381,15 @@ class Gui(wx.Frame):
         #  Side Sizer
         #   Switches
         toggle_button_size = wx.Size(50, wx.DefaultSize.GetHeight())
-        self.switches_select = wx.ComboBox(self, wx.ID_ANY, style = wx.CB_SORT)
+        switches_names = [names.get_name_string(switch_id) for switch_id in self.switches]
+        self.switches_select = wx.ComboBox(self, wx.ID_ANY, style = wx.CB_SORT, choices=switches_names)
         self.switches_set_button = wx.ToggleButton(self, wx.ID_ANY, "HIGH", style=wx.BORDER_NONE, size=toggle_button_size)
         self.switches_clear_button = wx.ToggleButton(self, wx.ID_ANY, "LOW", style=wx.BORDER_NONE, size=toggle_button_size)
         self.switches_set_button.Disable()
         self.switches_clear_button.Disable()
 
         #   Monitors
-        self.monitors_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT)
+        self.monitors_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT, choices=self.monitors.get_signal_names()[0] + self.monitors.get_signal_names()[1])
         self.monitors_set_button = wx.ToggleButton(self, wx.ID_ANY, "SET", style=wx.BORDER_NONE, size=toggle_button_size)
         self.monitors_zap_button = wx.ToggleButton(self, wx.ID_ANY, "ZAP", style=wx.BORDER_NONE, size=toggle_button_size)
         self.monitors_set_button.Disable()
@@ -416,14 +539,56 @@ class Gui(wx.Frame):
     def on_run_button(self, event):
         """Handle the event when the user clicks the run button."""
         text = "Run button pressed."
-        self.completed_cycles = int(self.simulation_cycles_spin.GetValue())
-        self.canvas.render(text)
+
+        cycles = self.simulation_cycles_spin.GetValue()
+        if cycles >= 0:
+            self.monitors.reset_monitors()
+            print("".join(["Running for ", str(cycles), " cycles"]))
+            self.devices.cold_startup()
+            if self.run_network(cycles):
+                self.completed_cycles = cycles
+                self.canvas.completed_cycles = cycles
+                self.canvas.render(text)
+            else:
+                wx.MessageBox("Cannot run network. The network doesn't have a stable state.",
+                              "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
+        else:
+            wx.MessageBox("Cannot run network. The number of cycles is not a positive integer.",
+                          "Invalig Value Error", wx.ICON_ERROR | wx.OK)
 
     def on_continue_button(self, event):
         """Handle the event when the user clicks the continue button."""
         text = "Continue button pressed."
-        self.completed_cycles += int(self.simulation_cycles_spin.GetValue())
-        self.canvas.render(text)
+
+        cycles = self.simulation_cycles_spin.GetValue()
+        if cycles >= 0:
+            cycles = int(cycles)
+            print("".join(["Continuing for ", str(cycles), " cycles"]))
+            self.devices.cold_startup()
+            if self.run_network(cycles):
+                self.completed_cycles += cycles
+                self.canvas.completed_cycles += cycles
+                self.canvas.render(text)
+            else:
+                wx.MessageBox("Cannot continue network. The network doesn't have a stable state.",
+                              "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
+        else:
+            wx.MessageBox("Cannot continue network. The number of cycles is not a positive integer.",
+                          "Error", wx.ICON_ERROR | wx.OK)
+
+    def run_network(self, cycles):
+        """Run the network for the specified number of simulation cycles.
+
+        Return True if successful.
+        """
+        for _ in range(cycles):
+            if self.network.execute_network():
+                self.monitors.record_signals()
+            else:
+                print("Error! Network oscillating.")
+                return False
+        self.canvas.Refresh()
+        return True
 
     def on_console(self, event):
         """Handle the event when the user enters a command in the console."""
@@ -459,6 +624,7 @@ class Gui(wx.Frame):
             self.devices.set_switch(device_id, self.devices.HIGH)
             self.switches_set_button.Disable()
             self.switches_clear_button.Enable()
+            self.switches_set_button.SetValue(False)
         else:
             self.canvas.render("DEBUG: ON SWITCHES SET, device_id not in switches")
 
@@ -470,6 +636,7 @@ class Gui(wx.Frame):
             self.devices.set_switch(device_id, self.devices.HIGH)
             self.switches_set_button.Enable()
             self.switches_clear_button.Disable()
+            self.switches_clear_button.SetValue(False)
         else:
             self.canvas.render("DEBUG: ON SWITCHES CLEAR, device_id not in switches")
 
@@ -479,7 +646,7 @@ class Gui(wx.Frame):
         If the text in the box matches the name of a signal, then the set
         and zap buttons enable according to if the if it's monitored or not.
         """
-        signal_name = self.switches_select.GetValue()
+        signal_name = self.monitors_select.GetValue()
         monitored, unmonitored = self.monitors.get_signal_names()
         if signal_name in monitored:
             self.monitors_set_button.Disable()
@@ -493,21 +660,27 @@ class Gui(wx.Frame):
 
     def on_monitors_set(self, event):
         """Handle the event when the user sets a monitor."""
-        signal_name = self.switches_select.GetValue()
-        ids = self.devices.get_signal_ids(self, signal_name)
+        signal_name = self.monitors_select.GetValue()
+        ids = self.devices.get_signal_ids(signal_name)
         if ids is not None:
             [device_id, output_id] = ids
-            self.monitors.make_monitor(self, device_id, output_id, cycles_completed=0)
+            self.monitors.make_monitor(device_id, output_id, self.completed_cycles)
+            self.monitors_set_button.Disable()
+            self.monitors_zap_button.Enable()
+            self.monitors_set_button.SetValue(False)
         else:
             self.canvas.render("DEBUG: ON MONITORS SET, ids is None")
 
     def on_monitors_zap(self, event):
         """Handle the event when the user clears a monitor."""
-        signal_name = self.switches_select.GetValue()
-        ids = self.devices.get_signal_ids(self, signal_name)
+        signal_name = self.monitors_select.GetValue()
+        ids = self.devices.get_signal_ids(signal_name)
         if ids is not None:
             [device_id, output_id] = ids
-            self.monitors.remove_monitor(self, device_id, output_id)
+            self.monitors.remove_monitor(device_id, output_id)
+            self.monitors_set_button.Enable()
+            self.monitors_zap_button.Disable()
+            self.monitors_zap_button.SetValue(False)
         else:
             self.canvas.render("DEBUG: ON MONITORS ZAP, ids is None")
 
