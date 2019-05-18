@@ -10,7 +10,8 @@ def test_unique_error_codes():
     assert n.error_code_count == 3
     with pytest.raises(TypeError):
         n.unique_error_codes(-1)
-        n.unique_error_codes("name")
+    with pytest.raises(TypeError):
+        n.unique_error_codes(-1)
 
 def test_query():
     n = Names()
