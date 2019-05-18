@@ -36,7 +36,7 @@ def main(arg_list):
                      "Command line user interface: logsim.py -c <file path>\n"
                      "Graphical user interface: logsim.py <file path>")
     try:
-        options, arguments = getopt.getopt(arg_list, "hc:")
+        options, arguments = getopt.getopt(arg_list, "hct:")
     except getopt.GetoptError:
         print("Error: invalid command line arguments\n")
         print(usage_message)
@@ -63,6 +63,19 @@ def main(arg_list):
                 # Initialise an instance of the userint.UserInterface() class
                 userint = UserInterface(names, devices, network, monitors)
                 userint.command_interface()
+        elif option == "-t":  # manually create the devices, network, and monitors for testing
+            if path == "1":
+                names, devices, network, monitors = test_gui_1()
+            else:
+                print("Error: invalid test number.\n")
+                sys.exit()
+            # Initialise an instance of the gui.Gui() class
+            app = wx.App()
+            gui = Gui("Logic Simulator", path, names, devices, network,
+                      monitors)
+            gui.Show(True)
+            app.MainLoop()
+
 
     if not options:  # no option given, use the graphical user interface
 
@@ -72,8 +85,8 @@ def main(arg_list):
             sys.exit()
 
         [path] = arguments
-        scanner = Scanner(path, names)
-        parser = Parser(names, devices, network, monitors, scanner)
+        # scanner = Scanner(path, names)
+        # parser = Parser(names, devices, network, monitors, scanner)
         if parser.parse_network():
             # Initialise an instance of the gui.Gui() class
             app = wx.App()
@@ -82,6 +95,31 @@ def main(arg_list):
             gui.Show(True)
             app.MainLoop()
 
+def test_gui_1():
+    names = Names()
+    devices = Devices(names)
+    network = Network(names, devices)
+    monitors = Monitors(names, devices, network)
+
+    devices.make_device(1, devices.SWITCH, 1)
+    devices.make_device(2, devices.SWITCH, 1)
+    devices.make_device(3, devices.SWITCH, 1)
+    devices.make_device(4, devices.SWITCH, 0)
+    devices.make_device(5, devices.D_TYPE)
+    devices.make_device(6, devices.CLOCK, 2)
+    devices.make_device(7, devices.XOR, 2)
+
+    network.make_connection(1, None, 7, names.query("I1"))
+    network.make_connection(2, None, 7, names.query("I2"))
+    network.make_connection(7, None, 5, names.query("DATA"))
+    network.make_connection(6, None, 5, names.query("CLK"))
+    network.make_connection(3, None, 5, names.query("SET"))
+    network.make_connection(4, None, 5, names.query("CLEAR"))
+
+    monitors.make_monitor(5, names.query("Q"))
+    monitors.make_monitor(5, names.query("QBAR"))
+
+    return names, devices, network, monitors
 
 if __name__ == "__main__":
     main(sys.argv[1:])
