@@ -5,15 +5,17 @@ from io import StringIO
 from names import Names
 
 def test_unique_error_codes():
+    """Test the unique_error_codes method"""
     n = Names()
-    assert n.unique_error_codes(3) == [0,1,2]
-    assert n.error_code_count == 3
+    codes = n.unique_error_codes(3)
+    assert [codes[0],codes[1],codes[2]] == [0,1,2]
     with pytest.raises(TypeError):
         n.unique_error_codes(-1)
     with pytest.raises(TypeError):
-        n.unique_error_codes(-1)
+        n.unique_error_codes("s")
 
 def test_query():
+    """Test the query method"""
     n = Names()
     n.names = ["name1", "name2", "name3"]
     assert n.query("name1") == 0
@@ -27,6 +29,7 @@ def test_lookup():
     assert n.lookup(["name2","name3","name1"]) == [1,2,0]
 
 def test_get_name_string():
+    """Test the get_name_string method"""
     n = Names()
     _ = n.lookup(["name1","name2","name3"])
     assert n.get_name_string(1) == "name2"
