@@ -8,7 +8,11 @@ Classes
 -------
 Parser - parses the definition file and builds the logic network.
 """
-
+# import sys
+from scanner import Symbol, Scanner
+from network import Network
+from devices import Device, Devices
+from monitors import Monitors
 
 class Parser:
 
@@ -42,77 +46,170 @@ class Parser:
         self.scanner = scanner
         self.symbol = Symbol()
         self.error_count = 0
-        self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NO_BACKSLASH] = range(5)
+        self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NO_BACKSLASH, self.NOT_NAME, self.NOT_NUMBER] = self.names.unique_error_code(7)
 
     def parse_network(self):
         """Parse the circuit definition file."""
         # For now just return True, so that userint and gui can run in the
         # skeleton code. When complete, should return False when there are
         # errors in the circuit definition file.
-        self.parse_devices()
-        self.parse_connections()
-        self.parse_monitors()
-        return True
+        flag1 = self.parse_devices()
+        flag2 = self.parse_connections()
+        flag3 = self.parse_monitors()
+        success = (flag1 and flag2 and flag3)
+        return success
 
     def parse_devices(self):
-        self.symbol = self.scanner.get_symbol()
+        flag = True # any error changes this to false
+        self.symbol = self.scanner.get_symbol() # check keyword first
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.DEVICES_ID:
-            self.symbol = self.scanner.get_symbol()
-            self.add_device()
+            if self.add_device() is False: # type not name
+                flag = False
+
             while self.symbol.type == self.scanner.COMMA:
-                self.symbol = self.scanner.get_symbol()
-                self.add_device()
-            if self.symbol.type == self.scanner.SEMICOLON:
-                self.symbol = self.scanner.get_symbol()
+                if self.add_device() is False:
+                    flag = False
+
+            if self.symbol.type == self.scanner.SEMICOLON: # end of this section
+                return flag
             else:
                 self.display_error(self.NO_SEMICOLON) # no semicolon
+                return False
                 # self.skip_erratic_part() or just end parsing this section
         else:
             self.display_error(self.NO_KEYWORD) # no keyword
+            return False
             # self.skip_erratic_part() or just raise error and exit
 
     def add_device(self):
-        identifier = self.symbol # current self.symbol is the IDENTIFIER
+
+        self.symbol = self.scanner.get_symbol()
+        if self.check_names() is False:
+            return False
+        identifier = self.symbol  # current self.symbol is the IDENTIFIER
+
         self.symbol = self.scanner.get_symbol() # read in the following '='
         if self.symbol.type == self.scanner.EQUALS:
+
             self.symbol = self.scanner.get_symbol() # the type of device
+            if self.check_names() is False: # type not a name
+                return False
+
             device_type = self.symbol
             self.symbol = self.scanner.get_symbol() # now self.symbol maybe ','or '/'
+
             if self.symbol.type == self.scanner.COMMA:
                 # make device with type only
-                self.symbol = self.scanner.get_symbol()
+                return True
+
             elif self.symbol.type == self.scanner.BACKSLASH:
                 param = []
                 while self.symbol.type == self.scanner.BACKSLASH:
+                    if self.add_parameter() is False: # param not a number
+                        return False
                     param.append(self.add_parameter())
+
                 if self.symbol.type == self.scanner.COMMA:
                     # make device using the type and param
-                    self.symbol = self.scanner.get_symbol()
+                    return True
                 else:
                     self.display_error(self.NO_COMMA)  # no comma
                     self.skip_erratic_part()
+                    return False
+
             else:
-                self.display_error(self.NO_COMMA) # no comma
+                self.display_error(self.NO_COMMA) # no comma or '/' actually
                 self.skip_erratic_part()
+                return False
+
         else:
             self.display_error(self.NO_EQUALS) # no equal
             self.skip_erratic_part()
+            return False
 
     def add_parameter(self):
-        self.symbol = self.scanner.get_symbol()
+        self.symbol = self.scanner.get_symbol() # read in a param
+        if self.check_number() is False:
+            return False
         param = self.symbol # get the parameter value
-        self.symbol = self.scanner.get_symbol()
+        self.symbol = self.scanner.get_symbol() # match the loop in add_devices
         return param
 
     def parse_connections(self):
+        flag = True
+        self.symbol = self.scanner.get_symbol()  # check keyword first
+        if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.CONNECTIONS_ID:
+            self.symbol = self.scanner.get_symbol()
+            self.add_connection()
+            while self.symbol.type == self.scanner.COMMA:
+                self.symbol = self.scanner.get_symbol()
+                self.add_connection()
+            if self.symbol.type == self.scanner.SEMICOLON:
+                return flag
+            else:
+                self.display_error(self.NO_SEMICOLON)
+                return False
+        else:
+            self.display_error(self.NO_KEYWORD)
+            return False
+            # self.skip_erratic_part() or just raise error and exit
 
+    def add_connection(self):
+        signal1 = self.signame()
+        if self.symbol.type == self.scanner.EQUALS:
+            self.symbol = self.scanner.get_symbol()
+            signal2 = self.signame()
+            # make connection between sig1 and sig2
+        else:
+            self.display_error(self.NO_EQUALS)  # no equal
+            self.skip_erratic_part()
+
+    def signame(self): # get the name of the signal
+        device_id = self.scanner.get_symbol()
+        if  self.scanner.get_symbol() == self.scanner.DOT:
+            port_id = self.scanner.get_symbol()
+            self.scanner.get_symbol()
+            return [device_id, port_id] # input
+        return device_id # output
 
     def parse_monitors(self):
+        flag = True
+        self.symbol = self.scanner.get_symbol()  # check keyword first
+        if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.MONITORS_ID:
+            self.symbol = self.scanner.get_symbol() # get the port to be monitored
+            # self.add_monitor()
+            while self.symbol.type == self.scanner.COMMA:
+                self.symbol = self.scanner.get_symbol()
+                # self.add_monitor()
+            if self.symbol.type == self.scanner.SEMICOLON:
+                return flag
+            else:
+                self.display_error(self.NO_SEMICOLON)
+                return False
+        else:
+            self.display_error(self.NO_KEYWORD)
+            return False
+            # self.skip_erratic_part() or just raise error and exit
 
+    def check_names(self): # skip erratic part then symbol becomes the next ',' or ';' or KEYWORD or EOF
+        if self.symbol.type != self.scanner.NAME:  # the type of device should be a name
+            self.display_error(self.NOT_NAME)
+            self.skip_erratic_part()
+            return False
+        else:
+            return True
+
+    def check_number(self): # similar to check_names
+        if self.symbol.type != self.scanner.NUMBER:  # param should be a number
+            self.display_error(self.NOT_NUMBER)
+            self.skip_erratic_part()
+            return False
+        else:
+            return True
 
     def display_error(self, error_type):
         self.error_count += 1
-        if error_type == self.NO_KEYWORDS:
+        if error_type == self.NO_KEYWORD:
             print("SyntaxError: Expected a keyword")
         elif error_type == self.NO_EQUALS:
             print("SyntaxError: Expected an equals sign")
@@ -120,12 +217,19 @@ class Parser:
             print("SyntaxError: Expected a semicolon")
         elif error_type == self.NO_COMMA:
             print("SyntaxError: Expected a comma")
+        # elif error_type == self.NO_DOT:
+        #     print("SyntaxError: Expected a backslash")
         elif error_type == self.NO_BACKSLASH:
             print("SyntaxError: Expected a backslash")
+        elif error_type == self.NOT_NAME:
+            print("SyntaxError: Expected a name")
+        elif error_type == self.NOT_NUMBER:
+            print("SyntaxError: Expected a number")
+        else:
+            print("Unknown error occurred")
 
     def skip_erratic_part(self):
         while self.symbol.type != self.scanner.COMMA: # go to the next comma within the section
             self.symbol = self.scanner.get_symbol()
             if self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.SEMICOLON or self.symbol.type == self.scanner.EOF:
                 return # end of section or file, terminate
-        self.symbol = self.scanner.get_symbol()
