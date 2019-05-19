@@ -1,4 +1,10 @@
 names = Names()
-scanner = Scanner("test_definition_files/test_model_3.txt",names)
-print(scanner.get_symbol().type)
-print(scanner.get_symbol().type)
+test_file_dir = "test_definition_files"
+path = test_file_dir +"/test_model_3.txt"
+scanner = Scanner(path, names)
+for a in range (15):
+    m = scanner.get_symbol()
+    try:
+        print( names.get_name_string(m.id), m.type )
+    except:
+        print (m.id, m.type) 

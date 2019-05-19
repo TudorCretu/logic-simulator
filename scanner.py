@@ -10,9 +10,6 @@ Symbol - encapsulates a symbol and stores its properties.
 """
 
 import sys
-from names import Names
-from io import StringIO
-
 
 class Symbol:
 
@@ -68,8 +65,8 @@ class Scanner:
         #list of keywords as well as ID values for keywords
         #Set current_character attribute to first character of file
         self.names = names 
-        self.symbol_type_list = [self.BACKSLASH, self.COMMA, self.SEMICOLON,
-            self.EQUALS, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(8)
+        self.symbol_type_list = [self.DOT, self.BACKSLASH, self.COMMA, self.SEMICOLON,
+            self.EQUALS, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(9)
         self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITORS"]
         [self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITOR_ID] = self.names.lookup(self.keywords_list)
         self.current_character = self.file.read(1)
@@ -79,7 +76,9 @@ class Scanner:
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
+        
         self.skip_spaces() # current character now not whitespace
+        self.skip_comment()
         if self.current_character.isalpha(): # name
             
             name_string = self.get_name()
@@ -92,6 +91,10 @@ class Scanner:
         elif self.current_character.isdigit():
             symbol.id = self.get_number()
             symbol.type = self.NUMBER
+            
+        elif self.current_character == ".":
+            symbol.type = self.DOT
+            self.advance()
 
         elif self.current_character == "=":
             symbol.type = self.EQUALS
@@ -105,14 +108,14 @@ class Scanner:
             symbol.type = self.COMMA
             self.advance()
 
-        elif self.current_character == ":":
+        elif self.current_character == ";":
             symbol.type = self.SEMICOLON
             self.advance()
 
         elif self.current_character == "":          
             symbol.type = self.EOF
 
-        else:             
+        else:           
             self.advance()
 
         return symbol 
@@ -122,10 +125,16 @@ class Scanner:
         self.current_character = self.file.read(1)
         return self.current_character
 
-
+    def skip_comment(self):
+        """Once a # is reached, skip to next line"""
+        if self.current_character == '#':
+            self.file.readline()
+            self.advance()
+        
+        
+        
     def skip_spaces(self):
         """Skip to the non - white space character in the file"""
-
         while self.current_character.isspace():
             self.advance()
 
@@ -141,11 +150,7 @@ class Scanner:
     def get_number(self):
         """Obtain the next number symbol in the file"""
         number = ''
-
         while self.current_character.isdigit() :
             number += self.current_character
             self.advance()
-
         return number 
-   
-
