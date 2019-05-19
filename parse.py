@@ -157,10 +157,12 @@ class Parser:
             # self.skip_erratic_part() or just raise error and exit
 
     def add_connection(self):
-        if self.signame() is False:
+        signal1 = self.signame()
+        if signal1 is None:
             return False
         if self.symbol.type == self.scanner.EQUALS:
-            if self.signame() is False:
+            signal2 = self.signame()
+            if signal2 is None:
                 return False
             # make connection between sig1 and sig2
             return True
@@ -169,23 +171,17 @@ class Parser:
             self.skip_erratic_part()
             return False
 
-    def signame(self): # get the name of the signal
-        device_id = self.scanner.get_symbol()
-        if  self.scanner.get_symbol() == self.scanner.DOT:
-            port_id = self.scanner.get_symbol()
-            self.scanner.get_symbol()
-            return [device_id, port_id] # input
-        return device_id # output
-
     def parse_monitors(self):
         flag = True
         self.symbol = self.scanner.get_symbol()  # check keyword first
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.MONITORS_ID:
-            self.symbol = self.scanner.get_symbol() # get the port to be monitored
-            # self.add_monitor()
+            if self.add_monitor() is False:
+                flag = False
+
             while self.symbol.type == self.scanner.COMMA:
-                self.symbol = self.scanner.get_symbol()
-                # self.add_monitor()
+                if self.add_monitor() is False:
+                    flag = False
+
             if self.symbol.type == self.scanner.SEMICOLON:
                 return flag
             else:
@@ -195,6 +191,41 @@ class Parser:
             self.display_error(self.NO_KEYWORD)
             return False
             # self.skip_erratic_part() or just raise error and exit
+
+    def add_monitor(self):
+        signal = self.signame(mon=1)
+        if signal is None:
+            return False
+        # make monitor
+        return signal
+
+    def signame(self, mon=0): # get the name of the signal
+        self.symbol = self.scanner.get_symbol()
+        if self.check_names() is False:
+            return None
+        device_id = self.symbol
+        self.symbol = self.scanner.get_symbol()
+        if  self.symbol == self.scanner.DOT: # input
+            if mon == 1: # monitor this signal then it must be an output
+                self.display_error(self.NO_COMMA)
+                self.skip_erratic_part()
+                return None
+
+            self.symbol = self.scanner.get_symbol()
+            if self.check_names() is False:
+                return None
+
+            port_id = self.symbol
+            self.scanner.get_symbol()
+            return [device_id, port_id] # input
+
+        elif self.symbol == self.scanner.COMMA or self.symbol == self.scanner.SEMICOLON: # output
+            return device_id # output
+
+        else:
+            self.display_error(self.NO_COMMA)
+            self.skip_erratic_part()
+            return None
 
     def check_names(self): # skip erratic part then symbol becomes the next ',' or ';' or KEYWORD or EOF
         if self.symbol.type != self.scanner.NAME:  # the type of device should be a name
@@ -233,7 +264,7 @@ class Parser:
         else:
             print("Unknown error occurred")
 
-    def skip_erratic_part(self):
+    def skip_erratic_part(self): # so-called recovery
         while self.symbol.type != self.scanner.COMMA: # go to the next comma within the section
             self.symbol = self.scanner.get_symbol()
             if self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.SEMICOLON or self.symbol.type == self.scanner.EOF:
