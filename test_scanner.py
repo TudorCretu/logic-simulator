@@ -214,8 +214,8 @@ def test_comment(names):
 
 def test_comment_between_sections(names):
     """Test if comments are ignored correctly."""
-    string_io = StringIO("Some / symbol " + os.linesep + os.linesep + " # some comment 1234 / " + os.linesep + os.linesep
-                         + "Some / other / symbols # some other comments / ; ")
+    string_io = StringIO("Some / symbol " + os.linesep + os.linesep + " # some comment 1234 / "
+                         + os.linesep + os.linesep + "Some / other / symbols # some other comments / ; ")
     scanner = Scanner(string_io, names)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("Some"))
     assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
