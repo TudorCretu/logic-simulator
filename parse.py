@@ -193,7 +193,7 @@ class Parser:
             # self.skip_erratic_part() or just raise error and exit
 
     def add_monitor(self):
-        signal = self.signame(mon=1)
+        signal = self.signame()
         if signal is None:
             return False
         # make monitor
@@ -206,11 +206,6 @@ class Parser:
         device_id = self.symbol
         self.symbol = self.scanner.get_symbol()
         if  self.symbol == self.scanner.DOT: # input
-            if mon == 1: # monitor this signal then it must be an output
-                self.display_error(self.NO_COMMA)
-                self.skip_erratic_part()
-                return None
-
             self.symbol = self.scanner.get_symbol()
             if self.check_names() is False:
                 return None
