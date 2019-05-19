@@ -98,7 +98,7 @@ class Parser:
             device_type = self.symbol
             self.symbol = self.scanner.get_symbol() # now self.symbol maybe ','or '/'
 
-            if self.symbol.type == self.scanner.COMMA:
+            if self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
                 # make device with type only
                 return True
 
@@ -109,7 +109,7 @@ class Parser:
                         return False
                     param.append(self.add_parameter())
 
-                if self.symbol.type == self.scanner.COMMA:
+                if self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
                     # make device using the type and param
                     return True
                 else:
@@ -139,11 +139,13 @@ class Parser:
         flag = True
         self.symbol = self.scanner.get_symbol()  # check keyword first
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.CONNECTIONS_ID:
-            self.symbol = self.scanner.get_symbol()
-            self.add_connection()
+            if self.add_connection() is False:
+                flag = False
+
             while self.symbol.type == self.scanner.COMMA:
-                self.symbol = self.scanner.get_symbol()
-                self.add_connection()
+                if self.add_connection() is False:
+                    flag = False
+
             if self.symbol.type == self.scanner.SEMICOLON:
                 return flag
             else:
@@ -155,14 +157,17 @@ class Parser:
             # self.skip_erratic_part() or just raise error and exit
 
     def add_connection(self):
-        signal1 = self.signame()
+        if self.signame() is False:
+            return False
         if self.symbol.type == self.scanner.EQUALS:
-            self.symbol = self.scanner.get_symbol()
-            signal2 = self.signame()
+            if self.signame() is False:
+                return False
             # make connection between sig1 and sig2
+            return True
         else:
             self.display_error(self.NO_EQUALS)  # no equal
             self.skip_erratic_part()
+            return False
 
     def signame(self): # get the name of the signal
         device_id = self.scanner.get_symbol()
