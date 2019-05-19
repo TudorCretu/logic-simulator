@@ -83,12 +83,45 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.monitors_number = len(monitors.monitors_dictionary)
 
         # Layout variables
-        self.monitor_height = 40
+        self.monitor_height = 70
+        self.monitors_padding = 15
         self.cycle_width = 40
         self.cycle_start_x = 65
         self.cycle_axis_y = -30
         self.cycle_axis_y_padding = -7
         self.completed_cycles = 10
+
+        # Colors from Tableau 10 and Tableau 10 Medium
+        self.blue = self.rgb_to_gl(31, 119, 180)
+        self.orange = self.rgb_to_gl(255, 127, 14)
+        self.green = self.rgb_to_gl(44, 160, 44)
+        self.red = self.rgb_to_gl(214, 39, 40)
+        self.purple = self.rgb_to_gl(148, 103, 189)
+        self.brown = self.rgb_to_gl(140, 86, 75)
+        self.pink = self.rgb_to_gl(227, 119, 194)
+        self.olive = self.rgb_to_gl(188, 189, 34)
+        self.cyan = self.rgb_to_gl(23, 190, 207)
+        self.gray = self.rgb_to_gl(127, 127, 127)
+        self.black = (0, 0, 0)
+        self.color_cycle = [self.blue, self.orange, self.green, self.red,
+                            self.purple, self.brown, self.pink, self.olive, self.cyan]
+
+        self.blue_light = self.rgb_to_gl(114, 158, 206)
+        self.orange_light = self.rgb_to_gl(255, 158, 74)
+        self.green_light = self.rgb_to_gl(103, 191, 92)
+        self.red_light = self.rgb_to_gl(237, 102, 93)
+        self.purple_light = self.rgb_to_gl(173, 139, 201)
+        self.brown_light = self.rgb_to_gl(168, 120, 110)
+        self.pink_light = self.rgb_to_gl(237, 151, 202)
+        self.olive_light = self.rgb_to_gl(205, 204, 93)
+        self.cyan_light = self.rgb_to_gl(109, 204, 218)
+        self.gray_light = self.rgb_to_gl(162, 162, 162)
+        self.color_cycle_light = [self.blue_light, self.orange_light, self.green_light, self.red_light,
+                                  self.purple_light, self.brown_light, self.pink_light, self.olive_light, self.cyan_light]
+
+        # Line thicknesses
+        self.thin_line = 1
+        self.thick_line = 3
 
 
     def init_gl(self):
@@ -207,6 +240,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.Refresh()  # triggers the paint event
 
     def draw_monitors_names(self):
+        for monitor_number, (device_id, output_id) in enumerate(reversed(self.monitors.monitors_dictionary)):
+            self.render_text(self.devices.get_signal_name(device_id, output_id), 3, self.cycle_axis_y - self.monitor_height * (0.5+monitor_number))
         return
 
     def draw_cycles_axis(self):
@@ -222,9 +257,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         # Draw the horizontal axis
         GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
         cycle_axis_x_offset = 15
-        # GL.glLineStipple(2, 0x0FFF)
         GL.glLineWidth(2.0)
-        # GL.glEnable(GL.GL_LINE_STIPPLE)
         for i in range(1, self.completed_cycles + 1, self.clock_display_frequency):
             GL.glBegin(GL.GL_LINES)
             GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i-1/2)+char_width/2, self.cycle_axis_y)
@@ -253,48 +286,97 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def draw_monitored_signals(self):
         # margin = self.monitors.get_margin()
         monitor_number = 0
-        monitors_start_y = 50
-        for device_id, output_id in self.monitors.monitors_dictionary:
-            y_0 = self.monitor_height * monitor_number + monitors_start_y
-            self.draw_signal(device_id, output_id, y_0)
+        for device_id, output_id in reversed(self.monitors.monitors_dictionary):
+            self.draw_signal(device_id, output_id, monitor_number)
+            monitor_number += 1
 
-    def draw_signal(self, device_id, output_id, y_0):
+
+
+    def draw_signal(self, device_id, output_id, monitor_number):
         monitor_name = self.devices.get_signal_name(device_id, output_id)
-        name_length = len(monitor_name)
         signal_list = self.monitors.monitors_dictionary[(device_id, output_id)]
-        # print(monitor_name + (margin - name_length) * " ", end=": ")
-        monitors_start_x = 50
+        monitors_start_x = self.cycle_start_x + self.text_width(str(0))/2
         x_0 = monitors_start_x
-        color = (0, 0, 1)
+        y_0 = -self.monitor_height * monitor_number + self.cycle_axis_y - self.monitor_height
+        y_low = y_0 + self.monitors_padding
+        y_high = y_0  + self.monitor_height - self.monitors_padding
+
+        color = self.color_cycle[monitor_number%len(self.color_cycle)]
+        color_light = self.color_cycle_light[monitor_number%len(self.color_cycle_light)]
+        signal_thickness = 2
+
+        # Draw thin black horizontal delimiter between monitors
+        self.render_line(monitors_start_x, y_0,
+                         monitors_start_x + self.cycle_width * self.completed_cycles, y_0,
+                         self.black, self.thin_line)
+
+        # Draw thin gray LOW and HIGH
+        self.render_line(monitors_start_x, y_low,
+                         monitors_start_x + self.cycle_width * self.completed_cycles, y_low,
+                         self.gray, self.thin_line)
+        self.render_line(monitors_start_x, y_high,
+                         monitors_start_x + self.cycle_width * self.completed_cycles, y_high,
+                         self.gray, self.thin_line)
+
+        # Draw signals
+        prev_signal = self.devices.BLANK
         for signal in signal_list:
             if signal == self.devices.HIGH:
-                self.render_line(x_0, y_0 + self.monitor_height, x_0 + self.cycle_width, y_0 + self.monitor_height, color)
+                # Draw light shading
+                self.render_rectangle(x_0, y_low, x_0 + self.cycle_width, y_high, color_light)
+
+                # Draw horizontal HIGH line
+                self.render_line(x_0, y_high, x_0 + self.cycle_width, y_high, color, signal_thickness)
+                if prev_signal == self.devices.LOW:
+                    # Draw a rising edge
+                    self.render_line(x_0, y_low, x_0, y_high, color, signal_thickness)
+
                 x_0 += self.cycle_width
                 print("-", end="")
             elif signal == self.devices.LOW:
-                self.render_line(x_0, y_0, x_0+self.cycle_width, y_0, color)
+                self.render_line(x_0, y_low, x_0 + self.cycle_width, y_low, color, signal_thickness)
+                if prev_signal == self.devices.HIGH:
+                    # Draw a falling edge
+                    self.render_line(x_0, y_high, x_0, y_low, color, signal_thickness)
                 x_0 += self.cycle_width
                 print("_", end="")
             elif signal == self.devices.RISING:
-                self.render_line(x_0, y_0, x_0, y_0+self.monitor_height, color)
+                self.render_line(x_0, y_low, x_0, y_high, color, signal_thickness)
                 print("/", end="")
             elif signal == self.devices.FALLING:
-                self.render_line(x_0, y_0+self.monitor_height, x_0, y_0, color)
+                self.render_line(x_0, y_high, x_0, y_low, color, signal_thickness)
                 print("\\", end="")
             elif signal == self.devices.BLANK:
-                self.render_line(x_0, y_0+self.monitor_height/2, x_0+self.cycle_width, y_0+self.monitor_height/2, color=(0.5,0.5,0.5))
                 x_0 += self.cycle_width
                 print(" ", end="")
+            prev_signal = signal
         print("\n", end="")
 
-    def render_line(self, x_start, y_start, x_end, y_end, color = (0, 0, 1)):
+
+
+    def render_line(self, x_start, y_start, x_end, y_end, color = (0, 0, 1), thickness = 1.0):
         GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
         GL.glColor3f(*color)
+        GL.glLineWidth(thickness)
         GL.glBegin(GL.GL_LINE_STRIP)
         GL.glVertex2f(x_start, y_start)
         GL.glVertex2f(x_end, y_end)
         GL.glEnd()
         GL.glPopAttrib()
+
+    def render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color = (0, 0, 1)):
+        GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
+        GL.glColor3f(*color)
+        GL.glBegin(GL.GL_TRIANGLES)
+        GL.glVertex2f(x_bottom_left, y_top_right)
+        GL.glVertex2f(x_bottom_left, y_bottom_left)
+        GL.glVertex2f(x_top_right, y_top_right)
+        GL.glVertex2f(x_top_right, y_top_right)
+        GL.glVertex2f(x_bottom_left, y_bottom_left)
+        GL.glVertex2f(x_top_right, y_bottom_left)
+        GL.glEnd()
+        GL.glPopAttrib()
+
 
 
     def render_text(self, text, x_pos, y_pos, color = (0, 0, 0), font=GLUT.GLUT_BITMAP_HELVETICA_18):
@@ -315,7 +397,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                 width += GLUT.glutBitmapWidth(font, ord(character))
         return width
 
-
+    def rgb_to_gl(self, r, g, b):
+        return [c/256 for c in (r, g, b)]
 
 class Gui(wx.Frame):
     """Configure the main window and all the widgets.
@@ -668,6 +751,7 @@ class Gui(wx.Frame):
             self.monitors_set_button.Disable()
             self.monitors_zap_button.Enable()
             self.monitors_set_button.SetValue(False)
+            self.canvas.monitors_number += 1
         else:
             self.canvas.render("DEBUG: ON MONITORS SET, ids is None")
 
@@ -681,6 +765,7 @@ class Gui(wx.Frame):
             self.monitors_set_button.Enable()
             self.monitors_zap_button.Disable()
             self.monitors_zap_button.SetValue(False)
+            self.canvas.monitors_number -= 1
         else:
             self.canvas.render("DEBUG: ON MONITORS ZAP, ids is None")
 
