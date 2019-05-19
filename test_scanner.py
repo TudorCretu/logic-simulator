@@ -12,7 +12,9 @@ from scanner import Scanner
 # Function to make "open" function to work with StringIo objects
 def replace_open():
     # The next line redefines the open function
-    old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] if isinstance(args[0], StringIO) else old_open(*args, **kwargs)
+    old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
+                                if isinstance(args[0], StringIO) \
+                                else old_open(*args, **kwargs)
 
     # The methods below have to be added to the StringIO class in order for the "with" statement to work
     # StringIO.__enter__ = lambda self: self
@@ -25,316 +27,374 @@ test_file_dir = "test_definition_files"
 
 
 @pytest.fixture
-def new_definition_file():
+def names():
     """Return a new instance of the Devices class."""
-    new_names = Names()
+    return Names()
 
 
-def test_string_symbol():
-    """Test if initial white space is ignored."""
-    names = Names()
+def assert_symbol(symbol, expected_type, expected_id):
+    assert symbol.type == expected_type
+    assert symbol.id == expected_id
+
+
+def test_eof_symbol(names):
+    """Test if eof is handled correctly."""
+    string_io = StringIO("")
+    scanner = Scanner(string_io, names)
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+
+
+def test_string_symbol(names):
+    """Test if name is handled correctly."""
     string_io = StringIO("symbol")
     scanner = Scanner(string_io, names)
-    assert scanner.get_symbol() == "symbol"
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbol"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-def test_punctuation_symbol():
-    """Test if initial white space is ignored."""
-    names = Names()
+def test_backslash_symbol(names):
+    """Test if backslash is handled correctly."""
     string_io = StringIO("/")
     scanner = Scanner(string_io, names)
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-def test_number_symbol():
-    """Test if initial white space is ignored."""
-    names = Names()
+def test_comma_symbol(names):
+    """Test if comma is handled correctly."""
+    string_io = StringIO(",")
+    scanner = Scanner(string_io, names)
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+
+
+def test_semicolon_symbol(names):
+    """Test if semicolon is handled correctly."""
+    string_io = StringIO(";")
+    scanner = Scanner(string_io, names)
+    assert_symbol(scanner.get_symbol(), scanner.SEMICOLON, None)
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+
+
+def test_equals_symbol(names):
+    """Test if equals is handled correctly."""
+    string_io = StringIO("=")
+    scanner = Scanner(string_io, names)
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+
+
+def test_dot_symbol(names):
+    """Test if dot is handled correctly."""
+    string_io = StringIO(".")
+    scanner = Scanner(string_io, names)
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+
+
+def test_keyword_symbol(names):
+    """Test if keywords are handled correctly."""
+    string_io = StringIO("CONNECTIONS")
+    scanner = Scanner(string_io, names)
+    assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("CONNECTIONS"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+
+    string_io = StringIO("DEVICES")
+    scanner = Scanner(string_io, names)
+    assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("DEVICES"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+
+    string_io = StringIO("MONITORS")
+    scanner = Scanner(string_io, names)
+    assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("MONITORS"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+
+
+def test_number_symbol(names):
+    """Test if number is handled correctly."""
     string_io = StringIO("1234")
     scanner = Scanner(string_io, names)
-    assert scanner.get_symbol() == "1234"
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), scanner.NUMBER, "1234")
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-
-def test_string_punctuation_sequence():
-    names = Names()
-    string_io = StringIO("symbol/symbol")
+def test_unknown_symbol(names):
+    """Test if unknown symbol is handled correctly."""
+    string_io = StringIO("%")
     scanner = Scanner(string_io, names)
-    assert scanner.get_symbol() == "symbol"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "symbol"
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), None, None)
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-def test_string_punctuation_number_symbol():
-    """Test if initial the number."""
-    names = Names()
-    string_io = StringIO("symbol/1234/symbol")
+def test_string_punctuation_sequence(names):
+    """Test if string, punctuation sequence is handled correctly."""
+    string_io = StringIO("symbol/other")
     scanner = Scanner(string_io, names)
-    assert scanner.get_symbol() == "symbol"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "1234"
-    assert scanner.get_symbol() == '/'
-    assert scanner.get_symbol() == 'symbol'
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbol"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("other"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-def test_keywords_symbol():
+def test_string_punctuation_number_symbol(names):
+    """Test if string, punctuation, number sequence is handled correctly."""
+    string_io = StringIO("symbol/1234/other")
+    scanner = Scanner(string_io, names)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbol"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NUMBER, "1234")
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("other"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+
+
+def test_keywords_in_sequence_symbol(names):
     """Test if the keywords DEVICES, CONNECTIONS, MONITORS are recognised correctly."""
-    names = Names()
-    string_io = StringIO("DEVICESsymbol/1234,CONNECTIONSsymbol/5678.MONITORSsymbol/90;")
+    string_io = StringIO("DEVICESsymbol/1234,CONNECTIONSconnec/5678.MONITORSmonitor/90;")
     scanner = Scanner(string_io, names)
-    assert scanner.get_symbol() == "DEVICES"
-    assert scanner.get_symbol() == "symbol"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "1234"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "CONNECTIONS"
-    assert scanner.get_symbol() == "symbol"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "5678"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "MONITORS"
-    assert scanner.get_symbol() == "symbol"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "90"
-    assert scanner.get_symbol() == ";"
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("DEVICES"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbol"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NUMBER, "1234")
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("CONNECTIONS"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("connec"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NUMBER, "5678")
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("MONITORS"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("monitor"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NUMBER, "90")
+    assert_symbol(scanner.get_symbol(), scanner.SEMICOLON, None)
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-def test_initial_whitespace():
+def test_initial_whitespace(names):
     """Test if initial white space is ignored."""
-    names = Names()
     string_io = StringIO("  \f  \t  \n \t \r \n \v symbol")
     scanner = Scanner(string_io, names)
-    assert scanner.get_symbol() == "symbol"
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbol"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-def test_interior_whitespace():
+def test_interior_whitespace(names):
     """Test if interior white space is ignored."""
-    names = Names()
     string_io = StringIO("symbol  \f  \t  \n \t \r \n \v / \n \t next")
     scanner = Scanner(string_io, names)
-    assert scanner.get_symbol() == "symbol"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "next"
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbol"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("next"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-
-def test_final_whitespace():
+def test_final_whitespace(names):
     """Test if final white space is ignored."""
-    names = Names()
     string_io = StringIO("symbol  \f \n\r  \t  \n \t \r \n \v ")
     scanner = Scanner(string_io, names)
-    assert scanner.get_symbol() == "symbol"
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbol"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-def test_comment():
+def test_comment(names):
     """Test if comments are ignored correctly."""
-    names = Names()
-    string_io = StringIO("Some / symbol # some comment 1234 / " + os.linesep + "Some / other / symbols # some other comments / ; ")
+    string_io = StringIO("Some / symbol # some comment 1234 / " + os.linesep
+                         + "Some / other / symbols # some other comments / ; ")
     scanner = Scanner(string_io, names)
-    assert scanner.get_symbol() == "Some"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "symbol"
-    assert scanner.get_symbol() == "Some"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "other"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "symbols"
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("Some"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbol"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("Some"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("other"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbols"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-def test_definition_file_1():
+def test_definition_file_1(names):
     """Test if definition_file_1 is scanned correctly."""
-    names = Names()
     scanner = Scanner(os.path.join(test_file_dir, "test_model_1.txt"), names)
-    assert scanner.get_symbol() == "DEVICES"
-    assert scanner.get_symbol() == "SW1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "SWITCH"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "1"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "SW2"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "SWITCH"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "1"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "SW3"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "SWITCH"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "1"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "SW4"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "SWITCH"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "0"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "D1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "DTYPE"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "CK1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "CLOCK"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "2"
-    assert scanner.get_symbol() == ";"
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("DEVICES"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SW1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SWITCH"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("1"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SW2"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SWITCH"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("1"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SW3"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SWITCH"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("1"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SW4"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SWITCH"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("0"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("D1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("DTYPE"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CLOCK"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("2"))
+    assert_symbol(scanner.get_symbol(), scanner.SEMICOLON, None)
 
-    assert scanner.get_symbol() == "CONNECTIONS"
-    assert scanner.get_symbol() == "SW1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "XOR1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "I1"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "SW2"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "XOR1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "I2"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "XOR1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "D1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "DATA"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "CK1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "D1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "CLK"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "SW3"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "D1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "SET"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "SW4"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "D1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "CLEAR"
-    assert scanner.get_symbol() == ";"
+    assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("CONNECTIONS"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SW1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("XOR1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("I1"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SW2"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("XOR1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("I2"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("XOR1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("D1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("DATA"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("D1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CLK"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SW3"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("D1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SET"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SW4"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("D1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CLEAR"))
+    assert_symbol(scanner.get_symbol(), scanner.SEMICOLON, None)
 
-    assert scanner.get_symbol() == "MONITORS"
-    assert scanner.get_symbol() == "D1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "Q"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "D1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "QBAR"
-    assert scanner.get_symbol() == ";"
+    assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("MONITORS"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("D1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("Q"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("D1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("QBAR"))
+    assert_symbol(scanner.get_symbol(), scanner.SEMICOLON, None)
 
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-def test_definition_file_2():
+def test_definition_file_2(names):
     """Test if definition_file_2 is scanned correctly."""
-    names = Names()
     scanner = Scanner(os.path.join(test_file_dir, "test_model_2.txt"), names)
-    assert scanner.get_symbol() == "DEVICES"
-    assert scanner.get_symbol() == "CK1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "CLOCK"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "2"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "CK2"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "CLOCK"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "1"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "AND1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "AND"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "2"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "NAND1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "NAND"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "2"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "OR1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "OR"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "2"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "NOR1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "NOR"
-    assert scanner.get_symbol() == "/"
-    assert scanner.get_symbol() == "2"
-    assert scanner.get_symbol() == ";"
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("DEVICES"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CLOCK"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("2"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK2"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CLOCK"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("1"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("AND1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("AND"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("2"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("NAND1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("NAND"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("2"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("OR1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("OR"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("2"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("NOR1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("NOR"))
+    assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("2"))
+    assert_symbol(scanner.get_symbol(), scanner.SEMICOLON, None)
 
-    assert scanner.get_symbol() == "CONNECTIONS"
-    assert scanner.get_symbol() == "CK1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "AND1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "I1"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "CK2"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "AND1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "I2"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "CK2"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "NAND1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "I2"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "CK2"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "OR1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "I2"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "CK2"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "NOR1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "I2"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "AND1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "NAND1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "I1"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "NAND1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "OR1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "I1"
-    assert scanner.get_symbol() == ","
-    assert scanner.get_symbol() == "OR1"
-    assert scanner.get_symbol() == "="
-    assert scanner.get_symbol() == "NOR1"
-    assert scanner.get_symbol() == "."
-    assert scanner.get_symbol() == "I1"
-    assert scanner.get_symbol() == ";"
+    assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("CONNECTIONS"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("AND1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("I1"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK2"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("AND1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("I2"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK2"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("NAND1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("I2"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK2"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("OR1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("I2"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK2"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("NOR1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("I2"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("AND1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("NAND1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("I1"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("NAND1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("OR1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("I1"))
+    assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("OR1"))
+    assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("NOR1"))
+    assert_symbol(scanner.get_symbol(), scanner.DOT, None)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("I1"))
+    assert_symbol(scanner.get_symbol(), scanner.SEMICOLON, None)
 
-    assert scanner.get_symbol() == "MONITORS"
-    assert scanner.get_symbol() == "NOR1"
-    assert scanner.get_symbol() == ";"
+    assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("MONITORS"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("NOR1"))
+    assert_symbol(scanner.get_symbol(), scanner.SEMICOLON, None)
 
-    assert scanner.get_symbol() == ""
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)

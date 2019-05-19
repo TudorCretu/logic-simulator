@@ -13,13 +13,6 @@ import wx.glcanvas as wxcanvas
 import datetime
 from OpenGL import GL, GLUT
 
-from names import Names
-from devices import Devices
-from network import Network
-from monitors import Monitors
-from scanner import Scanner
-from parse import Parser
-
 
 class MyGLCanvas(wxcanvas.GLCanvas):
     """Handle all drawing operations.
@@ -86,7 +79,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.monitor_height = 70
         self.monitors_padding = 15
         self.cycle_width = 40
-        self.cycle_start_x = 65
+        # 25pt after the longest monitor name
+        self.cycle_start_x = 25 + self.text_width("0") * self.monitors.get_margin()
         self.cycle_axis_y = -30
         self.cycle_axis_y_padding = -7
         self.completed_cycles = 10
@@ -103,8 +97,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.cyan = self.rgb_to_gl(23, 190, 207)
         self.gray = self.rgb_to_gl(127, 127, 127)
         self.black = (0, 0, 0)
-        self.color_cycle = [self.blue, self.orange, self.green, self.red,
-                            self.purple, self.brown, self.pink, self.olive, self.cyan]
+        self.color_cycle = [self.blue, self.orange, self.green,
+                            self.red, self.purple, self.brown,
+                            self.pink, self.olive, self.cyan]
 
         self.blue_light = self.rgb_to_gl(114, 158, 206)
         self.orange_light = self.rgb_to_gl(255, 158, 74)
@@ -116,13 +111,13 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.olive_light = self.rgb_to_gl(205, 204, 93)
         self.cyan_light = self.rgb_to_gl(109, 204, 218)
         self.gray_light = self.rgb_to_gl(162, 162, 162)
-        self.color_cycle_light = [self.blue_light, self.orange_light, self.green_light, self.red_light,
-                                  self.purple_light, self.brown_light, self.pink_light, self.olive_light, self.cyan_light]
+        self.color_cycle_light = [self.blue_light, self.orange_light, self.green_light,
+                                  self.red_light, self.purple_light, self.brown_light,
+                                  self.pink_light, self.olive_light, self.cyan_light]
 
         # Line thicknesses
         self.thin_line = 1
         self.thick_line = 3
-
 
     def init_gl(self):
         """Configure and initialise the OpenGL context."""
@@ -139,7 +134,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glTranslated(self.pan_x, self.pan_y, 0.0)
         GL.glScaled(self.zoom, self.zoom, self.zoom)
 
-    def render(self, text):
+    def render(self):
         """Handle all drawing operations."""
         self.SetCurrent(self.context)
         if not self.init:
@@ -152,26 +147,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         # Draw monitors names
         self.draw_monitors_names()
-        # self.render_text(text, 10, 10)
 
         # Draw cycles (time)  axis
         self.draw_cycles_axis()
 
         # Draw signals
         self.draw_monitored_signals()
-
-        GL.glColor3f(0.0, 0.0, 1.0)  # signal trace is blue
-        GL.glBegin(GL.GL_LINE_STRIP)
-        for i in range(10):
-            x = (i * 20) + 10
-            x_next = (i * 20) + 30
-            if i % 2 == 0:
-                y = 75
-            else:
-                y = 100
-            GL.glVertex2f(x, y)
-            GL.glVertex2f(x_next, y)
-        GL.glEnd()
 
         # We have been drawing to the back buffer, flush the graphics pipeline
         # and swap the back buffer to the front
@@ -189,7 +170,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         size = self.GetClientSize()
         text = "".join(["Canvas redrawn on paint event, size is ",
                         str(size.width), ", ", str(size.height)])
-        self.render(text)
+        print(text)
+        self.render()
 
     def on_size(self, event):
         """Handle the canvas resize event."""
@@ -235,16 +217,18 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                             str(self.zoom)])
         if text:
             print(text)
-            self.render(text)
+            self.render()
         else:
             self.Refresh()  # triggers the paint event
 
     def draw_monitors_names(self):
+        """Handle monitor names drawing operations."""
         for monitor_number, (device_id, output_id) in enumerate(reversed(self.monitors.monitors_dictionary)):
-            self.render_text(self.devices.get_signal_name(device_id, output_id), 3, self.cycle_axis_y - self.monitor_height * (0.5+monitor_number))
+            self.render_text(self.devices.get_signal_name(device_id, output_id), 3, self.cycle_axis_y - self.monitor_height * (0.7+monitor_number))
         return
 
     def draw_cycles_axis(self):
+        """Handle cycles count axis drawing operations."""
         char_width = self.text_width(str(0))
 
         # Draw title
@@ -275,24 +259,23 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         for i in range(0, self.completed_cycles, self.clock_display_frequency):
             char_width = self.text_width(str(i))
             GL.glBegin(GL.GL_LINES)
-            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i + 1 / 2) ,
+            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i + 1 / 2),
                           self.cycle_axis_y)
-            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i + 1 / 2) ,
+            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i + 1 / 2),
                           self.cycle_axis_y - self.monitor_height * self.monitors_number)
             GL.glEnd()
         GL.glPopAttrib()
         return
 
     def draw_monitored_signals(self):
-        # margin = self.monitors.get_margin()
+        """Handle monitors output drawing operations."""
         monitor_number = 0
         for device_id, output_id in reversed(self.monitors.monitors_dictionary):
             self.draw_signal(device_id, output_id, monitor_number)
             monitor_number += 1
 
-
-
     def draw_signal(self, device_id, output_id, monitor_number):
+        """Handle each monitor output drawing operations."""
         monitor_name = self.devices.get_signal_name(device_id, output_id)
         signal_list = self.monitors.monitors_dictionary[(device_id, output_id)]
         monitors_start_x = self.cycle_start_x + self.text_width(str(0))/2
@@ -355,6 +338,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
 
     def render_line(self, x_start, y_start, x_end, y_end, color = (0, 0, 1), thickness = 1.0):
+        """Handle line drawing operations."""
         GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
         GL.glColor3f(*color)
         GL.glLineWidth(thickness)
@@ -365,9 +349,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glPopAttrib()
 
     def render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color = (0, 0, 1)):
+        """Handle transparent rectangle drawing operations."""
         GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
-        GL.glColor3f(*color)
-        GL.glBegin(GL.GL_TRIANGLES)
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA) # enables transparency
+        GL.glEnable(GL.GL_BLEND)
+        GL.glColor4f(*color, 0.75) # slightly transparent with alpha 0.75
+        GL.glBegin(GL.GL_TRIANGLES) # a rectangle made of 2 triangles
         GL.glVertex2f(x_bottom_left, y_top_right)
         GL.glVertex2f(x_bottom_left, y_bottom_left)
         GL.glVertex2f(x_top_right, y_top_right)
@@ -376,8 +363,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glVertex2f(x_top_right, y_bottom_left)
         GL.glEnd()
         GL.glPopAttrib()
-
-
 
     def render_text(self, text, x_pos, y_pos, color = (0, 0, 0), font=GLUT.GLUT_BITMAP_HELVETICA_18):
         """Handle text drawing operations."""
@@ -390,7 +375,15 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             else:
                 GLUT.glutBitmapCharacter(font, ord(character))
 
+    def update_cycle_axis_layout(self):
+        """Handle changes in monitor names"""
+        self.cycle_start_x = 25 + self.text_width("0") * self.monitors.get_margin()
+
     def text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18):
+        """Calculate the length in pts of a displayed text.
+
+        Return the length of text in pts.
+        """
         width = 0
         for character in text:
             if character != '\n':
@@ -398,6 +391,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         return width
 
     def rgb_to_gl(self, r, g, b):
+        """Converse an 8bit RGB color to OpenGL format
+
+        Return a list of the RGB float values.
+        """
         return [c/256 for c in (r, g, b)]
 
 class Gui(wx.Frame):
@@ -617,7 +614,7 @@ class Gui(wx.Frame):
         """Handle the event when the user changes the spin control value."""
         spin_value = self.simulation_cycles_spin.GetValue()
         text = "".join(["New spin control value: ", str(spin_value)])
-        self.canvas.render(text)
+        self.canvas.render()
 
     def on_run_button(self, event):
         """Handle the event when the user clicks the run button."""
@@ -631,7 +628,7 @@ class Gui(wx.Frame):
             if self.run_network(cycles):
                 self.completed_cycles = cycles
                 self.canvas.completed_cycles = cycles
-                self.canvas.render(text)
+                self.canvas.render()
             else:
                 wx.MessageBox("Cannot run network. The network doesn't have a stable state.",
                               "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
@@ -651,7 +648,7 @@ class Gui(wx.Frame):
             if self.run_network(cycles):
                 self.completed_cycles += cycles
                 self.canvas.completed_cycles += cycles
-                self.canvas.render(text)
+                self.canvas.render()
             else:
                 wx.MessageBox("Cannot continue network. The network doesn't have a stable state.",
                               "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
@@ -709,7 +706,8 @@ class Gui(wx.Frame):
             self.switches_clear_button.Enable()
             self.switches_set_button.SetValue(False)
         else:
-            self.canvas.render("DEBUG: ON SWITCHES SET, device_id not in switches")
+            text = "DEBUG: ON SWITCHES SET, device_id not in switches"
+            self.canvas.render()
 
     def on_switches_clear(self, event):
         """Handle the event when the user clears a switch."""
@@ -721,7 +719,8 @@ class Gui(wx.Frame):
             self.switches_clear_button.Disable()
             self.switches_clear_button.SetValue(False)
         else:
-            self.canvas.render("DEBUG: ON SWITCHES CLEAR, device_id not in switches")
+            text = "DEBUG: ON SWITCHES CLEAR, device_id not in switches"
+            self.canvas.render()
 
 
     def on_monitors_select(self, event):
@@ -752,8 +751,10 @@ class Gui(wx.Frame):
             self.monitors_zap_button.Enable()
             self.monitors_set_button.SetValue(False)
             self.canvas.monitors_number += 1
+            self.canvas.update_cycle_axis_layout()
         else:
-            self.canvas.render("DEBUG: ON MONITORS SET, ids is None")
+            text = "DEBUG: ON MONITORS SET, ids is None"
+            self.canvas.render()
 
     def on_monitors_zap(self, event):
         """Handle the event when the user clears a monitor."""
@@ -766,8 +767,10 @@ class Gui(wx.Frame):
             self.monitors_zap_button.Disable()
             self.monitors_zap_button.SetValue(False)
             self.canvas.monitors_number -= 1
+            self.canvas.update_cycle_axis_layout()
         else:
-            self.canvas.render("DEBUG: ON MONITORS ZAP, ids is None")
+            text = "DEBUG: ON MONITORS ZAP, ids is None"
+            self.canvas.render()
 
     def on_load_file_button(self, event):
         """Handle the load file button"""
@@ -789,6 +792,7 @@ class Gui(wx.Frame):
 
     def on_load_file_text_box(self, event):
         """Handle the event when user enters a filepath into load_file_text_box"""
+
         # if self.contentNotSaved:
         #     if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
         #                      wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
@@ -799,6 +803,7 @@ class Gui(wx.Frame):
         self.open_file(path)
 
     def open_file(self, pathname):
+        """Create a new network for another definition file"""
         try:
             with open(pathname, 'r') as file:
                 self.load_file_text_box.SetValue(pathname)
