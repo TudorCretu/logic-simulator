@@ -73,15 +73,16 @@ class Parser:
                 flag = False
 
             while self.symbol.type == self.scanner.COMMA:
-                # print(self.symbol.type)
                 if self.add_device() is False:
                     flag = False
-
+            # print(self.symbol.type)
             if self.symbol.type == self.scanner.SEMICOLON: # end of this section
                 return flag
-            else:
+            elif self.symbol.type == self.scanner.KEYWORD:
                 self.display_error(self.NO_SEMICOLON) # no semicolon
                 return False # just end parsing this section
+            else:
+                return False
         else:
             self.display_error(self.NO_KEYWORD) # no keyword
             return False # just raise error and exit
@@ -172,7 +173,8 @@ class Parser:
 
     def parse_connections(self):
         flag = True
-        self.symbol = self.read_symbol()  # check keyword first
+        if self.symbol.type != self.scanner.KEYWORD:
+            self.symbol = self.read_symbol()  # check keyword first
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.CONNECTIONS_ID:
             if self.add_connection() is False:
                 flag = False
@@ -207,7 +209,8 @@ class Parser:
 
     def parse_monitors(self):
         flag = True
-        self.symbol = self.read_symbol()  # check keyword first
+        if self.symbol.type != self.scanner.KEYWORD:
+            self.symbol = self.read_symbol()  # check keyword first
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.MONITORS_ID:
             current_device, current_port = self.signame() # add_monitor
             error_type = self.monitors.make_monitor(current_device,current_port)
@@ -327,9 +330,9 @@ class Parser:
 
     def skip_erratic_part(self): # so-called recovery
         while self.symbol.type != self.scanner.COMMA: # go to the next comma within the section
-            self.symbol = self.read_symbol()
             if self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.SEMICOLON or self.symbol.type == self.scanner.EOF:
                 return # end of section or file, terminate
+            self.symbol = self.read_symbol()
 
     def read_symbol(self):
         current_symbol = self.scanner.get_symbol()
