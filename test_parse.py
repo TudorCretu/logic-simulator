@@ -6,8 +6,12 @@ import os
 from io import StringIO
 
 from names import Names
-from scanner import Scanner
+from scanner import Symbol, Scanner
 from parse import Parser
+from network import Network
+from devices import Device, Devices
+from monitors import Monitors
+
 # Function to make "open" function to work with StringIo objects
 def replace_open():
     # The next line redefines the open function
@@ -25,9 +29,9 @@ replace_open()
 test_file_dir = "test_definition_files"
 
 names = Names()
-devices =None
-network= None
-monitors =None
+devices = Devices(names)
+network = Network(names, devices)
+monitors = Monitors(names, devices, network)
 
 
  
@@ -71,6 +75,7 @@ def test_DEVICE_semicolon_absense():
 
 def test_DEVICE_backslash_absense():
     pass  
+
     
 def test_DEVICE_mutliple_errors():
     pass
