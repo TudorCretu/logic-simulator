@@ -150,22 +150,19 @@ def test_string_punctuation_number_symbol(names):
 
 def test_keywords_in_sequence_symbol(names):
     """Test if the keywords DEVICES, CONNECTIONS, MONITORS are recognised correctly."""
-    string_io = StringIO("DEVICES:symbol/1234,CONNECTIONS:connec/5678.MONITORS:monitor/90;")
+    string_io = StringIO("DEVICES symbol/1234,CONNECTIONS connec/5678.MONITORS monitor/90;")
     scanner = Scanner(string_io, names)
     assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("DEVICES"))
-    assert_symbol(scanner.get_symbol(), scanner.COLON, None)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbol"))
     assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
     assert_symbol(scanner.get_symbol(), scanner.NUMBER, "1234")
     assert_symbol(scanner.get_symbol(), scanner.COMMA, None)
     assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("CONNECTIONS"))
-    assert_symbol(scanner.get_symbol(), scanner.COLON, None)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("connec"))
     assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
     assert_symbol(scanner.get_symbol(), scanner.NUMBER, "5678")
     assert_symbol(scanner.get_symbol(), scanner.DOT, None)
     assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("MONITORS"))
-    assert_symbol(scanner.get_symbol(), scanner.COLON, None)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("monitor"))
     assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
     assert_symbol(scanner.get_symbol(), scanner.NUMBER, "90")
@@ -329,7 +326,6 @@ def test_definition_file_2(names):
     """Test if definition_file_2 is scanned correctly."""
     scanner = Scanner(os.path.join(test_file_dir, "test_model_2.txt"), names)
     assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("DEVICES"))
-    assert_symbol(scanner.get_symbol(), scanner.COLON, None)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK1"))
     assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CLOCK"))
@@ -368,7 +364,6 @@ def test_definition_file_2(names):
     assert_symbol(scanner.get_symbol(), scanner.SEMICOLON, None)
 
     assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("CONNECTIONS"))
-    assert_symbol(scanner.get_symbol(), scanner.COLON, None)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK1"))
     assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("AND1"))
@@ -419,7 +414,6 @@ def test_definition_file_2(names):
     assert_symbol(scanner.get_symbol(), scanner.SEMICOLON, None)
 
     assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("MONITORS"))
-    assert_symbol(scanner.get_symbol(), scanner.COLON, None)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("NOR1"))
     assert_symbol(scanner.get_symbol(), scanner.SEMICOLON, None)
 
