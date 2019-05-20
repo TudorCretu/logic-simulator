@@ -47,7 +47,7 @@ class Parser:
         self.symbol = Symbol()
         self.error_count = 0
 
-        self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NO_BACKSLASH, self.NOT_NAME, self.NOT_NUMBER] = self.names.unique_error_code(7)
+        self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NO_BACKSLASH, self.NOT_NAME, self.NOT_NUMBER] = self.names.unique_error_codes(7)
 
     def parse_network(self):
         """Parse the circuit definition file."""
