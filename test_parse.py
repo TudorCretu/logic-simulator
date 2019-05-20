@@ -29,6 +29,10 @@ devices =None
 network= None
 monitors =None
 
+
+ 
+"""DEVICE Block tests"""
+
 def test_parse_devices_success():
     """Test if parse_devices returns true correctly"""
     
@@ -37,7 +41,7 @@ def test_parse_devices_success():
     parser = Parser(names, devices, network, monitors, scanner)
     assert parser.parse_devices() is True 
     
-def test_detects_missing_devices_keywords(capfd):
+def test_DEVICES_missing_devices_keywords(capfd):
     """Test if parse_devices returns true correctly"""
     
     string_io = StringIO("SKIPKEYWORD CK1 = CLOCK / 1")
@@ -47,6 +51,28 @@ def test_detects_missing_devices_keywords(capfd):
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
     assert out == "SyntaxError: Expected a keyword\n"
+    
+
+def test_DEVICES_expected_name():
+    pass
+
+def test_DEVICES_resued_name():
+    pass
+
+def test_DEVICE_comma_absense():
+    pass
+
+
+def test_DEVICE_number_absense():
+    pass
+
+def test_DEVICE_semicolon_absense():
+    pass
+
+def test_DEVICE_mutliple_errors():
+    pass
+    
+"""CONNECTIONS Block tests""" 
     
   
    
