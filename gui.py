@@ -378,6 +378,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def update_cycle_axis_layout(self):
         """Handle changes in monitor names"""
         self.cycle_start_x = 25 + self.text_width("0") * self.monitors.get_margin()
+        self.render()
 
     def text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18):
         """Calculate the length in pts of a displayed text.
