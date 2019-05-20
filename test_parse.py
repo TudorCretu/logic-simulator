@@ -29,14 +29,55 @@ devices =None
 network= None
 monitors =None
 
-def test_parse_devices():
-    """Test if parse_devices works correctly"""
+
+ 
+"""DEVICE Block tests"""
+
+def test_parse_devices_success():
+    """Test if parse_devices returns true correctly"""
     
-    file_path = StringIO(test_file_dir + "/test_model_2")
+    file_path = test_file_dir + "/test_model_2.txt"
     scanner = Scanner(file_path, names)
     parser = Parser(names, devices, network, monitors, scanner)
     assert parser.parse_devices() is True 
     
+def test_DEVICES_missing_devices_keywords(capfd):
+    """Test if parse_devices returns true correctly"""
+    
+    string_io = StringIO("SKIPKEYWORD CK1 = CLOCK / 1")
+    scanner = Scanner(string_io, names)
+    parser = Parser(names, devices, network, monitors, scanner)
+   
+    assert parser.parse_devices() is False
+    out,err = capfd.readouterr()
+    assert out == "SyntaxError: Expected a keyword\n"
+    
 
+def test_DEVICES_expected_name():
+    pass
+
+def test_DEVICES_resued_name():
+    pass
+
+def test_DEVICE_comma_absense():
+    pass
+
+
+def test_DEVICE_number_absense():
+    pass
+
+def test_DEVICE_semicolon_absense():
+    pass
+
+def test_DEVICE_backslash_absense():
+    
+    
+def test_DEVICE_mutliple_errors():
+    pass
+    
+"""CONNECTIONS Block tests""" 
+
+
+    
   
    

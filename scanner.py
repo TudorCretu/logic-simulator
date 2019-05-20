@@ -11,7 +11,6 @@ Symbol - encapsulates a symbol and stores its properties.
 
 import sys
 from names import Names
-
 class Symbol:
 
     """Encapsulate a symbol and store its properties.
@@ -65,12 +64,16 @@ class Scanner:
         #Initialise instance of Names class , list of symbol types,
         #list of keywords as well as ID values for keywords
         #Set current_character attribute to first character of file
+        #Set line number counter to 1
+        #Set position of 1st character on current line to 0.
         self.names = names 
         self.symbol_type_list = [self.DOT, self.BACKSLASH, self.COMMA, self.SEMICOLON,
             self.EQUALS, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(9)
         self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITORS"]
         [self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITOR_ID] = self.names.lookup(self.keywords_list)
         self.current_character = self.file.read(1)
+        self.line_number = 1
+        self.cursor_pos_at_start_of_line = 0
 
 
 
@@ -124,20 +127,26 @@ class Scanner:
             
 
         return symbol 
+    
+    def update_line_data(self):
+        self.line_number +=1
+        self.cursor_pos_at_start_of_line = self.file.tell()
 
     def advance(self):
         """Read ahead 1 character in the file"""
+        if self.current_character == "\n":
+            self.update_line_data()
+            
         self.current_character = self.file.read(1)
         return self.current_character
 
     def skip_comment(self):
         """Once a # is reached, skip to next line"""
         if self.current_character == '#':
-            self.file.readline()
+            self.file.readline()            
             self.advance()
-        
-        
-        
+            self.update_line_data()
+    
     def skip_spaces(self):
         """Skip to the non - white space character in the file"""
         while self.current_character.isspace():
@@ -159,3 +168,20 @@ class Scanner:
             number += self.current_character
             self.advance()
         return number 
+    
+    def display_error_location(self):
+        pass 
+        
+    
+names = Names()
+test_file_dir = "test_definition_files"
+path = test_file_dir +"/test_model_3.txt"
+scanner = Scanner(path, names)
+for a in range (15):
+    m = scanner.get_symbol()
+    
+    try:
+        print( names.get_name_string(m.id), m.type )
+    except:
+        print (m.id, m.type)   
+print (scanner.line_number)
