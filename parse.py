@@ -8,7 +8,7 @@ Classes
 -------
 Parser - parses the definition file and builds the logic network.
 """
-# import sys
+import sys
 from scanner import Symbol, Scanner
 from network import Network
 from devices import Device, Devices
@@ -137,7 +137,7 @@ class Parser:
         self.symbol = self.scanner.get_symbol() # read in a param
         if self.check_number() is False:
             return None
-        param = self.symbol # get the parameter value
+        param = int(self.symbol.id) # get the parameter value
         self.symbol = self.scanner.get_symbol() # match the loop in add_devices
         return param
 
@@ -156,9 +156,9 @@ class Parser:
         elif device_type_string == "SWITCH":
             type_id = self.devices.SWITCH
         elif device_type_string == "CLOCK":
-            type_id = self.devices.SWITCH
+            type_id = self.devices.CLOCK
         elif device_type_string == "DTYPE":
-            type_id = self.devices.SWITCH
+            type_id = self.devices.D_TYPE
         else:
             return None
         return type_id
@@ -287,35 +287,35 @@ class Parser:
     def display_error_device(self,error_type):
         self.error_count += 1
         if error_type == self.devices.INVALID_QUALIFIER:
-            print("SemanticError: ")
+            print("SemanticError: INVALID_QUALIFIER")
         if error_type == self.devices.NO_QUALIFIER:
-            print("SemanticError: ")
+            print("SemanticError: NO_QUALIFIER")
         if error_type == self.devices.QUALIFIER_PRESENT:
-            print("SemanticError: ")
+            print("SemanticError: QUALIFIER_PRESENT")
         if error_type == self.devices.BAD_DEVICE:
-            print("SemanticError: ")
+            print("SemanticError: BAD_DEVICE")
         if error_type == self.devices.DEVICE_PRESENT:
-            print("SemanticError: ")
+            print("SemanticError: DEVICE_PRESENT")
 
     def display_error_connection(self,error_type):
         self.error_count += 1
         if error_type == self.network.INPUT_TO_INPUT:
-            print("Semantic error: ")
+            print("Semantic error: INPUT_TO_INPUT")
         if error_type == self.network.OUTPUT_TO_OUTPUT:
-            print("Semantic error: ")
+            print("Semantic error: OUTPUT_TO_OUTPUT")
         if error_type == self.network.INPUT_CONNECTED:
-            print("Semantic error: ")
+            print("Semantic error: INPUT_CONNECTED")
         if error_type == self.network.PORT_ABSENT:
-            print("Semantic error: ")
+            print("Semantic error: PORT_ABSENT")
         if error_type == self.network.DEVICE_ABSENT:
-            print("Semantic error: ")
+            print("Semantic error: DEVICE_ABSENT")
 
     def display_error_monitor(self,error_type):
         self.error_count += 1
         if error_type == self.monitors.NOT_OUTPUT:
-            print("SemanticError: ")
+            print("SemanticError: NOT_OUTPUT")
         if error_type == self.monitors.MONITOR_PRESENT:
-            print("SemanticError: ")
+            print("SemanticError: MONITOR_PRESENT")
 
     def skip_erratic_part(self): # so-called recovery
         while self.symbol.type != self.scanner.COMMA: # go to the next comma within the section
