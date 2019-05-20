@@ -73,8 +73,7 @@ def test_DEVICES_resued_name_error(capfd):
     
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a comma\n"
-    
+    assert out == "SemanticError: DEVICE_PRESENT\n"
    
 
 def test_DEVICE_expected_comma_error(capfd):
@@ -111,7 +110,7 @@ def test_DEVICE_semicolon_absense(capfd):
     assert parser.parse_devices() is True
     out,err = capfd.readouterr()
     assert out == "SyntaxError: Expected a semicolon"
-    
+    # not handled
 
 def test_DEVICE_parameter_error(capfd):
     string_io = StringIO("DEVICES SWITCH1 = SWITCH/1, SWITCH2 = SWITCH/0; MONITOR")
@@ -121,7 +120,7 @@ def test_DEVICE_parameter_error(capfd):
     assert parser.parse_devices() is True
     out,err = capfd.readouterr()
     assert out == "This specific device needs parameter preceded by a '/' "
-
+    # not handled
     
 def test_DEVICE_mutliple_errors():
     pass
