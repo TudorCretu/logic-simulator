@@ -128,6 +128,15 @@ def test_DEVICE_mutliple_errors():
     
 """CONNECTIONS Block tests""" 
 
+def test_parse_parse_connections_success():
+    """Test if parse_devices returns true correctly"""
+    
+    file_path = test_file_dir + "/test_model_2.txt"
+    scanner = Scanner(file_path, names)
+    parser = Parser(names, devices, network, monitors, scanner)
+    parser.parse_devices()
+    assert parser.parse_connections() is True 
+
 
     
   
