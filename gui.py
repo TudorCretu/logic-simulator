@@ -378,6 +378,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def update_cycle_axis_layout(self):
         """Handle changes in monitor names"""
         self.cycle_start_x = 25 + self.text_width("0") * self.monitors.get_margin()
+        self.render()
 
     def text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18):
         """Calculate the length in pts of a displayed text.
@@ -705,6 +706,7 @@ class Gui(wx.Frame):
             self.switches_set_button.Disable()
             self.switches_clear_button.Enable()
             self.switches_set_button.SetValue(False)
+            self.log_text("Switch " + device_name + " is set")
         else:
             text = "DEBUG: ON SWITCHES SET, device_id not in switches"
             self.canvas.render()
@@ -718,6 +720,7 @@ class Gui(wx.Frame):
             self.switches_set_button.Enable()
             self.switches_clear_button.Disable()
             self.switches_clear_button.SetValue(False)
+            self.log_text("Switch " + device_name + " is cleared")
         else:
             text = "DEBUG: ON SWITCHES CLEAR, device_id not in switches"
             self.canvas.render()
@@ -752,6 +755,7 @@ class Gui(wx.Frame):
             self.monitors_set_button.SetValue(False)
             self.canvas.monitors_number += 1
             self.canvas.update_cycle_axis_layout()
+            self.log_text("Monitor on " + signal_name + " is set")
         else:
             text = "DEBUG: ON MONITORS SET, ids is None"
             self.canvas.render()
@@ -768,6 +772,8 @@ class Gui(wx.Frame):
             self.monitors_zap_button.SetValue(False)
             self.canvas.monitors_number -= 1
             self.canvas.update_cycle_axis_layout()
+            self.log_text("Monitor on " + signal_name + " is zapped")
+
         else:
             text = "DEBUG: ON MONITORS ZAP, ids is None"
             self.canvas.render()
@@ -810,3 +816,7 @@ class Gui(wx.Frame):
                 # self.doLoadDataOrWhatever(file)
         except IOError:
             wx.LogError("Cannot open file '%s'." % pathname)
+
+    def log_text(self, text):
+        """Handle the logging in activity_log of an event"""
+        self.activity_log_text.AppendText(text+'\n')

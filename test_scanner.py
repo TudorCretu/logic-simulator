@@ -150,7 +150,7 @@ def test_string_punctuation_number_symbol(names):
 
 def test_keywords_in_sequence_symbol(names):
     """Test if the keywords DEVICES, CONNECTIONS, MONITORS are recognised correctly."""
-    string_io = StringIO("DEVICESsymbol/1234,CONNECTIONSconnec/5678.MONITORSmonitor/90;")
+    string_io = StringIO("DEVICES symbol/1234,CONNECTIONS connec/5678.MONITORS monitor/90;")
     scanner = Scanner(string_io, names)
     assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("DEVICES"))
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbol"))

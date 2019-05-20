@@ -10,6 +10,7 @@ Symbol - encapsulates a symbol and stores its properties.
 """
 
 import sys
+from names import Names
 
 class Symbol:
 
@@ -76,9 +77,12 @@ class Scanner:
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
+        self.skip_spaces()
+        while self.current_character == "#":
+            self.skip_comment()
+            self.skip_spaces() # current character now not whitespace
         
-        self.skip_spaces() # current character now not whitespace
-        self.skip_comment()
+        
         if self.current_character.isalpha(): # name
             
             name_string = self.get_name()
@@ -115,8 +119,9 @@ class Scanner:
         elif self.current_character == "":          
             symbol.type = self.EOF
 
-        else:           
+        else:
             self.advance()
+            
 
         return symbol 
 
