@@ -10,7 +10,6 @@ Symbol - encapsulates a symbol and stores its properties.
 """
 
 import sys
-from names import Names
 class Symbol:
 
     """Encapsulate a symbol and store its properties.
@@ -31,6 +30,7 @@ class Symbol:
         #Note that id is the index in a name list for the types NAME and KEYWORD
         #For other types like NUMBER however, id is the actual value of the symbol 
         self.id = None 
+        self.cursor_position = None
 
 
 class Scanner:
@@ -85,7 +85,7 @@ class Scanner:
             self.skip_comment()
             self.skip_spaces() # current character now not whitespace
         
-        
+        symbol.cursor_position = self.file.tell()
         if self.current_character.isalpha(): # name
             
             name_string = self.get_name()
@@ -169,19 +169,12 @@ class Scanner:
             self.advance()
         return number 
     
-    def display_error_location(self):
-        pass 
+    def display_error_location(self,last_symbol_cursor_pos):
+        position_of_error = last_symbol_cursor_pos
+        self.file.seek(self.cursor_pos_at_start_of_line)
         
-    
-names = Names()
-test_file_dir = "test_definition_files"
-path = test_file_dir +"/test_model_3.txt"
-scanner = Scanner(path, names)
-for a in range (15):
-    m = scanner.get_symbol()
-    
-    try:
-        print( names.get_name_string(m.id), m.type )
-    except:
-        print (m.id, m.type)   
-print (scanner.line_number)
+        print (self.file.readline())
+        print(" " * (position_of_error - self.cursor_pos_at_start_of_line) + "^")
+        
+        self.file.seek(last_symbol_cursor_pos)
+        self.advance()
