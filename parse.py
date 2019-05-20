@@ -87,7 +87,7 @@ class Parser:
         if self.check_names() is False:
             return False
         identifier = self.symbol  # current self.symbol is the IDENTIFIER
-        existing = self.names.lookup(self.symbol.id)
+        existing = self.names.lookup([self.symbol.id])
         if len(existing) > 1: # we do not want duplicate identifier
             self.display_error(self.DUPLICATE)
             self.skip_erratic_part()

@@ -10,7 +10,6 @@ Symbol - encapsulates a symbol and stores its properties.
 """
 
 import sys
-from names import Names
 
 class Symbol:
 
