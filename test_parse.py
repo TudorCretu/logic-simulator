@@ -69,10 +69,15 @@ def test_DEVICE_number_absense():
 def test_DEVICE_semicolon_absense():
     pass
 
+def test_DEVICE_backslash_absense():
+    
+    
 def test_DEVICE_mutliple_errors():
     pass
     
 """CONNECTIONS Block tests""" 
+
+
     
   
    
