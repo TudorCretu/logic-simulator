@@ -630,6 +630,7 @@ class Gui(wx.Frame):
                 self.completed_cycles = cycles
                 self.canvas.completed_cycles = cycles
                 self.canvas.render()
+                self.log_text("Run simulation for " + str(cycles) + " cycles")
             else:
                 wx.MessageBox("Cannot run network. The network doesn't have a stable state.",
                               "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
@@ -650,6 +651,7 @@ class Gui(wx.Frame):
                 self.completed_cycles += cycles
                 self.canvas.completed_cycles += cycles
                 self.canvas.render()
+                self.log_text("Continue simulation for " + str(cycles) + " cycles. Total cycles: " + str(self.completed_cycles))
             else:
                 wx.MessageBox("Cannot continue network. The network doesn't have a stable state.",
                               "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
@@ -673,8 +675,25 @@ class Gui(wx.Frame):
 
     def on_console(self, event):
         """Handle the event when the user enters a command in the console."""
-        text_box_value = self.console.GetValue()
-        text = "".join([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: "), text_box_value])
+        command, *args = self.console.GetValue().split()
+
+
+        if command == "h":
+            self.help_command()
+        elif command == "s" and len(args) == 2:
+            self.switch_command(*args)
+        elif command == "m" and len(args) == 1:
+            self.monitor_command(*args)
+        elif command == "z" and len(args) == 1:
+            self.zap_command(*args)
+        elif command == "r" and len(args) == 1:
+            self.run_command(*args)
+        elif command == "c" and len(args) == 1:
+            self.continue_command(*args)
+        else:
+            print("Invalid command. Enter 'h' for help.")
+
+        # text = "".join([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: "), ])
         self.activity_log_text.AppendText(text+'\n')
         self.console.SetValue("")
         
@@ -706,7 +725,7 @@ class Gui(wx.Frame):
             self.switches_set_button.Disable()
             self.switches_clear_button.Enable()
             self.switches_set_button.SetValue(False)
-            self.log_text("Switch " + device_name + " is set")
+            self.log_text("Set switch " + device_name)
         else:
             text = "DEBUG: ON SWITCHES SET, device_id not in switches"
             self.canvas.render()
@@ -720,7 +739,7 @@ class Gui(wx.Frame):
             self.switches_set_button.Enable()
             self.switches_clear_button.Disable()
             self.switches_clear_button.SetValue(False)
-            self.log_text("Switch " + device_name + " is cleared")
+            self.log_text("Clear swithc " + device_name)
         else:
             text = "DEBUG: ON SWITCHES CLEAR, device_id not in switches"
             self.canvas.render()
@@ -753,9 +772,9 @@ class Gui(wx.Frame):
             self.monitors_set_button.Disable()
             self.monitors_zap_button.Enable()
             self.monitors_set_button.SetValue(False)
-            self.canvas.monitors_number += 1
+            self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
             self.canvas.update_cycle_axis_layout()
-            self.log_text("Monitor on " + signal_name + " is set")
+            self.log_text("Set monitor on " + signal_name)
         else:
             text = "DEBUG: ON MONITORS SET, ids is None"
             self.canvas.render()
@@ -770,9 +789,9 @@ class Gui(wx.Frame):
             self.monitors_set_button.Enable()
             self.monitors_zap_button.Disable()
             self.monitors_zap_button.SetValue(False)
-            self.canvas.monitors_number -= 1
+            self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
             self.canvas.update_cycle_axis_layout()
-            self.log_text("Monitor on " + signal_name + " is zapped")
+            self.log_text("Zap monitor on " + signal_name)
 
         else:
             text = "DEBUG: ON MONITORS ZAP, ids is None"
@@ -819,4 +838,51 @@ class Gui(wx.Frame):
 
     def log_text(self, text):
         """Handle the logging in activity_log of an event"""
+        text = "".join([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: "), text])
         self.activity_log_text.AppendText(text+'\n')
+
+    def help_command(self):
+        """Print a list of valid commands."""
+        text ="User commands:\n" + \
+            "r N       - run the simulation for N cycles\n" + \
+            "c N       - continue the simulation for N cycles\n" + \
+            "s X N     - set switch X to N (0 or 1)\n" + \
+            "m X       - set a monitor on signal X\n" + \
+            "z X       - zap the monitor on signal X\n" + \
+            "h         - help (this command)\n" + \
+            "q         - quit the program"
+        self.log_text(text)
+
+    def switch_command(self, switch_name, value):
+        """Set the state of a switch"""
+        device_id = self.names.query(switch_name)
+        if device_id is not None and device_id in self.switches:
+            try:
+                value = int(value)
+                if value == self.devices.LOW or value == self.devices.HIGH:
+                    self.devices.set_switch(device_id, value)
+                else:
+                    self.log_text("Error: Switch can be set to only 0 or 1.")
+            except ValueError:
+                self.log_text("Error: Switch can be set to only 0 or 1.")
+        else:
+            self.log_text("Error: Device " + switch_name + "is not a SWITCH")
+
+    def monitor_command(self, signal_name):
+        """Set monitor on a signal"""
+        monitored, unmonitored = self.monitors.get_signal_names()
+        if signal_name in monitored+unmonitored:
+            if signal_name in unmonitored:
+                ids = self.devices.get_signal_ids(signal_name)
+                if ids is not None:
+                    [device_id, output_id] = ids
+                    self.monitors.make_monitor(device_id, output_id, self.completed_cycles)
+                    self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
+                    self.canvas.update_cycle_axis_layout()
+                    self.log_text("Set monitor on " + signal_name)
+            else:
+                self.log_text(signal_name + " is already monitored")
+        else:
+            self.log_text("Error: " + signal_name + " is not an output signal")
+
+    def zap_command
