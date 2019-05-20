@@ -9,10 +9,14 @@ Classes
 Parser - parses the definition file and builds the logic network.
 """
 import sys
+from names import Names
 from scanner import Symbol, Scanner
 from network import Network
 from devices import Device, Devices
 from monitors import Monitors
+import builtins
+import os
+from io import StringIO
 
 class Parser:
 
@@ -69,6 +73,7 @@ class Parser:
                 flag = False
 
             while self.symbol.type == self.scanner.COMMA:
+                # print(self.symbol.type)
                 if self.add_device() is False:
                     flag = False
 
@@ -97,7 +102,6 @@ class Parser:
             device_type = self.symbol
             type_id = self.get_type_id(device_type) # type of device to be passed to make_device
             self.symbol = self.read_symbol() # now self.symbol maybe ','or '/' or ';'
-
             if self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
                 # make device with type only
                 error_type = self.devices.make_device(identifier,type_id)
@@ -108,12 +112,14 @@ class Parser:
 
             elif self.symbol.type == self.scanner.BACKSLASH:
                 param = self.get_parameter()
+
                 if param is None:
                     # self.display_error(self.NOT_NUMBER) handled by check in get_param
                     return False
                 elif self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
                     # make device using the type and param, have 1 param
-                    error_type = self.devices.make_device(identifier,type_id,param)
+                    error_type = self.devices.make_device(identifier.id,type_id,param)
+                    # print(identifier.id)
                     if error_type != self.devices.NO_ERROR:
                         self.display_error_device(error_type)
                         return False
@@ -143,6 +149,7 @@ class Parser:
 
     def get_type_id(self, device_type): # device type not specified in EBNF, so the parser handles this rather than scanner
         device_type_string = self.names.get_name_string(device_type.id)
+        # print(device_type_string)
         if device_type_string == "AND":
             type_id = self.devices.AND
         elif device_type_string == "NAND":
@@ -213,7 +220,6 @@ class Parser:
                 error_type = self.monitors.make_monitor(current_device, current_port)
                 if error_type != self.monitors.NO_ERROR:
                     self.display_error_monitor(error_type)
-                    flag = False
 
             if self.symbol.type == self.scanner.SEMICOLON:
                 return flag
@@ -331,3 +337,28 @@ class Parser:
             self.display_error(self.NOT_SYMBOL)
             current_symbol = self.scanner.get_symbol()
         return current_symbol
+
+# Function to make "open" function to work with StringIo objects
+def replace_open():
+    # The next line redefines the open function
+    old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
+                                if isinstance(args[0], StringIO) \
+                                else old_open(*args, **kwargs)
+
+    # The methods below have to be added to the StringIO class in order for the "with" statement to work
+    # StringIO.__enter__ = lambda self: self
+    # StringIO.__exit__= lambda self, a, b, c: None
+
+
+replace_open()
+# Folder to keep test definition files
+test_file_dir = "test_definition_files"
+
+names = Names()
+devices = Devices(names)
+network = Network(names, devices)
+monitors = Monitors(names, devices, network)
+file_path = test_file_dir + "/test_model.txt"
+scanner = Scanner(file_path, names)
+parser = Parser(names, devices, network, monitors, scanner)
+flag = parser.parse_devices()
