@@ -70,7 +70,7 @@ def test_DEVICE_semicolon_absense():
     pass
 
 def test_DEVICE_backslash_absense():
-    
+    pass  
     
 def test_DEVICE_mutliple_errors():
     pass
