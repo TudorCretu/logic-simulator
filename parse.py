@@ -90,13 +90,6 @@ class Parser:
             return False
         identifier = self.symbol  # current self.symbol is the IDENTIFIER
 
-        existing = self.names.lookup([self.symbol.id])
-        if len(existing) > 1: # we do not want duplicate identifier
-            self.display_error(self.DUPLICATE)
-            self.skip_erratic_part()
-            return False
-
-
         self.symbol = self.scanner.get_symbol() # read in the following '='
         if self.symbol.type == self.scanner.EQUALS:
 
@@ -107,39 +100,36 @@ class Parser:
             device_type = self.symbol
             type_id = self.get_type_id(device_type)
 
-            if type_id is None:
-                self.display_error(self.devices.BAD_DEVICE)
+            if type_id is None: # unspecified type of device
+                self.display_error_device(self.devices.BAD_DEVICE)
                 self.skip_erratic_part()
                 return False
-            self.symbol = self.scanner.get_symbol() # now self.symbol maybe ','or '/'
+            self.symbol = self.scanner.get_symbol() # now self.symbol maybe ','or '/' or ';'
 
             if self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
                 # make device with type only
-                error_type = self.devices.make_device(identifier,device_type)
+                error_type = self.devices.make_device(identifier,type_id)
                 if error_type == self.devices.NO_ERROR:
                     return True
                 else:
-                    self.display_error(error_type)
+                    self.display_error_device(error_type)
                     return False
 
             elif self.symbol.type == self.scanner.BACKSLASH:
-                param = []
-                while self.symbol.type == self.scanner.BACKSLASH:
-                    if self.add_parameter() is False: # param not a number
-                        return False
-                    param.append(self.add_parameter())
-
-                if self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
-                    # make device using the type and param
-                    error_type = self.devices.make_device(identifier,device_type,param[0])
-                    # we are told at most one property is needed，semantic errors may be raised here
+                param = self.get_parameter()
+                if param is None:
+                    # self.display_error(self.NOT_NUMBER) handled by check in get_param
+                    return False
+                elif self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
+                    # make device using the type and param, have 1 param
+                    error_type = self.devices.make_device(identifier,type_id,param)
                     if error_type == self.devices.NO_ERROR:
                         return True
                     else:
-                        self.display_error(error_type)
+                        self.display_error_device(error_type)
                         return False
                 else:
-                    self.display_error(self.NO_COMMA)  # no comma
+                    self.display_error(self.NO_COMMA) # no comma
                     self.skip_erratic_part()
                     return False
 
@@ -153,10 +143,10 @@ class Parser:
             self.skip_erratic_part()
             return False
 
-    def add_parameter(self):
+    def get_parameter(self):
         self.symbol = self.scanner.get_symbol() # read in a param
         if self.check_number() is False:
-            return False
+            return None
         param = self.symbol # get the parameter value
         self.symbol = self.scanner.get_symbol() # match the loop in add_devices
         return param
@@ -229,7 +219,7 @@ class Parser:
             else:
                 error_type = self.monitors.make_monitor(current_device,current_port)
                 if error_type != self.monitors.NO_ERROR:
-                    self.display_error(error_type)
+                    self.display_error_monitor(error_type)
                     flag = False
 
             while self.symbol.type == self.scanner.COMMA:
@@ -239,7 +229,7 @@ class Parser:
                 else:
                     error_type = self.monitors.make_monitor(current_device, current_port)
                     if error_type != self.monitors.NO_ERROR:
-                        self.display_error(error_type)
+                        self.display_error_monitor(error_type)
                         flag = False
 
             if self.symbol.type == self.scanner.SEMICOLON:
@@ -258,11 +248,11 @@ class Parser:
             return None, None
         device_id = self.symbol
         self.symbol = self.scanner.get_symbol()
+
         if  self.symbol == self.scanner.DOT: # input
             self.symbol = self.scanner.get_symbol()
             if self.check_names() is False:
                 return None, None
-
             port_id = self.symbol
             self.scanner.get_symbol()
             return device_id, port_id # input & DTYPE
@@ -274,14 +264,6 @@ class Parser:
             self.display_error(self.NO_COMMA)
             self.skip_erratic_part()
             return None
-
-    def find(self, x):
-
-        for m in self.monitoring_list:
-            if x == m:
-                return True
-        return False
-
 
     def check_names(self): # skip erratic part then symbol becomes the next ',' or ';' or KEYWORD or EOF
         if self.symbol.type != self.scanner.NAME:  # the type of device should be a name
@@ -319,6 +301,36 @@ class Parser:
             print("SyntaxError: Expected a number")
         else:
             print("Unknown error occurred")
+
+    def display_error_device(self,error_type):
+        if error_type == self.devices.INVALID_QUALIFIER:
+            print("SemanticError: ")
+        if error_type == self.devices.NO_QUALIFIER:
+            print("SemanticError: ")
+        if error_type == self.devices.QUALIFIER_PRESENT:
+            print("SemanticError: ")
+        if error_type == self.devices.BAD_DEVICE:
+            print("SemanticError: ")
+        if error_type == self.devices.DEVICE_PRESENT:
+            print("SemanticError: ")
+
+    def display_error_connection(self,error_type):
+        if error_type == self.network.INPUT_TO_INPUT:
+            print("Semantic error: ")
+        if error_type == self.network.OUTPUT_TO_OUTPUT:
+            print("Semantic error: ")
+        if error_type == self.network.INPUT_CONNECTED:
+            print("Semantic error: ")
+        if error_type == self.network.PORT_ABSENT:
+            print("Semantic error: ")
+        if error_type == self.network.DEVICE_ABSENT:
+            print("Semantic error: ")
+
+    def display_error_monitor(self,error_type):
+        if error_type == self.monitors.NOT_OUTPUT:
+            print("SemanticError: ")
+        if error_type == self.monitors.MONITOR_PRESENT:
+            print("SemanticError: ")
 
     def skip_erratic_part(self): # so-called recovery
         while self.symbol.type != self.scanner.COMMA: # go to the next comma within the section
