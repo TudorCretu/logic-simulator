@@ -103,17 +103,16 @@ def test_DEVICE_expected_number_error(capfd):
     assert out == "SyntaxError: Expected a number\n"
 
 def test_DEVICE_semicolon_absense(capfd):
-    string_io = StringIO("DEVICES SWITCH1 = SWITCH/1, SWITCH2 = SWITCH/0 MONITOR")
+    string_io = StringIO("DEVICES SWITCH1 = SWITCH/1, SWITCH2 = SWITCH/0 MONITORS")
     scanner = Scanner(string_io, names)
     parser = Parser(names, devices, network, monitors, scanner)
-    
+
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a semicolon"
-    # not handled
+    assert out == "SyntaxError: Expected a semicolon\n"
 
 def test_DEVICE_parameter_error(capfd):
-    string_io = StringIO("DEVICES SWITCH1 = SWITCH/1, SWITCH2 = SWITCH/0; MONITOR")
+    string_io = StringIO("DEVICES SWITCH1 = SWITCH/1, SWITCH2 = SWITCH/0; MONITORS")
     scanner = Scanner(string_io, names)
     parser = Parser(names, devices, network, monitors, scanner)
     

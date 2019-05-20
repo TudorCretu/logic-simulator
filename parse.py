@@ -66,26 +66,28 @@ class Parser:
         return success
 
     def parse_devices(self):
-        flag = True # any error changes this to false
-        self.symbol = self.read_symbol() # check keyword first
+        if self.symbol.type == self.scanner.EOF:
+            return False
+        flag = True  # any error changes this to false
+        if self.symbol.type != self.scanner.KEYWORD:
+            self.symbol = self.read_symbol()  # check keyword first
+
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.DEVICES_ID:
-            if self.add_device() is False: # type not name
+            if self.add_device() is False:  # type not name
                 flag = False
 
             while self.symbol.type == self.scanner.COMMA:
+                # print(self.symbol.type)
                 if self.add_device() is False:
                     flag = False
-            # print(self.symbol.type)
-            if self.symbol.type == self.scanner.SEMICOLON: # end of this section
+
+            if self.symbol.type == self.scanner.SEMICOLON:  # end of this section
                 return flag
-            elif self.symbol.type == self.scanner.KEYWORD:
-                self.display_error(self.NO_SEMICOLON) # no semicolon
-                return False # just end parsing this section
             else:
-                return False
+                return False  # just end parsing this section
         else:
-            self.display_error(self.NO_KEYWORD) # no keyword
-            return False # just raise error and exit
+            self.display_error(self.NO_KEYWORD)  # no keyword
+            return False  # just raise error and exit
 
     def add_device(self):
         self.symbol = self.read_symbol()
@@ -103,6 +105,7 @@ class Parser:
             device_type = self.symbol
             type_id = self.get_type_id(device_type) # type of device to be passed to make_device
             self.symbol = self.read_symbol() # now self.symbol maybe ','or '/' or ';'
+
             if self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
                 # make device with type only
                 error_type = self.devices.make_device(identifier,type_id)
@@ -125,10 +128,17 @@ class Parser:
                         self.display_error_device(error_type)
                         return False
                     return True
+                elif self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
+                    self.display_error(self.NO_SEMICOLON)
+                    return False
                 else:
                     self.display_error(self.NO_COMMA) # no comma
                     self.skip_erratic_part()
                     return False
+
+            elif self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
+                self.display_error(self.NO_SEMICOLON)
+                return False
 
             else:
                 self.display_error(self.NO_COMMA) # no comma or '/' actually
@@ -172,9 +182,12 @@ class Parser:
         return type_id
 
     def parse_connections(self):
-        flag = True
+        if self.symbol.type == self.scanner.EOF:
+            return False
+        flag = True  # any error changes this to false
         if self.symbol.type != self.scanner.KEYWORD:
             self.symbol = self.read_symbol()  # check keyword first
+
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.CONNECTIONS_ID:
             if self.add_connection() is False:
                 flag = False
@@ -186,7 +199,6 @@ class Parser:
             if self.symbol.type == self.scanner.SEMICOLON:
                 return flag
             else:
-                self.display_error(self.NO_SEMICOLON)
                 return False
         else:
             self.display_error(self.NO_KEYWORD)
@@ -208,9 +220,12 @@ class Parser:
             return False
 
     def parse_monitors(self):
-        flag = True
+        if self.symbol.type == self.scanner.EOF:
+            return False
+        flag = True  # any error changes this to false
         if self.symbol.type != self.scanner.KEYWORD:
             self.symbol = self.read_symbol()  # check keyword first
+            
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.MONITORS_ID:
             current_device, current_port = self.signame() # add_monitor
             error_type = self.monitors.make_monitor(current_device,current_port)
@@ -227,7 +242,6 @@ class Parser:
             if self.symbol.type == self.scanner.SEMICOLON:
                 return flag
             else:
-                self.display_error(self.NO_SEMICOLON)
                 return False
         else:
             self.display_error(self.NO_KEYWORD)
@@ -250,6 +264,10 @@ class Parser:
 
         elif self.symbol == self.scanner.COMMA or self.symbol == self.scanner.SEMICOLON: # output
             return device_id, None # output
+
+        elif self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
+            self.display_error(self.NO_SEMICOLON)
+            return None, None
 
         else:
             self.display_error(self.NO_COMMA)
