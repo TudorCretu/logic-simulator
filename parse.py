@@ -46,7 +46,11 @@ class Parser:
         self.scanner = scanner
         self.symbol = Symbol()
         self.error_count = 0
+<<<<<<< HEAD
         self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NO_BACKSLASH, self.NOT_NAME, self.NOT_NUMBER, self.DUPLICATE] = self.names.unique_error_code(8)
+=======
+        self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NO_BACKSLASH, self.NOT_NAME, self.NOT_NUMBER, self.duplicate] = self.names.unique_error_codes(8)
+>>>>>>> abff546b78e77de4eb768c18bd6622ed3179f944
         self.monitoring_list = []
 
     def parse_network(self):
@@ -267,10 +271,14 @@ class Parser:
             return None
 
     def find(self, x):
+<<<<<<< HEAD
         for m in self.monitoring_list:
             if x == m:
                 return True
         return False
+=======
+        pass
+>>>>>>> abff546b78e77de4eb768c18bd6622ed3179f944
 
     def check_names(self): # skip erratic part then symbol becomes the next ',' or ';' or KEYWORD or EOF
         if self.symbol.type != self.scanner.NAME:  # the type of device should be a name
