@@ -10,6 +10,7 @@ Symbol - encapsulates a symbol and stores its properties.
 """
 
 import sys
+from names import Names
 
 class Symbol:
 
@@ -66,7 +67,7 @@ class Scanner:
         #Set current_character attribute to first character of file
         self.names = names 
         self.symbol_type_list = [self.DOT, self.BACKSLASH, self.COMMA, self.SEMICOLON,
-            self.EQUALS, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(9)
+            self.COLON, self.EQUALS, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(10)
         self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITORS"]
         [self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITOR_ID] = self.names.lookup(self.keywords_list)
         self.current_character = self.file.read(1)
@@ -76,9 +77,12 @@ class Scanner:
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
+        self.skip_spaces()
+        while self.current_character == "#":
+            self.skip_comment()
+            self.skip_spaces() # current character now not whitespace
         
-        self.skip_spaces() # current character now not whitespace
-        self.skip_comment()
+        
         if self.current_character.isalpha(): # name
             
             name_string = self.get_name()
@@ -107,6 +111,10 @@ class Scanner:
         elif self.current_character == ",":
             symbol.type = self.COMMA
             self.advance()
+            
+        elif self.current_character == ":":
+            symbol.type = self.COLON
+            self.advance()
 
         elif self.current_character == ";":
             symbol.type = self.SEMICOLON
@@ -115,8 +123,9 @@ class Scanner:
         elif self.current_character == "":          
             symbol.type = self.EOF
 
-        else:           
+        else:
             self.advance()
+            
 
         return symbol 
 
