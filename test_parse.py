@@ -108,7 +108,7 @@ def test_DEVICE_semicolon_absense(capfd):
     scanner = Scanner(string_io, names)
     parser = Parser(names, devices, network, monitors, scanner)
     
-    assert parser.parse_devices() is True
+    assert parser.parse_devices() is False
     out,err = capfd.readouterr()
     assert out == "SyntaxError: Expected a semicolon"
     
@@ -118,7 +118,7 @@ def test_DEVICE_parameter_error(capfd):
     scanner = Scanner(string_io, names)
     parser = Parser(names, devices, network, monitors, scanner)
     
-    assert parser.parse_devices() is True
+    assert parser.parse_devices() is False
     out,err = capfd.readouterr()
     assert out == "This specific device needs parameter preceded by a '/' "
 
