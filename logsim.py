@@ -68,6 +68,8 @@ def main(arg_list):
                 names, devices, network, monitors = test_1()
             elif path == "2":
                 names, devices, network, monitors = test_2()
+            elif path == "3":
+                names, devices, network, monitors = test_3()
             else:
                 print("Error: invalid test number.\n")
                 sys.exit()
@@ -152,6 +154,69 @@ def test_2():
 
     monitors.make_monitor(NOR1, None)
 
+def test_3():
+    names = Names()
+    devices = Devices(names)
+    network = Network(names, devices)
+    monitors = Monitors(names, devices, network)
+
+    S, R, CK, D = names.lookup(["S", "R", "CK", "D"])
+    devices.make_device(S, devices.SWITCH, 1)
+    devices.make_device(R, devices.SWITCH, 1)
+    devices.make_device(CK, devices.CLOCK, 1)
+    devices.make_device(D, devices.D_TYPE)
+
+    network.make_connection(S, None, D, names.query("SET"))
+    network.make_connection(R, None, D, names.query("CLEAR"))
+    network.make_connection(D, names.query("QBAR"), D, names.query("DATA"))
+
+    monitors.make_monitor(CK, None)
+    monitors.make_monitor(D, names.query("Q"))
+    monitors.make_monitor(S, None)
+    monitors.make_monitor(R, None)
+
     return names, devices, network, monitors
+
+
+def test_4():
+    names = Names()
+    devices = Devices(names)
+    network = Network(names, devices)
+    monitors = Monitors(names, devices, network)
+
+    SW, CK, D1, D2, D3, D4 = names.lookup(["SW", "CK", "D1", "D2", "D3", "D4"])
+    devices.make_device(SW, devices.SWITCH, 1)
+    devices.make_device(CK, devices.CLOCK, 1)
+    devices.make_device(D1, devices.D_TYPE)
+    devices.make_device(D2, devices.D_TYPE)
+    devices.make_device(D3, devices.D_TYPE)
+    devices.make_device(D4, devices.D_TYPE)
+
+    network.make_connection(SW, None, D1, names.query("SET"))
+    network.make_connection(SW, None, D1, names.query("CLEAR"))
+    network.make_connection(SW, None, D2, names.query("SET"))
+    network.make_connection(SW, None, D2, names.query("CLEAR"))
+    network.make_connection(SW, None, D3, names.query("SET"))
+    network.make_connection(SW, None, D3, names.query("CLEAR"))
+    network.make_connection(SW, None, D4, names.query("SET"))
+    network.make_connection(SW, None, D4, names.query("CLEAR"))
+    network.make_connection(CK, None, D1, names.query("CLK"))
+    network.make_connection(D1, names.query("QBAR"), D2, names.query("CLK"))
+    network.make_connection(D2, names.query("QBAR"), D3, names.query("CLK"))
+    network.make_connection(D3, names.query("QBAR"), D4, names.query("CLK"))
+    network.make_connection(D1, names.query("QBAR"), D1, names.query("DATA"))
+    network.make_connection(D2, names.query("QBAR"), D2, names.query("DATA"))
+    network.make_connection(D3, names.query("QBAR"), D3, names.query("DATA"))
+    network.make_connection(D4, names.query("QBAR"), D4, names.query("DATA"))
+
+    monitors.make_monitor(CK, None)
+    monitors.make_monitor(D1, names.query("Q"))
+    monitors.make_monitor(D2, names.query("Q"))
+    monitors.make_monitor(D3, names.query("Q"))
+    monitors.make_monitor(D4, names.query("Q"))
+
+    return names, devices, network, monitors
+
+
 if __name__ == "__main__":
     main(sys.argv[1:])
