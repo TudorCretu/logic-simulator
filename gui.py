@@ -11,6 +11,7 @@ Gui - configures the main window and all the widgets.
 import wx
 import wx.glcanvas as wxcanvas
 import datetime
+import copy
 from OpenGL import GL, GLUT
 
 
@@ -137,6 +138,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def render(self):
         """Handle all drawing operations."""
         self.SetCurrent(self.context)
+        if self.completed_cycles<10:
+            self.completed_cycles=10
         if not self.init:
             # Configure the viewport, modelview and projection matrices
             self.init_gl()
@@ -223,8 +226,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def draw_monitors_names(self):
         """Handle monitor names drawing operations."""
-        for monitor_number, (device_id, output_id) in enumerate(reversed(self.monitors.monitors_dictionary)):
-            self.render_text(self.devices.get_signal_name(device_id, output_id), 3, self.cycle_axis_y - self.monitor_height * (0.7+monitor_number))
+        for monitor_number, (device_id, output_id) in enumerate(self.monitors.monitors_dictionary):
+            self.render_text(self.devices.get_signal_name(device_id, output_id),
+                             3, self.cycle_axis_y - self.monitor_height * (0.7+monitor_number))
         return
 
     def draw_cycles_axis(self):
@@ -269,10 +273,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def draw_monitored_signals(self):
         """Handle monitors output drawing operations."""
-        monitor_number = 0
-        for device_id, output_id in reversed(self.monitors.monitors_dictionary):
+        for monitor_number, (device_id, output_id) in enumerate(self.monitors.monitors_dictionary):
             self.draw_signal(device_id, output_id, monitor_number)
-            monitor_number += 1
 
     def draw_signal(self, device_id, output_id, monitor_number):
         """Handle each monitor output drawing operations."""
@@ -425,18 +427,59 @@ class Gui(wx.Frame):
         """Initialise widgets and layout."""
         super().__init__(parent=None, title=title, size=(800, 600))
 
+        # Simulation variables
         self.completed_cycles = 0
 
+        # Saving, loading, and undo/redo variables
+        self.is_saved = True
+        self.command_history = []
+        self.last_command_index = -1
+        self.initial_devices = copy.deepcopy(devices)
+        self.initial_network = copy.deepcopy(network)
+        self.initial_monitors = copy.deepcopy(monitors)
+
+        # Erros
+        [self.NO_ERROR, self.INVALID_COMMAND, self.INVALID_ARGUMENT, self.SIGNAL_NOT_MONITORED, self.OSCILLATING_NETWORK,
+         self.CANNOT_OPEN_FILE, self.NOTHING_TO_UNDO, self.NOTHING_TO_REDO, self.UNKNOWN_ERROR] = names.unique_error_codes(9)
+
+
         # Configure the file menu
-        fileMenu = wx.Menu()
         menuBar = wx.MenuBar()
+        fileMenu = wx.Menu()
         fileMenu.Append(wx.ID_ABOUT, "&About")
+        fileMenu.Append(wx.ID_OPEN, "&Load")
         fileMenu.Append(wx.ID_SAVE, "&Save")
+        fileMenu.Append(wx.ID_SAVEAS, "&Save as")
         fileMenu.Append(wx.ID_EXIT, "&Exit")
         menuBar.Append(fileMenu, "&File")
+
+        editMenu = wx.Menu()
+        editMenu.Append(wx.ID_UNDO, "&Undo")
+        editMenu.Append(wx.ID_REDO, "&Redo")
+        menuBar.Append(editMenu, "&Edit")
+
+        viewMenu = wx.Menu()
+        wx.ID_FULLSCREEN = wx.NewId()
+        viewMenu.Append(wx.ID_FULLSCREEN, "&Fullscreen")
+        viewMenu.Append(wx.ID_ZOOM_100, "&Zoom reset")
+        viewMenu.Append(wx.ID_ZOOM_FIT, "&Zoom fit")
+        viewMenu.Append(wx.ID_ZOOM_IN, "&Zoom in")
+        viewMenu.Append(wx.ID_ZOOM_OUT, "&Zoom out")
+        menuBar.Append(viewMenu, "&View")
+
+        runMenu = wx.Menu()
+        wx.ID_CONTINUE = wx.NewId()
+        runMenu.Append(wx.ID_EXECUTE, "&Run")
+        runMenu.Append(wx.ID_CONTINUE, "&Continue")
+        menuBar.Append(runMenu, "&Run")
+
+        helpMenu = wx.Menu()
+        helpMenu.Append(wx.ID_HELP, "&Help")
+        helpMenu.Append(wx.ID_HELP_COMMANDS, "&Help commands")
+        menuBar.Append(helpMenu, "&Help")
         self.SetMenuBar(menuBar)
 
-        # List of switches
+        # Instances of the classes
         self.names = names
         self.devices = devices
         self.network = network
@@ -470,7 +513,8 @@ class Gui(wx.Frame):
         self.switches_clear_button.Disable()
 
         #   Monitors
-        self.monitors_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT, choices=self.monitors.get_signal_names()[0] + self.monitors.get_signal_names()[1])
+        self.monitors_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT,
+                                           choices=self.monitors.get_signal_names()[0] + self.monitors.get_signal_names()[1])
         self.monitors_set_button = wx.ToggleButton(self, wx.ID_ANY, "SET", style=wx.BORDER_NONE, size=toggle_button_size)
         self.monitors_zap_button = wx.ToggleButton(self, wx.ID_ANY, "ZAP", style=wx.BORDER_NONE, size=toggle_button_size)
         self.monitors_set_button.Disable()
@@ -500,6 +544,9 @@ class Gui(wx.Frame):
         # Bind events to widgets
         #  Menu
         self.Bind(wx.EVT_MENU, self.on_menu)
+
+        #  Exit fullscreen
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key)
 
         #  Load file
         self.load_file_button.Bind(wx.EVT_BUTTON, self.on_load_file_button)
@@ -606,56 +653,69 @@ class Gui(wx.Frame):
         """Handle the event when the user selects a menu item."""
         Id = event.GetId()
         if Id == wx.ID_EXIT:
-            self.Close(True)
+            self.quit_command()
         if Id == wx.ID_ABOUT:
             wx.MessageBox("Logic Simulator\nCreated by Mojisola Agboola\n2017",
                           "About Logsim", wx.ICON_INFORMATION | wx.OK)
+        if Id == wx.ID_OPEN:
+            # Same functionality as load button
+            self.on_load_file_button(None)
+        if Id == wx.ID_SAVE:
+            self.save_file()
+        if Id == wx.ID_SAVEAS:
+            self.save_file() #TODO
+        if Id == wx.ID_UNDO:
+            self.last_command_index -= 1
+            if self.last_command_index < -1:
+                self.raise_error(self.NOTHING_TO_UNDO)
+            else:
+                self.execute_command_history()
+                self.log_text("Undo")
+        if Id == wx.ID_REDO:
+            self.last_command_index += 1
+            if self.last_command_index == len(self.command_history):
+                self.raise_error(self.NOTHING_TO_REDO)
+            else:
+                self.execute_command_history()
+                self.log_text("Redo")
+        if Id == wx.ID_MAXIMIZE_FRAME:
+            self.Maximize(True)
+        if Id == wx.ID_FULLSCREEN:
+            self.Show()
+            self.ShowFullScreen(True)
+            pass
+        if Id == wx.ID_ZOOM_100:
+            pass
+        if Id == wx.ID_ZOOM_FIT:
+            pass
+        if Id == wx.ID_ZOOM_IN:
+            pass
+        if Id == wx.ID_ZOOM_OUT:
+            pass
+        if Id == wx.ID_EXECUTE:
+            pass
+        if Id == wx.ID_CONTINUE:
+            pass
+        if Id == wx.ID_HELP:
+            pass
+        if Id == wx.ID_HELP_COMMANDS:
+            pass
+
 
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
         spin_value = self.simulation_cycles_spin.GetValue()
-        text = "".join(["New spin control value: ", str(spin_value)])
         self.canvas.render()
 
     def on_run_button(self, event):
         """Handle the event when the user clicks the run button."""
-        text = "Run button pressed."
-
         cycles = self.simulation_cycles_spin.GetValue()
-        if cycles >= 0:
-            self.monitors.reset_monitors()
-            print("".join(["Running for ", str(cycles), " cycles"]))
-            self.devices.cold_startup()
-            if self.run_network(cycles):
-                self.completed_cycles = cycles
-                self.canvas.completed_cycles = cycles
-                self.canvas.render()
-            else:
-                wx.MessageBox("Cannot run network. The network doesn't have a stable state.",
-                              "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
-        else:
-            wx.MessageBox("Cannot run network. The number of cycles is not a positive integer.",
-                          "Invalig Value Error", wx.ICON_ERROR | wx.OK)
+        self.run_command(cycles)
 
     def on_continue_button(self, event):
         """Handle the event when the user clicks the continue button."""
-        text = "Continue button pressed."
-
         cycles = self.simulation_cycles_spin.GetValue()
-        if cycles >= 0:
-            cycles = int(cycles)
-            print("".join(["Continuing for ", str(cycles), " cycles"]))
-            self.devices.cold_startup()
-            if self.run_network(cycles):
-                self.completed_cycles += cycles
-                self.canvas.completed_cycles += cycles
-                self.canvas.render()
-            else:
-                wx.MessageBox("Cannot continue network. The network doesn't have a stable state.",
-                              "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
-        else:
-            wx.MessageBox("Cannot continue network. The number of cycles is not a positive integer.",
-                          "Error", wx.ICON_ERROR | wx.OK)
+        self.continue_command(cycles)
 
     def run_network(self, cycles):
         """Run the network for the specified number of simulation cycles.
@@ -666,16 +726,33 @@ class Gui(wx.Frame):
             if self.network.execute_network():
                 self.monitors.record_signals()
             else:
-                print("Error! Network oscillating.")
                 return False
         self.canvas.Refresh()
         return True
 
     def on_console(self, event):
         """Handle the event when the user enters a command in the console."""
-        text_box_value = self.console.GetValue()
-        text = "".join([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: "), text_box_value])
-        self.activity_log_text.AppendText(text+'\n')
+        command, *args = self.console.GetValue().split()
+
+
+        if command == "h":
+            self.help_command()
+        elif command == "s" and len(args) == 2:
+            self.switch_command(*args)
+        elif command == "m" and len(args) == 1:
+            self.monitor_command(*args)
+        elif command == "z" and len(args) == 1:
+            self.zap_command(*args)
+        elif command == "r" and len(args) == 1:
+            self.run_command(*args)
+        elif command == "c" and len(args) == 1:
+            self.continue_command(*args)
+        elif command == "q":
+            self.quit_command()
+        else:
+            wx.MessageBox("Invalid command. Enter 'h' for help.",
+                          "Invalid Command Error", wx.ICON_ERROR | wx.OK)
+
         self.console.SetValue("")
         
     def on_switches_select(self, event):
@@ -700,31 +777,12 @@ class Gui(wx.Frame):
     def on_switches_set(self, event):
         """Handle the event when the user sets a switch."""
         device_name = self.switches_select.GetValue()
-        device_id = self.names.query(device_name)
-        if device_id is not None and device_id in self.switches:
-            self.devices.set_switch(device_id, self.devices.HIGH)
-            self.switches_set_button.Disable()
-            self.switches_clear_button.Enable()
-            self.switches_set_button.SetValue(False)
-            self.log_text("Switch " + device_name + " is set")
-        else:
-            text = "DEBUG: ON SWITCHES SET, device_id not in switches"
-            self.canvas.render()
+        self.switch_command(device_name, self.devices.HIGH)
 
     def on_switches_clear(self, event):
         """Handle the event when the user clears a switch."""
         device_name = self.switches_select.GetValue()
-        device_id = self.names.query(device_name)
-        if device_id is not None and device_id in self.switches:
-            self.devices.set_switch(device_id, self.devices.HIGH)
-            self.switches_set_button.Enable()
-            self.switches_clear_button.Disable()
-            self.switches_clear_button.SetValue(False)
-            self.log_text("Switch " + device_name + " is cleared")
-        else:
-            text = "DEBUG: ON SWITCHES CLEAR, device_id not in switches"
-            self.canvas.render()
-
+        self.switch_command(device_name, self.devices.LOW)
 
     def on_monitors_select(self, event):
         """Handle the event when the user types text in monitors text box.
@@ -746,19 +804,7 @@ class Gui(wx.Frame):
     def on_monitors_set(self, event):
         """Handle the event when the user sets a monitor."""
         signal_name = self.monitors_select.GetValue()
-        ids = self.devices.get_signal_ids(signal_name)
-        if ids is not None:
-            [device_id, output_id] = ids
-            self.monitors.make_monitor(device_id, output_id, self.completed_cycles)
-            self.monitors_set_button.Disable()
-            self.monitors_zap_button.Enable()
-            self.monitors_set_button.SetValue(False)
-            self.canvas.monitors_number += 1
-            self.canvas.update_cycle_axis_layout()
-            self.log_text("Monitor on " + signal_name + " is set")
-        else:
-            text = "DEBUG: ON MONITORS SET, ids is None"
-            self.canvas.render()
+        self.monitor_command(signal_name)
 
     def on_monitors_zap(self, event):
         """Handle the event when the user clears a monitor."""
@@ -770,9 +816,9 @@ class Gui(wx.Frame):
             self.monitors_set_button.Enable()
             self.monitors_zap_button.Disable()
             self.monitors_zap_button.SetValue(False)
-            self.canvas.monitors_number -= 1
+            self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
             self.canvas.update_cycle_axis_layout()
-            self.log_text("Monitor on " + signal_name + " is zapped")
+            self.log_text("Zap monitor on " + signal_name)
 
         else:
             text = "DEBUG: ON MONITORS ZAP, ids is None"
@@ -780,11 +826,12 @@ class Gui(wx.Frame):
 
     def on_load_file_button(self, event):
         """Handle the load file button"""
-        # if self.contentNotSaved:
-        #     if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
-        #                      wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
-        #         return
-
+        if not self.is_saved:
+            answer = self.ask_to_save("Load file")
+            if answer == wx.CANCEL:
+                return
+            elif answer == wx.YES:
+                self.save_file()
         # otherwise ask the user what new file to open
         with wx.FileDialog(self, "Open another definition file", wildcard="*.def",
                            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
@@ -798,11 +845,12 @@ class Gui(wx.Frame):
 
     def on_load_file_text_box(self, event):
         """Handle the event when user enters a filepath into load_file_text_box"""
-
-        # if self.contentNotSaved:
-        #     if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
-        #                      wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
-        #         return
+        if not self.is_saved:
+            answer = self.ask_to_save("Load file")
+            if answer == wx.CANCEL:
+                return
+            elif answer == wx.YES:
+                self.save_file()
 
         # otherwise ask the user what new file to open
         path = self.load_file_text_box.GetValue()
@@ -815,8 +863,245 @@ class Gui(wx.Frame):
                 self.load_file_text_box.SetValue(pathname)
                 # self.doLoadDataOrWhatever(file)
         except IOError:
-            wx.LogError("Cannot open file '%s'." % pathname)
+            self.raise_error(self.CANNOT_OPEN_FILE, "Cannot open file '%s'." % pathname)
+
+    def ask_to_save(self, action_title):
+        """Handle the quit or load actions if the state is not save"""
+        save_dlg = wx.MessageBox("Current state of the simulation has not been saved! Save changes?", action_title,
+                                 wx.ICON_QUESTION | wx.YES_NO | wx.CANCEL | wx.CANCEL_DEFAULT, self)
+        return save_dlg
+
+    def save_file(self):
+        self.is_saved = True
+        return
 
     def log_text(self, text):
         """Handle the logging in activity_log of an event"""
+        text = "".join([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: "), text])
         self.activity_log_text.AppendText(text+'\n')
+        self.is_saved=False
+
+    def help_command(self):
+        """Print a list of valid commands."""
+        text ="User commands:\n" + \
+            "r N         - run the simulation for N cycles\n" + \
+            "c N         - continue the simulation for N cycles\n" + \
+            "s X N     - set switch X to N (0 or 1)\n" + \
+            "m X       - set a monitor on signal X\n" + \
+            "z X         - zap the monitor on signal X\n" + \
+            "h             - help (this command)\n" + \
+            "q            - quit the program"
+        self.log_text(text)
+
+    def switch_command(self, switch_name, value):
+        """Set the state of a switch"""
+        device_id = self.names.query(switch_name)
+        if device_id is not None and device_id in self.switches:
+            try:
+                value = int(value)
+                if value == self.devices.LOW or value == self.devices.HIGH:
+                    self.devices.set_switch(device_id, value)
+                    self.log_text("Set switch " + switch_name + " to  " + str(value))
+                    self.log_command("s "+ switch_name + " " + str(value))
+                    self.last_command_index = len(self.command_history) -1
+                    # Update set/clear switches toggle button
+                    if self.switches_select.GetValue() == switch_name:
+                        if value == self.devices.HIGH:
+                            self.switches_set_button.Disable()
+                            self.switches_clear_button.Enable()
+                            self.switches_set_button.SetValue(False)
+                        else:
+                            self.switches_set_button.Enable()
+                            self.switches_clear_button.Disable()
+                            self.switches_clear_button.SetValue(False)
+                else:
+                    raise ValueError
+            except ValueError:
+                self.raise_error(self.INVALID_ARGUMENT, "Switch can be set to only 0 or 1.")
+        else:
+            self.raise_error(self.INVALID_ARGUMENT, "Device " + switch_name + " is not a SWITCH")
+
+    def monitor_command(self, signal_name):
+        """Set monitor on a signal"""
+
+        monitored, unmonitored = self.monitors.get_signal_names()
+        if signal_name in monitored + unmonitored:
+            if signal_name in unmonitored:
+                ids = self.devices.get_signal_ids(signal_name)
+                if ids is not None:
+                    [device_id, output_id] = ids
+                    self.monitors.make_monitor(device_id, output_id, self.completed_cycles)
+                    self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
+                    self.canvas.update_cycle_axis_layout()
+                    self.log_text("Set monitor on " + signal_name)
+                    self.log_command("m "+ signal_name)
+                    self.last_command_index = len(self.command_history) -1
+                    # update monitors set/zap toggle button
+                    if signal_name == self.monitors_select.GetValue():
+                        self.monitors_set_button.Disable()
+                        self.monitors_zap_button.Enable()
+                        self.monitors_set_button.SetValue(False)
+                else:
+                    self.raise_error(self.UNKNOWN_ERROR, "Failed in monitor_command. ids is None.")
+            else:
+                self.raise_error(self.monitors.MONITOR_PRESENT, signal_name + " is already monitored")
+        else:
+            self.raise_error(self.monitors.NOT_OUTPUT, "Error: " + signal_name + " is not an output signal")
+
+    def zap_command(self, signal_name):
+        """Zap monitor on a signal"""
+        monitored, unmonitored = self.monitors.get_signal_names()
+        if signal_name in monitored + unmonitored:
+            if signal_name in monitored:
+                ids = self.devices.get_signal_ids(signal_name)
+                if ids is not None:
+                    [device_id, output_id] = ids
+                    self.monitors.remove_monitor(device_id, output_id)
+                    self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
+                    self.canvas.update_cycle_axis_layout()
+                    self.log_text("Zap monitor on " + signal_name)
+                    self.log_command("z "+ signal_name)
+                    self.last_command_index = len(self.command_history) -1
+                    # update monitors set/zap toggle button
+                    if signal_name == self.monitors_select.GetValue():
+                        self.monitors_set_button.Enable()
+                        self.monitors_zap_button.Disable()
+                        self.monitors_zap_button.SetValue(False)
+            else:
+                self.raise_error(self.SIGNAL_NOT_MONITORED, signal_name + " is not monitored")
+        else:
+            self.raise_error(self.monitors.NOT_OUTPUT, signal_name + " is not an output signal")
+
+    def run_command(self, cycles):
+        """Run simulation from start for a number of cycles"""
+        try:
+            cycles = int(cycles)
+            if cycles<0:
+                raise ValueError
+            self.monitors.reset_monitors()
+            self.devices.cold_startup()
+            if self.run_network(cycles):
+                self.completed_cycles = cycles
+                self.canvas.completed_cycles = cycles
+                self.canvas.render()
+                self.log_text("Run simulation for " + str(cycles) + " cycles")
+                self.log_command("r " + str(cycles))
+                self.last_command_index = len(self.command_history) - 1
+            else:
+                self.raise_error(self.OSCILLATING_NETWORK,
+                                 "Cannot run network. The network doesn't have a stable state.")
+        except ValueError:
+            self.raise_error(self.INVALID_ARGUMENT,
+                             "Cannot continue network. The number of cycles is not a positive integer.")
+
+    def continue_command(self, cycles):
+        try:
+            cycles = int(cycles)
+            if cycles<0:
+                raise ValueError
+            cycles = int(cycles)
+            self.devices.cold_startup()
+            if self.run_network(cycles):
+                self.completed_cycles += cycles
+                self.canvas.completed_cycles = self.completed_cycles
+                self.canvas.render()
+                self.log_text("Continue simulation for " + str(cycles) + " cycles. Total cycles: " + str(
+                    self.completed_cycles))
+                self.log_command("c " + str(cycles))
+                self.last_command_index = len(self.command_history) - 1
+            else:
+                self.raise_error(self.OSCILLATING_NETWORK, "Cannot run network. The network doesn't have a stable state.")
+        except ValueError:
+            self.raise_error(self.INVALID_ARGUMENT, "Cannot continue network. The number of cycles is not a positive integer.")
+
+    def quit_command(self):
+        """Handle the quit command"""
+        if not self.is_saved:
+            answer = self.ask_to_save("Quit")
+            if answer == wx.CANCEL:
+                return
+            elif answer == wx.YES:
+                self.save_file()
+        self.Close(True)
+
+    def log_command(self, command):
+        """Handle a new command to the gui."""
+
+        # Delet the rest of the unused command history
+        self.command_history = self.command_history[:self.last_command_index+1]
+        self.command_history.append(command)
+        self.last_command_index = len(self.command_history)-1
+
+    def execute_command_history(self):
+        """Restarts and executes the command history"""
+        self.reset_to_initial_state()
+        print(self.command_history)
+        command_history_copy = list(self.command_history)
+        last_command_index_copy = self.last_command_index
+        for command_string in command_history_copy[:self.last_command_index+1]:
+            command, *args = command_string.split()
+            if command == "s" and len(args) == 2:
+                self.switch_command(*args)
+            elif command == "m" and len(args) == 1:
+                self.monitor_command(*args)
+            elif command == "z" and len(args) == 1:
+                self.zap_command(*args)
+            elif command == "r" and len(args) == 1:
+                self.run_command(*args)
+            elif command == "c" and len(args) == 1:
+                self.continue_command(*args)
+            else:
+                wx.MessageBox("Invalid command. Enter 'h' for help.",
+                              "Invalid Command Error", wx.ICON_ERROR | wx.OK)
+        self.canvas.monitors = self.monitors
+        self.canvas.devices = self.devices
+        self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
+        self.canvas.update_cycle_axis_layout()
+        self.canvas.render()
+        self.command_history = list(command_history_copy)
+        self.last_command_index = last_command_index_copy
+
+    def reset_to_initial_state(self):
+        self.canvas.completed_cycles=0
+        self.completed_cycles=0
+        self.devices = copy.deepcopy(self.initial_devices)
+        self.network = copy.deepcopy(self.initial_network)
+        self.monitors = copy.deepcopy(self.initial_monitors)
+
+    def raise_error(self, error, message=None):
+        """Handle user's errors in GUI"""
+        if error == self.INVALID_COMMAND:
+            wx.MessageBox("Invalid command. Enter 'h' for help.",
+                          "Invalid Command Error", wx.ICON_ERROR | wx.OK)
+        elif error == self.INVALID_ARGUMENT:
+            wx.MessageBox(message, "Invalid Argument Error", wx.ICON_ERROR | wx.OK)
+        elif error == self.monitors.MONITOR_PRESENT:
+            wx.MessageBox(message, "Monitor Present Error", wx.ICON_ERROR | wx.OK)
+        elif error == self.SIGNAL_NOT_MONITORED:
+            wx.MessageBox(message, "Signal Not Monitored Error", wx.ICON_ERROR | wx.OK)
+        elif error == self.monitors.NOT_OUTPUT:
+            wx.MessageBox(message, "Monitor On Input Signal Error", wx.ICON_ERROR | wx.OK)
+        elif error == self.network.DEVICE_ABSENT:
+            wx.MessageBox(message, "Device Absent Error", wx.ICON_ERROR | wx.OK)
+        elif error == self.devices.INVALID_QUALIFIER:
+            wx.MessageBox(message, "Invalid Argument Error", wx.ICON_ERROR | wx.OK)
+        elif error == self.OSCILLATING_NETWORK:
+            wx.MessageBox(message, "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
+        elif error == self.CANNOT_OPEN_FILE:
+            wx.MessageBox(message, "Cannot Open File Error", wx.ICON_ERROR | wx.OK)
+        elif error == self.NOTHING_TO_UNDO:
+            wx.MessageBox("No command left to undo. This is the initial state of the simulation", "Nothing To Undo",
+                          wx.ICON_ERROR | wx.OK)
+        elif error == self.NOTHING_TO_REDO:
+            wx.MessageBox("No command left to redo. This is the last state of the simulation", "Nothing To Redo",
+                          wx.ICON_ERROR | wx.OK)
+        else:
+            wx.MessageBox(message, "Unknown Error", wx.ICON_ERROR | wx.OK)
+
+    def on_key(self, event):
+        """Handle generic key press. Used for exiting the fullscreen mode by pressing ESCAPE."""
+        key_code = event.GetKeyCode()
+        if key_code == wx.WXK_ESCAPE:
+            self.ShowFullScreen(False)
+        else:
+            event.Skip()
