@@ -13,7 +13,7 @@ import wx.glcanvas as wxcanvas
 import datetime
 import copy
 from OpenGL import GL, GLUT
-
+from command_manager import *
 
 class MyGLCanvas(wxcanvas.GLCanvas):
     """Handle all drawing operations.
@@ -432,6 +432,7 @@ class Gui(wx.Frame):
 
         # Saving, loading, and undo/redo variables
         self.is_saved = True
+        self.command_manager = CommandManager(self, names, devices, network, monitors)
         self.command_history = []
         self.last_command_index = -1
         self.initial_devices = copy.deepcopy(devices)
