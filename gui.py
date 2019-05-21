@@ -11,7 +11,6 @@ Gui - configures the main window and all the widgets.
 import wx
 import wx.glcanvas as wxcanvas
 import datetime
-import copy
 from OpenGL import GL, GLUT
 from command_manager import *
 
@@ -279,7 +278,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def draw_signal(self, device_id, output_id, monitor_number):
         """Handle each monitor output drawing operations."""
-        monitor_name = self.devices.get_signal_name(device_id, output_id)
         signal_list = self.monitors.monitors_dictionary[(device_id, output_id)]
         monitors_start_x = self.cycle_start_x + self.text_width(str(0))/2
         x_0 = monitors_start_x
@@ -287,8 +285,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         y_low = y_0 + self.monitors_padding
         y_high = y_0  + self.monitor_height - self.monitors_padding
 
-        color = self.color_cycle[monitor_number%len(self.color_cycle)]
-        color_light = self.color_cycle_light[monitor_number%len(self.color_cycle_light)]
+        color = self.color_cycle[monitor_number % len(self.color_cycle)]
+        color_light = self.color_cycle_light[monitor_number % len(self.color_cycle_light)]
         signal_thickness = 2
 
         # Draw thin black horizontal delimiter between monitors
@@ -338,9 +336,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             prev_signal = signal
         print("\n", end="")
 
-
-
-    def render_line(self, x_start, y_start, x_end, y_end, color = (0, 0, 1), thickness = 1.0):
+    def render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1), thickness=1.0):
         """Handle line drawing operations."""
         GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
         GL.glColor3f(*color)
@@ -351,7 +347,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glEnd()
         GL.glPopAttrib()
 
-    def render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color = (0, 0, 1)):
+    def render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color=(0, 0, 1)):
         """Handle transparent rectangle drawing operations."""
         GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA) # enables transparency
@@ -367,7 +363,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glEnd()
         GL.glPopAttrib()
 
-    def render_text(self, text, x_pos, y_pos, color = (0, 0, 0), font=GLUT.GLUT_BITMAP_HELVETICA_18):
+    def render_text(self, text, x_pos, y_pos, color=(0, 0, 0), font=GLUT.GLUT_BITMAP_HELVETICA_18):
         """Handle text drawing operations."""
         GL.glColor3f(*color)
         GL.glRasterPos2f(x_pos, y_pos)
@@ -401,6 +397,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         Return a list of the RGB float values.
         """
         return [c/256 for c in (r, g, b)]
+
 
 class Gui(wx.Frame):
     """Configure the main window and all the widgets.
@@ -441,7 +438,6 @@ class Gui(wx.Frame):
         # Erros
         [self.NO_ERROR, self.INVALID_COMMAND, self.INVALID_ARGUMENT, self.SIGNAL_NOT_MONITORED, self.OSCILLATING_NETWORK,
          self.CANNOT_OPEN_FILE, self.NOTHING_TO_UNDO, self.NOTHING_TO_REDO, self.SIMULATION_NOT_STARTED, self.UNKNOWN_ERROR] = names.unique_error_codes(10)
-
 
         # Configure the file menu
         menuBar = wx.MenuBar()
@@ -497,7 +493,7 @@ class Gui(wx.Frame):
 
         #  Activity log sizer
         self.activity_log_title = wx.StaticText(self, wx.ID_ANY, "Activity log")
-        self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, "", style= wx.TE_MULTILINE | wx.TE_READONLY | wx.ALIGN_TOP)
+        self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY | wx.ALIGN_TOP)
 
         #  Console sizer
         self.console = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
@@ -594,13 +590,13 @@ class Gui(wx.Frame):
         main_sizer.Add(activity_log_sizer, 5, wx.ALL | wx.EXPAND, 5)
         main_sizer.Add(console_sizer, 1, wx.ALL | wx.EXPAND, 5)
         
-        top_sizer.Add(self.load_file_button, 0, wx.LEFT| wx.TOP, 5)
-        top_sizer.Add(self.load_file_text_box, 1, wx.ALL , 5)
+        top_sizer.Add(self.load_file_button, 0, wx.LEFT | wx.TOP, 5)
+        top_sizer.Add(self.load_file_text_box, 1, wx.ALL, 5)
 
         central_sizer.Add(self.canvas, 5, wx.EXPAND | wx.ALL, 5)
         central_sizer.Add(side_sizer, 1, wx.ALL, 5)
         
-        activity_log_sizer.Add(self.activity_log_title, 0, wx.TOP| wx. BOTTOM, 10)
+        activity_log_sizer.Add(self.activity_log_title, 0, wx.TOP | wx.BOTTOM, 10)
         activity_log_sizer.Add(self.activity_log_text, 2, wx.EXPAND, 5)
 
         console_sizer.Add(console_title, 1, wx.TOP, 5)
@@ -637,9 +633,9 @@ class Gui(wx.Frame):
         simulation_title_sizer.Add(run_simulation_title, 0, wx.LEFT | wx.TOP, 10)
         simulation_title_sizer.Add(line_sizer_run_simulation, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
 
-        simulation_sizer.Add(self.simulation_cycles_spin, 4, wx.LEFT| wx.TOP | wx.EXPAND, 12)
-        simulation_sizer.Add(self.simulation_run_button, 0, wx.LEFT| wx.TOP, 12)
-        simulation_sizer.Add(self.simulation_continue_button, 0, wx.LEFT| wx.TOP, 12)
+        simulation_sizer.Add(self.simulation_cycles_spin, 4, wx.LEFT | wx.TOP | wx.EXPAND, 12)
+        simulation_sizer.Add(self.simulation_run_button, 0, wx.LEFT | wx.TOP, 12)
+        simulation_sizer.Add(self.simulation_continue_button, 0, wx.LEFT | wx.TOP, 12)
 
         line_sizer_side.Add(line_side, 0, wx.ALL | wx.EXPAND, 5)
         line_sizer_switches.Add(line_switches, 0, wx.ALL | wx.EXPAND, 5)
@@ -665,18 +661,16 @@ class Gui(wx.Frame):
         if Id == wx.ID_SAVEAS:
             self.save_file() #TODO
         if Id == wx.ID_UNDO:
-            self.last_command_index -= 1
-            if self.last_command_index < -1:
-                self.raise_error(self.NOTHING_TO_UNDO)
+            error_code, error_message = self.command_manager.undo_command()
+            if error_code != self.NO_ERROR:
+                self.raise_error(error_code, error_message)
             else:
-                self.execute_command_history()
-                self.log_text("Undo")
+                self.log_text("Redo")
         if Id == wx.ID_REDO:
-            self.last_command_index += 1
-            if self.last_command_index == len(self.command_history):
-                self.raise_error(self.NOTHING_TO_REDO)
+            error_code, error_message = self.command_manager.redo_command()
+            if error_code!=self.NO_ERROR:
+                self.raise_error(error_code, error_message)
             else:
-                self.execute_command_history()
                 self.log_text("Redo")
         if Id == wx.ID_MAXIMIZE_FRAME:
             self.Maximize(True)
@@ -700,7 +694,6 @@ class Gui(wx.Frame):
             pass
         if Id == wx.ID_HELP_COMMANDS:
             pass
-
 
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
@@ -754,8 +747,7 @@ class Gui(wx.Frame):
         elif command == "q":
             self.quit_command()
         else:
-            wx.MessageBox("Invalid command. Enter 'h' for help.",
-                          "Invalid Command Error", wx.ICON_ERROR | wx.OK)
+            self.raise_error(self.INVALID_COMMAND, "Invalid command. Enter 'h' for help.")
 
         self.console.SetValue("")
         
@@ -785,20 +777,7 @@ class Gui(wx.Frame):
     def on_monitors_zap(self, event):
         """Handle the event when the user clears a monitor."""
         signal_name = self.monitors_select.GetValue()
-        ids = self.devices.get_signal_ids(signal_name)
-        if ids is not None:
-            [device_id, output_id] = ids
-            self.monitors.remove_monitor(device_id, output_id)
-            self.monitors_set_button.Enable()
-            self.monitors_zap_button.Disable()
-            self.monitors_zap_button.SetValue(False)
-            self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
-            self.canvas.update_cycle_axis_layout()
-            self.log_text("Zap monitor on " + signal_name)
-
-        else:
-            text = "DEBUG: ON MONITORS ZAP, ids is None"
-            self.canvas.render()
+        self.zap_command(signal_name)
 
     def on_load_file_button(self, event):
         """Handle the load file button"""
@@ -982,3 +961,4 @@ class Gui(wx.Frame):
             self.ShowFullScreen(False)
         else:
             event.Skip()
+            
