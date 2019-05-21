@@ -15,6 +15,7 @@ import copy
 from OpenGL import GL, GLUT
 from command_manager import *
 
+
 class MyGLCanvas(wxcanvas.GLCanvas):
     """Handle all drawing operations.
 
@@ -138,8 +139,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def render(self):
         """Handle all drawing operations."""
         self.SetCurrent(self.context)
-        if self.completed_cycles<10:
-            self.completed_cycles=10
+        if self.completed_cycles < 10:
+            self.completed_cycles = 10
         if not self.init:
             # Configure the viewport, modelview and projection matrices
             self.init_gl()
@@ -378,7 +379,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                 GLUT.glutBitmapCharacter(font, ord(character))
 
     def update_cycle_axis_layout(self):
-        """Handle changes in monitor names"""
+        """Handle changes in monitors"""
+        self.monitors_number = len(self.monitors.monitors_dictionary)
         self.cycle_start_x = 25 + self.text_width("0") * self.monitors.get_margin()
         self.render()
 
@@ -435,9 +437,6 @@ class Gui(wx.Frame):
         self.command_manager = CommandManager(self, names, devices, network, monitors)
         self.command_history = []
         self.last_command_index = -1
-        self.initial_devices = copy.deepcopy(devices)
-        self.initial_network = copy.deepcopy(network)
-        self.initial_monitors = copy.deepcopy(monitors)
 
         # Erros
         [self.NO_ERROR, self.INVALID_COMMAND, self.INVALID_ARGUMENT, self.SIGNAL_NOT_MONITORED, self.OSCILLATING_NETWORK,
@@ -731,13 +730,17 @@ class Gui(wx.Frame):
         self.canvas.Refresh()
         return True
 
+    def update_cycles(self, cycles):
+        self.completed_cycles = cycles
+        self.canvas.completed_cycles = cycles
+        self.canvas.render()
+
     def on_console(self, event):
         """Handle the event when the user enters a command in the console."""
         command, *args = self.console.GetValue().split()
 
-
         if command == "h":
-            self.help_command()
+            self.command_manager.execute_command(HelpCommand())
         elif command == "s" and len(args) == 2:
             self.switch_command(*args)
         elif command == "m" and len(args) == 1:
@@ -757,23 +760,8 @@ class Gui(wx.Frame):
         self.console.SetValue("")
         
     def on_switches_select(self, event):
-        """Handle the event when the user types text in switches text box.
-        If the text in the box matches the name of a switch, then the set
-        and clear buttons enable according to the current value of the switch.
-        """
-        device_name = self.switches_select.GetValue()
-        device_id = self.names.query(device_name)
-        if device_id is not None and device_id in self.switches:
-            device = self.devices.get_device(device_id)
-            if device.switch_state is self.devices.HIGH:
-                self.switches_set_button.Disable()
-                self.switches_clear_button.Enable()
-            else:
-                self.switches_set_button.Enable()
-                self.switches_clear_button.Disable()
-        else:
-            self.switches_set_button.Disable()
-            self.switches_clear_button.Disable()
+        """Handle the event when the user types text in switches text box."""
+        self.switches_update_toggle()
 
     def on_switches_set(self, event):
         """Handle the event when the user sets a switch."""
@@ -786,21 +774,8 @@ class Gui(wx.Frame):
         self.switch_command(device_name, self.devices.LOW)
 
     def on_monitors_select(self, event):
-        """Handle the event when the user types text in monitors text box.
-        If the text in the box matches the name of a signal, then the set
-        and zap buttons enable according to if the if it's monitored or not.
-        """
-        signal_name = self.monitors_select.GetValue()
-        monitored, unmonitored = self.monitors.get_signal_names()
-        if signal_name in monitored:
-            self.monitors_set_button.Disable()
-            self.monitors_zap_button.Enable()
-        elif signal_name in unmonitored:
-            self.monitors_set_button.Enable()
-            self.monitors_zap_button.Disable()
-        else:
-            self.monitors_set_button.Disable()
-            self.monitors_zap_button.Disable()
+        """Handle the event when the user types text in monitors text box."""
+        self.monitors_update_toggle()
 
     def on_monitors_set(self, event):
         """Handle the event when the user sets a monitor."""
@@ -894,128 +869,66 @@ class Gui(wx.Frame):
             "q            - quit the program"
         self.log_text(text)
 
+    def switches_update_toggle(self):
+        """Handle a change in switches."""
+
+        # If the text in the switches box matches the name of a switch, then the set
+        # and clear buttons enable according to the current value of the switch.
+        device_name = self.switches_select.GetValue()
+        device_id = self.names.query(device_name)
+        if device_id is not None and device_id in self.switches:
+            device = self.devices.get_device(device_id)
+            if device.switch_state is self.devices.HIGH:
+                self.switches_set_button.Disable()
+                self.switches_clear_button.Enable()
+                self.switches_clear_button.SetValue(False)
+
+            else:
+                self.switches_set_button.Enable()
+                self.switches_clear_button.Disable()
+                self.switches_set_button.SetValue(False)
+        else:
+            self.switches_set_button.Disable()
+            self.switches_clear_button.Disable()
+
+    def monitors_update_toggle(self):
+        """Handle a change in monitors"""
+
+        # If the text in the box matches the name of a signal, then the set
+        # and zap buttons enable according to if the if it's monitored or not.
+        signal_name = self.monitors_select.GetValue()
+        monitored, unmonitored = self.monitors.get_signal_names()
+        if signal_name in monitored:
+            self.monitors_set_button.Disable()
+            self.monitors_zap_button.Enable()
+            self.monitors_zap_button.SetValue(False)
+        elif signal_name in unmonitored:
+            self.monitors_set_button.Enable()
+            self.monitors_zap_button.Disable()
+            self.monitors_set_button.SetValue(False)
+        else:
+            self.monitors_set_button.Disable()
+            self.monitors_zap_button.Disable()
+
     def switch_command(self, switch_name, value):
         """Set the state of a switch"""
-        device_id = self.names.query(switch_name)
-        if device_id is not None and device_id in self.switches:
-            try:
-                value = int(value)
-                if value == self.devices.LOW or value == self.devices.HIGH:
-                    self.devices.set_switch(device_id, value)
-                    self.log_text("Set switch " + switch_name + " to  " + str(value))
-                    self.log_command("s "+ switch_name + " " + str(value))
-                    self.last_command_index = len(self.command_history) -1
-                    # Update set/clear switches toggle button
-                    if self.switches_select.GetValue() == switch_name:
-                        if value == self.devices.HIGH:
-                            self.switches_set_button.Disable()
-                            self.switches_clear_button.Enable()
-                            self.switches_set_button.SetValue(False)
-                        else:
-                            self.switches_set_button.Enable()
-                            self.switches_clear_button.Disable()
-                            self.switches_clear_button.SetValue(False)
-                else:
-                    raise ValueError
-            except ValueError:
-                self.raise_error(self.INVALID_ARGUMENT, "Switch can be set to only 0 or 1.")
-        else:
-            self.raise_error(self.INVALID_ARGUMENT, "Device " + switch_name + " is not a SWITCH")
+        self.command_manager.execute_command(SwitchCommand(switch_name, value))
 
     def monitor_command(self, signal_name):
         """Set monitor on a signal"""
-
-        monitored, unmonitored = self.monitors.get_signal_names()
-        if signal_name in monitored + unmonitored:
-            if signal_name in unmonitored:
-                ids = self.devices.get_signal_ids(signal_name)
-                if ids is not None:
-                    [device_id, output_id] = ids
-                    self.monitors.make_monitor(device_id, output_id, self.completed_cycles)
-                    self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
-                    self.canvas.update_cycle_axis_layout()
-                    self.log_text("Set monitor on " + signal_name)
-                    self.log_command("m "+ signal_name)
-                    self.last_command_index = len(self.command_history) -1
-                    # update monitors set/zap toggle button
-                    if signal_name == self.monitors_select.GetValue():
-                        self.monitors_set_button.Disable()
-                        self.monitors_zap_button.Enable()
-                        self.monitors_set_button.SetValue(False)
-                else:
-                    self.raise_error(self.UNKNOWN_ERROR, "Failed in monitor_command. ids is None.")
-            else:
-                self.raise_error(self.monitors.MONITOR_PRESENT, signal_name + " is already monitored")
-        else:
-            self.raise_error(self.monitors.NOT_OUTPUT, "Error: " + signal_name + " is not an output signal")
+        self.command_manager.execute_command(MonitorCommand(signal_name))
 
     def zap_command(self, signal_name):
         """Zap monitor on a signal"""
-        monitored, unmonitored = self.monitors.get_signal_names()
-        if signal_name in monitored + unmonitored:
-            if signal_name in monitored:
-                ids = self.devices.get_signal_ids(signal_name)
-                if ids is not None:
-                    [device_id, output_id] = ids
-                    self.monitors.remove_monitor(device_id, output_id)
-                    self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
-                    self.canvas.update_cycle_axis_layout()
-                    self.log_text("Zap monitor on " + signal_name)
-                    self.log_command("z "+ signal_name)
-                    self.last_command_index = len(self.command_history) -1
-                    # update monitors set/zap toggle button
-                    if signal_name == self.monitors_select.GetValue():
-                        self.monitors_set_button.Enable()
-                        self.monitors_zap_button.Disable()
-                        self.monitors_zap_button.SetValue(False)
-            else:
-                self.raise_error(self.SIGNAL_NOT_MONITORED, signal_name + " is not monitored")
-        else:
-            self.raise_error(self.monitors.NOT_OUTPUT, signal_name + " is not an output signal")
+        self.command_manager.execute_command(ZapCommand(signal_name))
 
     def run_command(self, cycles):
         """Run simulation from start for a number of cycles"""
-        try:
-            cycles = int(cycles)
-            if cycles<0:
-                raise ValueError
-            self.monitors.reset_monitors()
-            self.devices.cold_startup()
-            if self.run_network(cycles):
-                self.completed_cycles = cycles
-                self.canvas.completed_cycles = cycles
-                self.canvas.render()
-                self.log_text("Run simulation for " + str(cycles) + " cycles")
-                self.log_command("r " + str(cycles))
-                self.last_command_index = len(self.command_history) - 1
-            else:
-                self.raise_error(self.OSCILLATING_NETWORK,
-                                 "Cannot run network. The network doesn't have a stable state.")
-        except ValueError:
-            self.raise_error(self.INVALID_ARGUMENT,
-                             "Cannot run network. The number of cycles is not a positive integer.")
+        self.command_manager.execute_command(RunCommand(cycles))
 
     def continue_command(self, cycles):
-        if self.completed_cycles == 0:
-            self.raise_error(self.SIMULATION_NOT_STARTED)
-            return
-        try:
-            cycles = int(cycles)
-            if cycles<0:
-                raise ValueError
-            cycles = int(cycles)
-            if self.run_network(cycles):
-                self.completed_cycles += cycles
-                self.canvas.completed_cycles = self.completed_cycles
-                self.canvas.render()
-                self.log_text("Continue simulation for " + str(cycles) + " cycles. Total cycles: " + str(
-                    self.completed_cycles))
-                self.log_command("c " + str(cycles))
-                self.last_command_index = len(self.command_history) - 1
-            else:
-                self.raise_error(self.OSCILLATING_NETWORK, "Cannot continue network. The network doesn't have a stable state.")
-        except ValueError:
-            self.raise_error(self.INVALID_ARGUMENT, "Cannot continue network. The number of cycles is not a positive integer.")
+        """Continue simulation from start for a number of cycles"""
+        self.command_manager.execute_command(ContinueCommand(cycles))
 
     def quit_command(self):
         """Handle the quit command"""
@@ -1024,125 +937,10 @@ class Gui(wx.Frame):
             if answer == wx.CANCEL:
                 return
             elif answer == wx.YES:
-                self.save_file()
+
+                path = None
+                self.command_manager.execute_command(SaveCommand(path))
         self.Close(True)
-
-    def undo_switch_command(self, switch_name, value):
-        """Undo the setting the state of a switch"""
-        self.switch_command(switch_name, 1 - value)
-
-    def undo_monitor_command(self, signal_name):
-        """Set monitor on a signal"""
-        self.zap_command(signal_name)
-
-    def undo_zap_command(self, signal_name):
-        """Zap monitor on a signal"""
-        self.monitor_command(signal_name)  # TODO this is not complete
-
-    def undo_run_command(self, cycles):
-        """Run simulation from start for a number of cycles"""
-        try:
-            cycles = int(cycles)
-            if cycles<0:
-                raise ValueError
-            self.monitors.reset_monitors()
-            self.devices.cold_startup()
-            if self.run_network(cycles):
-                self.completed_cycles = cycles
-                self.canvas.completed_cycles = cycles
-                self.canvas.render()
-                self.log_text("Run simulation for " + str(cycles) + " cycles")
-                self.log_command("r " + str(cycles))
-                self.last_command_index = len(self.command_history) - 1
-            else:
-                self.raise_error(self.OSCILLATING_NETWORK,
-                                 "Cannot run network. The network doesn't have a stable state.")
-        except ValueError:
-            self.raise_error(self.INVALID_ARGUMENT,
-                             "Cannot run network. The number of cycles is not a positive integer.")
-
-    def undo_continue_command(self, cycles):
-        try:
-            cycles = int(cycles)
-            if cycles<0:
-                raise ValueError
-            cycles = int(cycles)
-            if self.run_network(cycles):
-                self.completed_cycles += cycles
-                self.canvas.completed_cycles = self.completed_cycles
-                self.canvas.render()
-                self.log_text("Continue simulation for " + str(cycles) + " cycles. Total cycles: " + str(
-                    self.completed_cycles))
-                self.log_command("c " + str(cycles))
-                self.last_command_index = len(self.command_history) - 1
-            else:
-                self.raise_error(self.OSCILLATING_NETWORK, "Cannot continue network. The network doesn't have a stable state.")
-        except ValueError:
-            self.raise_error(self.INVALID_ARGUMENT, "Cannot continue network. The number of cycles is not a positive integer.")
-
-    def log_command(self, command):
-        """Handle a new command to the gui."""
-
-        # Delete the rest of the unused command history
-        self.command_history = self.command_history[:self.last_command_index+1]
-        self.command_history.append(command)
-        self.last_command_index = len(self.command_history)-1
-
-    def execute_command_history(self):
-        """Restarts and executes the command history"""
-        self.reset_to_initial_state()
-        print(self.command_history)
-        command_history_copy = list(self.command_history)
-        last_command_index_copy = self.last_command_index
-        for command_string in command_history_copy[:self.last_command_index+1]:
-            self.execute_command(command_string)
-        self.canvas.monitors = self.monitors
-        self.canvas.devices = self.devices
-        self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
-        self.canvas.update_cycle_axis_layout()
-        self.canvas.render()
-        self.command_history = list(command_history_copy)
-        self.last_command_index = last_command_index_copy
-
-    def execute_command(self, command_string):
-        """Handle a command string. Determines the command type and passes the necessary arguments"""
-        command, *args = command_string.split()
-        if command == "s" and len(args) == 2:
-            self.switch_command(*args)
-        elif command == "m" and len(args) == 1:
-            self.monitor_command(*args)
-        elif command == "z" and len(args) == 1:
-            self.zap_command(*args)
-        elif command == "r" and len(args) == 1:
-            self.run_command(*args)
-        elif command == "c" and len(args) == 1:
-            self.continue_command(*args)
-        else:
-            wx.MessageBox("Invalid command. Enter 'h' for help.",
-                          "Invalid Command Error", wx.ICON_ERROR | wx.OK)
-
-    def undo_command(self, command_string):
-        command, *args = command_string.split()
-        if command == "s" and len(args) == 2:
-            self.undo_switch_command(*args)
-        elif command == "m" and len(args) == 1:
-            self.undo_monitor_command(*args)
-        elif command == "z" and len(args) == 1:
-            self.undo_zap_command(*args)
-        elif command == "r" and len(args) == 1:
-            self.undo_run_command(*args)
-        elif command == "c" and len(args) == 1:
-            self.undo_continue_command(*args)
-        else:
-            wx.MessageBox("Invalid command. Enter 'h' for help.",
-                          "Invalid Command Error", wx.ICON_ERROR | wx.OK)
-
-    def reset_to_initial_state(self):
-        self.canvas.completed_cycles=0
-        self.completed_cycles=0
-        self.devices = copy.deepcopy(self.initial_devices)
-        self.network = copy.deepcopy(self.initial_network)
-        self.monitors = copy.deepcopy(self.initial_monitors)
 
     def raise_error(self, error, message=None):
         """Handle user's errors in GUI"""
