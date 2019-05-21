@@ -440,7 +440,7 @@ class Gui(wx.Frame):
 
         # Erros
         [self.NO_ERROR, self.INVALID_COMMAND, self.INVALID_ARGUMENT, self.SIGNAL_NOT_MONITORED, self.OSCILLATING_NETWORK,
-         self.CANNOT_OPEN_FILE, self.NOTHING_TO_UNDO, self.NOTHING_TO_REDO, self.UNKNOWN_ERROR] = names.unique_error_codes(9)
+         self.CANNOT_OPEN_FILE, self.NOTHING_TO_UNDO, self.NOTHING_TO_REDO, self.SIMULATION_NOT_STARTED, self.UNKNOWN_ERROR] = names.unique_error_codes(10)
 
 
         # Configure the file menu
@@ -992,15 +992,17 @@ class Gui(wx.Frame):
                                  "Cannot run network. The network doesn't have a stable state.")
         except ValueError:
             self.raise_error(self.INVALID_ARGUMENT,
-                             "Cannot continue network. The number of cycles is not a positive integer.")
+                             "Cannot run network. The number of cycles is not a positive integer.")
 
     def continue_command(self, cycles):
+        if self.completed_cycles == 0:
+            self.raise_error(self.SIMULATION_NOT_STARTED)
+            return
         try:
             cycles = int(cycles)
             if cycles<0:
                 raise ValueError
             cycles = int(cycles)
-            self.devices.cold_startup()
             if self.run_network(cycles):
                 self.completed_cycles += cycles
                 self.canvas.completed_cycles = self.completed_cycles
@@ -1010,7 +1012,7 @@ class Gui(wx.Frame):
                 self.log_command("c " + str(cycles))
                 self.last_command_index = len(self.command_history) - 1
             else:
-                self.raise_error(self.OSCILLATING_NETWORK, "Cannot run network. The network doesn't have a stable state.")
+                self.raise_error(self.OSCILLATING_NETWORK, "Cannot continue network. The network doesn't have a stable state.")
         except ValueError:
             self.raise_error(self.INVALID_ARGUMENT, "Cannot continue network. The number of cycles is not a positive integer.")
 
@@ -1024,10 +1026,63 @@ class Gui(wx.Frame):
                 self.save_file()
         self.Close(True)
 
+    def undo_switch_command(self, switch_name, value):
+        """Undo the setting the state of a switch"""
+        self.switch_command(switch_name, 1 - value)
+
+    def undo_monitor_command(self, signal_name):
+        """Set monitor on a signal"""
+        self.zap_command(signal_name)
+
+    def undo_zap_command(self, signal_name):
+        """Zap monitor on a signal"""
+        self.monitor_command(signal_name)  # TODO this is not complete
+
+    def undo_run_command(self, cycles):
+        """Run simulation from start for a number of cycles"""
+        try:
+            cycles = int(cycles)
+            if cycles<0:
+                raise ValueError
+            self.monitors.reset_monitors()
+            self.devices.cold_startup()
+            if self.run_network(cycles):
+                self.completed_cycles = cycles
+                self.canvas.completed_cycles = cycles
+                self.canvas.render()
+                self.log_text("Run simulation for " + str(cycles) + " cycles")
+                self.log_command("r " + str(cycles))
+                self.last_command_index = len(self.command_history) - 1
+            else:
+                self.raise_error(self.OSCILLATING_NETWORK,
+                                 "Cannot run network. The network doesn't have a stable state.")
+        except ValueError:
+            self.raise_error(self.INVALID_ARGUMENT,
+                             "Cannot run network. The number of cycles is not a positive integer.")
+
+    def undo_continue_command(self, cycles):
+        try:
+            cycles = int(cycles)
+            if cycles<0:
+                raise ValueError
+            cycles = int(cycles)
+            if self.run_network(cycles):
+                self.completed_cycles += cycles
+                self.canvas.completed_cycles = self.completed_cycles
+                self.canvas.render()
+                self.log_text("Continue simulation for " + str(cycles) + " cycles. Total cycles: " + str(
+                    self.completed_cycles))
+                self.log_command("c " + str(cycles))
+                self.last_command_index = len(self.command_history) - 1
+            else:
+                self.raise_error(self.OSCILLATING_NETWORK, "Cannot continue network. The network doesn't have a stable state.")
+        except ValueError:
+            self.raise_error(self.INVALID_ARGUMENT, "Cannot continue network. The number of cycles is not a positive integer.")
+
     def log_command(self, command):
         """Handle a new command to the gui."""
 
-        # Delet the rest of the unused command history
+        # Delete the rest of the unused command history
         self.command_history = self.command_history[:self.last_command_index+1]
         self.command_history.append(command)
         self.last_command_index = len(self.command_history)-1
@@ -1039,20 +1094,7 @@ class Gui(wx.Frame):
         command_history_copy = list(self.command_history)
         last_command_index_copy = self.last_command_index
         for command_string in command_history_copy[:self.last_command_index+1]:
-            command, *args = command_string.split()
-            if command == "s" and len(args) == 2:
-                self.switch_command(*args)
-            elif command == "m" and len(args) == 1:
-                self.monitor_command(*args)
-            elif command == "z" and len(args) == 1:
-                self.zap_command(*args)
-            elif command == "r" and len(args) == 1:
-                self.run_command(*args)
-            elif command == "c" and len(args) == 1:
-                self.continue_command(*args)
-            else:
-                wx.MessageBox("Invalid command. Enter 'h' for help.",
-                              "Invalid Command Error", wx.ICON_ERROR | wx.OK)
+            self.execute_command(command_string)
         self.canvas.monitors = self.monitors
         self.canvas.devices = self.devices
         self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
@@ -1060,6 +1102,39 @@ class Gui(wx.Frame):
         self.canvas.render()
         self.command_history = list(command_history_copy)
         self.last_command_index = last_command_index_copy
+
+    def execute_command(self, command_string):
+        """Handle a command string. Determines the command type and passes the necessary arguments"""
+        command, *args = command_string.split()
+        if command == "s" and len(args) == 2:
+            self.switch_command(*args)
+        elif command == "m" and len(args) == 1:
+            self.monitor_command(*args)
+        elif command == "z" and len(args) == 1:
+            self.zap_command(*args)
+        elif command == "r" and len(args) == 1:
+            self.run_command(*args)
+        elif command == "c" and len(args) == 1:
+            self.continue_command(*args)
+        else:
+            wx.MessageBox("Invalid command. Enter 'h' for help.",
+                          "Invalid Command Error", wx.ICON_ERROR | wx.OK)
+
+    def undo_command(self, command_string):
+        command, *args = command_string.split()
+        if command == "s" and len(args) == 2:
+            self.undo_switch_command(*args)
+        elif command == "m" and len(args) == 1:
+            self.undo_monitor_command(*args)
+        elif command == "z" and len(args) == 1:
+            self.undo_zap_command(*args)
+        elif command == "r" and len(args) == 1:
+            self.undo_run_command(*args)
+        elif command == "c" and len(args) == 1:
+            self.undo_continue_command(*args)
+        else:
+            wx.MessageBox("Invalid command. Enter 'h' for help.",
+                          "Invalid Command Error", wx.ICON_ERROR | wx.OK)
 
     def reset_to_initial_state(self):
         self.canvas.completed_cycles=0
@@ -1094,6 +1169,9 @@ class Gui(wx.Frame):
                           wx.ICON_ERROR | wx.OK)
         elif error == self.NOTHING_TO_REDO:
             wx.MessageBox("No command left to redo. This is the last state of the simulation", "Nothing To Redo",
+                          wx.ICON_ERROR | wx.OK)
+        elif error == self.SIMULATION_NOT_STARTED:
+            wx.MessageBox("Nothing to continue. Run first.", "Simulation Not Started",
                           wx.ICON_ERROR | wx.OK)
         else:
             wx.MessageBox(message, "Unknown Error", wx.ICON_ERROR | wx.OK)
