@@ -70,6 +70,8 @@ def main(arg_list):
                 names, devices, network, monitors = test_2()
             elif path == "3":
                 names, devices, network, monitors = test_3()
+            elif path == "4":
+                names, devices, network, monitors = test_4()
             else:
                 print("Error: invalid test number.\n")
                 sys.exit()
@@ -129,6 +131,7 @@ def test_1():
 
     return names, devices, network, monitors
 
+
 def test_2():
     names = Names()
     devices = Devices(names)
@@ -153,6 +156,8 @@ def test_2():
     network.make_connection(OR1, None, NOR1, names.query("I1"))
 
     monitors.make_monitor(NOR1, None)
+    return names, devices, network, monitors
+
 
 def test_3():
     names = Names()
@@ -161,11 +166,12 @@ def test_3():
     monitors = Monitors(names, devices, network)
 
     S, R, CK, D = names.lookup(["S", "R", "CK", "D"])
-    devices.make_device(S, devices.SWITCH, 1)
-    devices.make_device(R, devices.SWITCH, 1)
+    devices.make_device(S, devices.SWITCH, 0)
+    devices.make_device(R, devices.SWITCH, 0)
     devices.make_device(CK, devices.CLOCK, 1)
     devices.make_device(D, devices.D_TYPE)
 
+    network.make_connection(CK, None, D, names.query("CLK"))
     network.make_connection(S, None, D, names.query("SET"))
     network.make_connection(R, None, D, names.query("CLEAR"))
     network.make_connection(D, names.query("QBAR"), D, names.query("DATA"))
@@ -185,7 +191,7 @@ def test_4():
     monitors = Monitors(names, devices, network)
 
     SW, CK, D1, D2, D3, D4 = names.lookup(["SW", "CK", "D1", "D2", "D3", "D4"])
-    devices.make_device(SW, devices.SWITCH, 1)
+    devices.make_device(SW, devices.SWITCH, 0)
     devices.make_device(CK, devices.CLOCK, 1)
     devices.make_device(D1, devices.D_TYPE)
     devices.make_device(D2, devices.D_TYPE)

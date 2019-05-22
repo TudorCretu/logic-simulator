@@ -548,7 +548,13 @@ class Gui(wx.Frame):
         self.simulation_run_button = wx.Button(self, wx.ID_ANY, "Run")
         self.simulation_continue_button = wx.Button(self, wx.ID_ANY, "Continue")
 
-        #  StatiROWSc Strings
+        #   Zoom
+        zoom_button_size = wx.Size(25, 25)
+        self.zoom_minus_button = wx.Button(self, wx.ID_ANY, "-", size=zoom_button_size)
+        self.zoom_slider = wx.Slider(self, wx.ID_ANY, value=1, minValue=0.1, maxValue = 10, style=wx.SL_LABELS | wx.SL_TICKS, name="Zoom" )
+        self.zoom_plus_button = wx.Button(self, wx.ID_ANY, "+", size=zoom_button_size)
+
+        #  Static Strings
         console_title = wx.StaticText(self, wx.ID_ANY, "Console")
         side_title = wx.StaticText(self, wx.ID_ANY, "Properties")
         switches_title = wx.StaticText(self, wx.ID_ANY, "Change State of Switch")
@@ -607,6 +613,8 @@ class Gui(wx.Frame):
         monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
         simulation_title_sizer = wx.BoxSizer(wx.HORIZONTAL)
         simulation_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        vertical_fill_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        pan_zoom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         line_sizer_side = wx.BoxSizer(wx.VERTICAL)
         line_sizer_switches = wx.BoxSizer(wx.VERTICAL)
         line_sizer_monitors = wx.BoxSizer(wx.VERTICAL)
@@ -639,6 +647,8 @@ class Gui(wx.Frame):
         side_sizer.Add(simulation_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
         side_sizer.Add(simulation_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
         side_sizer.Add(line_run_simulation_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        side_sizer.Add(vertical_fill_sizer, 1, wx.ALL | wx.EXPAND, 1)
+        side_sizer.Add(pan_zoom_sizer, 0, wx.ALL | wx.EXPAND, 0)
 
         side_title_sizer.Add(side_title, 0, wx.TOP, 0)
         side_title_sizer.Add(line_sizer_side, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 3)
@@ -663,6 +673,10 @@ class Gui(wx.Frame):
         simulation_sizer.Add(self.simulation_cycles_spin, 4, wx.LEFT | wx.TOP | wx.EXPAND, 12)
         simulation_sizer.Add(self.simulation_run_button, 0, wx.LEFT | wx.TOP, 12)
         simulation_sizer.Add(self.simulation_continue_button, 0, wx.LEFT | wx.TOP, 12)
+
+        pan_zoom_sizer.Add(self.zoom_minus_button, 0, wx.LEFT | wx.TOP, 8)
+        pan_zoom_sizer.Add(self.zoom_slider, 1, wx.EXPAND, 0)
+        pan_zoom_sizer.Add(self.zoom_plus_button, 0, wx.RIGHT | wx.TOP, 8)
 
         line_sizer_side.Add(line_side, 0, wx.ALL | wx.EXPAND, 5)
         line_sizer_switches.Add(line_switches, 0, wx.ALL | wx.EXPAND, 5)
