@@ -82,7 +82,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.cycle_width = 40
         # 25pt after the longest monitor name
         self.cycle_start_x = 25 + self.text_width("0") * self.monitors.get_margin()
-        self.cycle_axis_y = -30
+        self.cycle_axis_y = 0
         self.cycle_axis_y_padding = -7
         self.completed_cycles = 10
 
@@ -432,17 +432,16 @@ class Gui(wx.Frame):
         # Saving, loading, and undo/redo variables
         self.is_saved = True
         self.command_manager = CommandManager(self, names, devices, network, monitors)
-        self.command_history = []
-        self.last_command_index = -1
 
         # Erros
         [self.NO_ERROR, self.INVALID_COMMAND, self.INVALID_ARGUMENT, self.SIGNAL_NOT_MONITORED, self.OSCILLATING_NETWORK,
          self.CANNOT_OPEN_FILE, self.NOTHING_TO_UNDO, self.NOTHING_TO_REDO, self.SIMULATION_NOT_STARTED, self.UNKNOWN_ERROR] = names.unique_error_codes(10)
 
-        # Configure the file menu
+        # Configure the menu
         menuBar = wx.MenuBar()
+
         fileMenu = wx.Menu()
-        fileMenu.Append(wx.ID_ABOUT, "&About")
+        fileMenu.Append(wx.ID_NEW, "&New")
         fileMenu.Append(wx.ID_OPEN, "&Load")
         fileMenu.Append(wx.ID_SAVE, "&Save")
         fileMenu.Append(wx.ID_SAVEAS, "&Save as")
@@ -457,10 +456,10 @@ class Gui(wx.Frame):
         viewMenu = wx.Menu()
         wx.ID_FULLSCREEN = wx.NewId()
         viewMenu.Append(wx.ID_FULLSCREEN, "&Fullscreen")
-        viewMenu.Append(wx.ID_ZOOM_100, "&Zoom reset")
-        viewMenu.Append(wx.ID_ZOOM_FIT, "&Zoom fit")
-        viewMenu.Append(wx.ID_ZOOM_IN, "&Zoom in")
-        viewMenu.Append(wx.ID_ZOOM_OUT, "&Zoom out")
+        viewMenu.Append(wx.ID_ZOOM_100, "&Actual Size")
+        viewMenu.Append(wx.ID_ZOOM_FIT, "Zoom to &Fit")
+        viewMenu.Append(wx.ID_ZOOM_IN, "Zoom &In")
+        viewMenu.Append(wx.ID_ZOOM_OUT, "Zoom &Out")
         menuBar.Append(viewMenu, "&View")
 
         runMenu = wx.Menu()
@@ -471,9 +470,24 @@ class Gui(wx.Frame):
 
         helpMenu = wx.Menu()
         helpMenu.Append(wx.ID_HELP, "&Help")
+        helpMenu.Append(wx.ID_ABOUT, "&About")
         helpMenu.Append(wx.ID_HELP_COMMANDS, "&Help commands")
         menuBar.Append(helpMenu, "&Help")
         self.SetMenuBar(menuBar)
+
+        # Configure the tooblar
+        self.toolbar =  wx.ToolBar(self)
+        self.toolbar.AddTool(wx.ID_NEW, 'New file', wx.ArtProvider.GetBitmap(wx.ART_NEW))
+        self.toolbar.AddTool(wx.ID_OPEN, 'Load', wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN))
+        self.toolbar.AddTool(wx.ID_SAVE, 'Save', wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE))
+        self.toolbar.AddTool(wx.ID_UNDO, 'Undo', wx.ArtProvider.GetBitmap(wx.ART_UNDO))
+        self.toolbar.AddTool(wx.ID_REDO, 'Redo', wx.ArtProvider.GetBitmap(wx.ART_REDO))
+        self.toolbar.AddTool(wx.ID_EXIT, 'Exit', wx.ArtProvider.GetBitmap(wx.ART_QUIT))
+
+        self.toolbar.Realize()
+        self.toolbar.EnableTool(wx.ID_UNDO, False)
+        self.toolbar.EnableTool(wx.ID_REDO, False)
+        self.SetToolBar(self.toolbar)
 
         # Instances of the classes
         self.names = names
@@ -585,18 +599,18 @@ class Gui(wx.Frame):
         line_sizer_monitors = wx.BoxSizer(wx.VERTICAL)
         line_sizer_run_simulation = wx.BoxSizer(wx.VERTICAL)
 
-        main_sizer.Add(top_sizer, 0, wx.TOP | wx.EXPAND, 5)
+        main_sizer.Add(top_sizer, 0, wx.EXPAND, 5)
         main_sizer.Add(central_sizer, 10, wx.EXPAND, 5)
-        main_sizer.Add(activity_log_sizer, 5, wx.ALL | wx.EXPAND, 5)
-        main_sizer.Add(console_sizer, 1, wx.ALL | wx.EXPAND, 5)
+        main_sizer.Add(activity_log_sizer, 3, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
+        main_sizer.Add(console_sizer, 1, wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, 5)
         
-        top_sizer.Add(self.load_file_button, 0, wx.LEFT | wx.TOP, 5)
-        top_sizer.Add(self.load_file_text_box, 1, wx.ALL, 5)
+        top_sizer.Add(self.load_file_button, 0, wx.LEFT, 5)
+        top_sizer.Add(self.load_file_text_box, 1, wx.LEFT | wx.RIGHT, 5)
 
         central_sizer.Add(self.canvas, 5, wx.EXPAND | wx.ALL, 5)
         central_sizer.Add(side_sizer, 1, wx.ALL, 5)
         
-        activity_log_sizer.Add(self.activity_log_title, 0, wx.TOP | wx.BOTTOM, 10)
+        activity_log_sizer.Add(self.activity_log_title, 0, wx.TOP, 10)
         activity_log_sizer.Add(self.activity_log_text, 2, wx.EXPAND, 5)
 
         console_sizer.Add(console_title, 1, wx.TOP, 5)
@@ -662,13 +676,13 @@ class Gui(wx.Frame):
             self.save_file() #TODO
         if Id == wx.ID_UNDO:
             error_code, error_message = self.command_manager.undo_command()
-            if error_code != self.NO_ERROR:
+            if error_code != self.command_manager.NO_ERROR:
                 self.raise_error(error_code, error_message)
             else:
-                self.log_text("Redo")
+                self.log_text("Undo")
         if Id == wx.ID_REDO:
             error_code, error_message = self.command_manager.redo_command()
-            if error_code!=self.NO_ERROR:
+            if error_code!=self.command_manager.NO_ERROR:
                 self.raise_error(error_code, error_message)
             else:
                 self.log_text("Redo")
@@ -816,7 +830,7 @@ class Gui(wx.Frame):
         try:
             with open(pathname, 'r') as file:
                 self.load_file_text_box.SetValue(pathname)
-                # self.doLoadDataOrWhatever(file)
+                self.command_manager.execute_command(LoadCommand(pathname))
         except IOError:
             self.raise_error(self.CANNOT_OPEN_FILE, "Cannot open file '%s'." % pathname)
 
@@ -827,7 +841,25 @@ class Gui(wx.Frame):
         return save_dlg
 
     def save_file(self):
-        self.is_saved = True
+        with wx.FileDialog(self, "Save file", wildcard="*.def",
+                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return  # the user changed their mind
+
+            # save the current contents in the file
+            pathname = fileDialog.GetPath()
+            try:
+                print("Saving")
+                error_code, error_message = self.command_manager.execute_command(SaveCommand(pathname))
+                if error_code==self.command_manager.NO_ERROR:
+                    self.is_saved = True
+                else:
+                    self.raise_error(error_code, error_message)
+            except IOError:
+                wx.LogError("Cannot save current data in file '%s'." % pathname)
+                return
+
         return
 
     def log_text(self, text):
@@ -889,6 +921,20 @@ class Gui(wx.Frame):
             self.monitors_set_button.Disable()
             self.monitors_zap_button.Disable()
 
+    def update_toolbar(self):
+        """Handle an undo/redo action"""
+        # Enable or disable UNDO arrow
+        if len(self.command_manager.undo_stack) == 0:
+            self.toolbar.EnableTool(wx.ID_UNDO, False)
+        else:
+            self.toolbar.EnableTool(wx.ID_UNDO, True)
+
+        # Enable or disable REDO arrow
+        if len(self.command_manager.redo_stack) == 0:
+            self.toolbar.EnableTool(wx.ID_REDO, False)
+        else:
+            self.toolbar.EnableTool(wx.ID_REDO, True)
+
     def switch_command(self, switch_name, value):
         """Set the state of a switch"""
         self.command_manager.execute_command(SwitchCommand(switch_name, value))
@@ -916,17 +962,16 @@ class Gui(wx.Frame):
             if answer == wx.CANCEL:
                 return
             elif answer == wx.YES:
-
                 path = None
                 self.command_manager.execute_command(SaveCommand(path))
         self.Close(True)
 
     def raise_error(self, error, message=None):
         """Handle user's errors in GUI"""
-        if error == self.INVALID_COMMAND:
+        if error == self.command_manager.INVALID_COMMAND:
             wx.MessageBox("Invalid command. Enter 'h' for help.",
                           "Invalid Command Error", wx.ICON_ERROR | wx.OK)
-        elif error == self.INVALID_ARGUMENT:
+        elif error == self.command_manager.INVALID_ARGUMENT:
             wx.MessageBox(message, "Invalid Argument Error", wx.ICON_ERROR | wx.OK)
         elif error == self.monitors.MONITOR_PRESENT:
             wx.MessageBox(message, "Monitor Present Error", wx.ICON_ERROR | wx.OK)
@@ -938,17 +983,17 @@ class Gui(wx.Frame):
             wx.MessageBox(message, "Device Absent Error", wx.ICON_ERROR | wx.OK)
         elif error == self.devices.INVALID_QUALIFIER:
             wx.MessageBox(message, "Invalid Argument Error", wx.ICON_ERROR | wx.OK)
-        elif error == self.OSCILLATING_NETWORK:
+        elif error == self.command_manager.OSCILLATING_NETWORK:
             wx.MessageBox(message, "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
-        elif error == self.CANNOT_OPEN_FILE:
+        elif error == self.command_manager.CANNOT_OPEN_FILE:
             wx.MessageBox(message, "Cannot Open File Error", wx.ICON_ERROR | wx.OK)
-        elif error == self.NOTHING_TO_UNDO:
-            wx.MessageBox("No command left to undo. This is the initial state of the simulation", "Nothing To Undo",
+        elif error == self.command_manager.NOTHING_TO_UNDO:
+            wx.MessageBox("No command left to undo. This is the initial state of the simulation.", "Nothing To Undo",
                           wx.ICON_ERROR | wx.OK)
-        elif error == self.NOTHING_TO_REDO:
-            wx.MessageBox("No command left to redo. This is the last state of the simulation", "Nothing To Redo",
+        elif error == self.command_manager.NOTHING_TO_REDO:
+            wx.MessageBox("No command left to redo. This is the last state of the simulation.", "Nothing To Redo",
                           wx.ICON_ERROR | wx.OK)
-        elif error == self.SIMULATION_NOT_STARTED:
+        elif error == self.command_manager.SIMULATION_NOT_STARTED:
             wx.MessageBox("Nothing to continue. Run first.", "Simulation Not Started",
                           wx.ICON_ERROR | wx.OK)
         else:
@@ -961,4 +1006,3 @@ class Gui(wx.Frame):
             self.ShowFullScreen(False)
         else:
             event.Skip()
-            

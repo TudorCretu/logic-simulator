@@ -4,12 +4,13 @@ Used in the Logic Simulator project to enable save/load undo/redo operations in 
 
 Classes
 -------
-Command - stores device properties.
+Command - stores command properties.
 CommandManager - makes and stores all the devices in the logic network.
 """
 
 import abc
-
+import copy
+import pickle
 
 class Command(metaclass=abc.ABCMeta):
     """Abstract / Interface base class for commands."""
@@ -50,10 +51,12 @@ class HelpCommand(Command):
         return self.command_manager.NO_ERROR, None
 
     def undo(self):
-        pass
+        # Nothing to undo, undo the next command
+        return self.command_manager.undo_command()
 
     def redo(self):
-        pass
+        # Nothing to redo, redo the next command
+        return self.command_manager.redo_command()
 
 
 class SwitchCommand(Command):
@@ -77,7 +80,7 @@ class SwitchCommand(Command):
                 if self.value == self.command_manager.devices.LOW or self.value == self.command_manager.devices.HIGH:
                     self.command_manager.devices.set_switch(device_id, self.value)
                     self.gui.log_text("Set switch " + self.switch_name + " to  " + str(self.value))
-                    self.gui.update_switches_toggle()
+                    self.gui.switches_update_toggle()
                 else:
                     raise ValueError
             except ValueError:
@@ -106,11 +109,14 @@ class MonitorCommand(Command):
     def __init__(self, signal_name):
         self.command_manager = None
         self.gui = None
+        self.initial_monitors_state = None
+        self.final_monitors_state = None
         self.signal_name = signal_name
 
     def execute(self, command_manager):
         self.command_manager = command_manager
         self.gui = command_manager.gui
+        self.initial_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
 
         monitored, unmonitored = self.command_manager.monitors.get_signal_names()
         if self.signal_name in monitored + unmonitored:
@@ -130,14 +136,20 @@ class MonitorCommand(Command):
                 return self.command_manager.monitors.MONITOR_PRESENT, self.signal_name + " is already monitored"
         else:
             return self.command_manager.monitors.NOT_OUTPUT, "Error: " + self.signal_name + " is not an output signal"
+        self.final_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
         return command_manager.NO_ERROR, None
 
     def undo(self):
-        pass
+        self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
+        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.monitors_update_toggle()
+        return self.command_manager.NO_ERROR, None
 
     def redo(self):
-        pass
-
+        self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
+        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.monitors_update_toggle()
+        return self.command_manager.NO_ERROR, None
 
 class ZapCommand(Command):
     """Help command implementation."""
@@ -145,12 +157,15 @@ class ZapCommand(Command):
     def __init__(self, signal_name):
         self.command_manager = None
         self.gui = None
+        self.initial_monitors_state = None
+        self.final_monitors_state = None
         self.signal_name = signal_name
         pass
 
     def execute(self, command_manager):
         self.command_manager = command_manager
         self.gui = command_manager.gui
+        self.initial_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
 
         monitored, unmonitored = self.command_manager.monitors.get_signal_names()
         if self.signal_name in monitored + unmonitored:
@@ -168,13 +183,19 @@ class ZapCommand(Command):
                 return self.command_manager.SIGNAL_NOT_MONITORED, self.signal_name + " is not monitored"
         else:
             return self.command_manager.monitors.NOT_OUTPUT, self.signal_name + " is not an output signal"
-
+        self.final_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
         return command_manager.NO_ERROR, None
 
     def undo(self):
+        self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
+        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.monitors_update_toggle()
         return self.command_manager.NO_ERROR, None
 
     def redo(self):
+        self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
+        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.monitors_update_toggle()
         return self.command_manager.NO_ERROR, None
 
 
@@ -185,11 +206,19 @@ class RunCommand(Command):
         self.command_manager = None
         self.gui = None
         self.cycles = cycles
+        self.initial_cycles = None
+        self.initial_monitors_state = None
+        self.final_monitors_state = None
+        self.initial_devices_state = None
+        self.final_devices_state = None
 
     def execute(self, command_manager):
         """Run simulation from start for a number of cycles"""
         self.command_manager = command_manager
         self.gui = command_manager.gui
+        self.initial_cycles = self.gui.completed_cycles
+        self.initial_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
+        self.initial_devices_state = copy.deepcopy(command_manager.devices.devices_list)
 
         try:
             self.cycles = int(self.cycles)
@@ -201,20 +230,28 @@ class RunCommand(Command):
                 if self.command_manager.network.execute_network():
                     self.command_manager.monitors.record_signals()
                 else:
-                    return (self.command_manager.OSCILLATING_NETWORK,
-                            "Cannot run network. The network doesn't have a stable state.")
+                    return self.command_manager.OSCILLATING_NETWORK, "Cannot run network. The network doesn't have a stable state."
             self.gui.update_cycles(self.cycles)
             self.gui.log_text("Run simulation for " + str(self.cycles) + " cycles")
 
         except ValueError:
-            return (self.command_manager.INVALID_ARGUMENT,
-                    "Cannot run network. The number of cycles is not a positive integer.")
+            return self.command_manager.INVALID_ARGUMENT, "Cannot run network. The number of cycles is not a positive integer."
+        self.final_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
+        self.final_devices_state = copy.deepcopy(command_manager.devices.devices_list)
+
+        return self.command_manager.NO_ERROR, None
 
     def undo(self):
-        pass
+        self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
+        self.command_manager.devices.devices_list = self.initial_devices_state
+        self.gui.update_cycles(self.initial_cycles)
+        return self.command_manager.NO_ERROR, None
 
     def redo(self):
-        pass
+        self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
+        self.command_manager.devices.devices_list = self.final_devices_state
+        self.gui.update_cycles(self.cycles)
+        return self.command_manager.NO_ERROR, None
 
 
 class ContinueCommand(Command):
@@ -224,36 +261,44 @@ class ContinueCommand(Command):
         self.command_manager = None
         self.gui = None
         self.cycles = cycles
+        self.initial_monitors_state = None
 
     def execute(self, command_manager):
         self.command_manager = command_manager
         self.gui = command_manager.gui
+        self.initial_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
 
         if self.gui.completed_cycles == 0:
             return self.command_manager.SIMULATION_NOT_STARTED, None
         try:
-            cycles = int(self.cycles)
-            if cycles < 0:
+            self.cycles = int(self.cycles)
+            if self.cycles < 0:
                 raise ValueError
-            cycles = int(cycles)
+            self.cycles = int(self.cycles)
             for _ in range(self.cycles):
                 if self.command_manager.network.execute_network():
                     self.command_manager.monitors.record_signals()
                 else:
-                    return (self.command_manager.OSCILLATING_NETWORK,
-                            "Cannot continue network. The network doesn't have a stable state.")
+                    return self.command_manager.OSCILLATING_NETWORK, \
+                            "Cannot continue network. The network doesn't have a stable state."
             self.gui.update_cycles(self.gui.completed_cycles + self.cycles)
-            self.gui.log_text("Continue simulation for " + str(cycles)
+            self.gui.log_text("Continue simulation for " + str(self.cycles)
                               + " cycles. Total cycles: " + str(self.gui.completed_cycles))
         except ValueError:
-            return (self.command_manager.INVALID_ARGUMENT,
-                    "Cannot continue network. The number of cycles is not a positive integer.")
+            return self.command_manager.INVALID_ARGUMENT, \
+                   "Cannot continue network. The number of cycles is not a positive integer."
+        return self.command_manager.NO_ERROR, None
 
     def undo(self):
-        pass
+        # Resets monitors to the state before continuing and also updates the cycles counters
+        self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
+        self.gui.update_cycles(self.gui.completed_cycles - self.cycles)
+        return self.command_manager.NO_ERROR, None
 
     def redo(self):
-        pass
+        # This command is deterministic, so no need to keep final states too. Can just execute it again.
+        error_code, error_message = self.execute(self.command_manager)
+        return error_code, error_message
 
 
 class SaveCommand(Command):
@@ -261,17 +306,26 @@ class SaveCommand(Command):
 
     def __init__(self, path):
         self.command_manager = None
+        self.gui = None
         self.path = path
 
     def execute(self, command_manager):
         self.command_manager = command_manager
-        pass
+        self.gui = command_manager.gui
+        with open(self.path, 'wb') as fp:
+            data = [self.command_manager.monitors, self.command_manager.devices, self.command_manager.network, self.command_manager.names, self.command_manager.gui.completed_cycles]
+            pickle.dump(data, fp)
+
+        self.gui.log_text("Save file " + self.path)
+        return self.command_manager.NO_ERROR, None
 
     def undo(self):
-        pass
+        # Nothing to undo, undo the next command
+        return self.command_manager.undo_command()
 
     def redo(self):
-        pass
+        # Nothing to redo, redo the next command
+        return self.command_manager.redo_command()
 
 
 class LoadCommand(Command):
@@ -279,17 +333,41 @@ class LoadCommand(Command):
 
     def __init__(self, path):
         self.command_manager = None
+        self.gui = None
         self.path = path
 
     def execute(self, command_manager):
         self.command_manager = command_manager
-        pass
+        self.gui = command_manager.gui
+        with open(self.path, 'rb') as fp:
+            monitors, devices, network, names, completed_cycles = pickle.load(fp)
+            self.command_manager.monitors = monitors
+            self.command_manager.devices = devices
+            self.command_manager.network = network
+            self.command_manager.names = names
+            self.command_manager.undo_stack.clear()
+            self.command_manager.redo_stack.clear()
+            self.gui.monitors = self.command_manager.monitors
+            self.gui.devices = self.command_manager.devices
+            self.gui.network = self.command_manager.network
+            self.gui.names = self.command_manager.names
+            self.gui.canvas.monitors = self.command_manager.monitors
+            self.gui.canvas.update_cycle_axis_layout()
+            self.gui.update_cycles(completed_cycles)
+            self.gui.switches_select.SetValue("")
+            self.gui.switches_update_toggle()
+            self.gui.monitors_select.SetValue("")
+            self.gui.monitors_update_toggle()
+            self.gui.log_text("Load file " + self.path)
+        return self.command_manager.NO_ERROR, None
 
     def undo(self):
-        pass
+        # Nothing to undo, undo the next command
+        return self.command_manager.undo_command()
 
     def redo(self):
-        pass
+        # Nothing to redo, redo the next command
+        return self.command_manager.redo_command()
 
 
 class CommandManager:
@@ -327,22 +405,31 @@ class CommandManager:
          self.SIMULATION_NOT_STARTED, self.UNKNOWN_ERROR] = names.unique_error_codes(10)
 
     def execute_command(self, command):
-        error_type, error_message = command.execute(self)
-        if error_type == self.NO_ERROR:
+        error_code, error_message = command.execute(self)
+        if error_code == self.NO_ERROR:
             self.redo_stack.clear()
             self.undo_stack.append(command)
         else:
-            self.gui.raise_error(error_type, error_message)
-        return error_type
+            self.gui.raise_error(error_code, error_message)
+        self.gui.update_toolbar()
+        return error_code, error_message
 
     def undo_command(self):
-        command = self.undo_stack.pop()
-        self.redo_stack.append(command)
-        error_type = command.redo()
-        return error_type
+        if len(self.undo_stack) > 0:
+            command = self.undo_stack.pop()
+            self.redo_stack.append(command)
+            error_code, error_message = command.undo()
+            self.gui.update_toolbar()
+            return error_code, error_message
+        else:
+            return self.NOTHING_TO_UNDO, None
 
     def redo_command(self):
-        command = self.redo_stack.pop()
-        self.undo_stack.append(command)
-        error_type = command.redo()
-        return error_type
+        if len(self.redo_stack) > 0:
+            command = self.redo_stack.pop()
+            self.undo_stack.append(command)
+            error_code, error_message = command.redo()
+            self.gui.update_toolbar()
+            return error_code, error_message
+        else:
+            return self.NOTHING_TO_REDO, None
