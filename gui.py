@@ -449,8 +449,8 @@ class Gui(wx.Frame):
         menuBar.Append(fileMenu, "&File")
 
         editMenu = wx.Menu()
-        editMenu.Append(wx.ID_UNDO, "&Undo")
-        editMenu.Append(wx.ID_REDO, "&Redo")
+        editMenu.Append(wx.ID_UNDO, "&Undo\tCTRL+Z")
+        editMenu.Append(wx.ID_REDO, "&Redo\tCTRL+SHIFT+Z")
         menuBar.Append(editMenu, "&Edit")
 
         viewMenu = wx.Menu()
@@ -469,8 +469,8 @@ class Gui(wx.Frame):
         menuBar.Append(runMenu, "&Run")
 
         helpMenu = wx.Menu()
-        helpMenu.Append(wx.ID_HELP, "&Help")
         helpMenu.Append(wx.ID_ABOUT, "&About")
+        helpMenu.Append(wx.ID_HELP, "&Help")
         helpMenu.Append(wx.ID_HELP_COMMANDS, "&Help commands")
         menuBar.Append(helpMenu, "&Help")
         self.SetMenuBar(menuBar)
@@ -488,6 +488,19 @@ class Gui(wx.Frame):
         self.toolbar.EnableTool(wx.ID_UNDO, False)
         self.toolbar.EnableTool(wx.ID_REDO, False)
         self.SetToolBar(self.toolbar)
+
+        # Configure the hotkeys
+        self.accel_tbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, ord('N'), wx.ID_NEW),
+                                              (wx.ACCEL_CTRL, ord('O'), wx.ID_OPEN),
+                                              (wx.ACCEL_CTRL, ord('S'), wx.ID_SAVE),
+                                              (wx.ACCEL_CTRL, ord('Z'), wx.ID_UNDO),
+                                              (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord('Z'), wx.ID_REDO),
+                                              (wx.ACCEL_CTRL, ord('Y'), wx.ID_REDO),
+                                              (wx.ACCEL_CTRL, ord('H'), wx.ID_HELP),
+                                              (wx.ACCEL_CTRL, ord('+'), wx.ID_ZOOM_IN),
+                                              (wx.ACCEL_CTRL, ord('-'), wx.ID_ZOOM_OUT)
+                                              ])
+        self.SetAcceleratorTable(self.accel_tbl)
 
         # Instances of the classes
         self.names = names
@@ -701,10 +714,13 @@ class Gui(wx.Frame):
         if Id == wx.ID_ZOOM_OUT:
             pass
         if Id == wx.ID_EXECUTE:
+            self.run_command(10)
             pass
         if Id == wx.ID_CONTINUE:
+            self.continue_command(10)
             pass
         if Id == wx.ID_HELP:
+            self.help_command()
             pass
         if Id == wx.ID_HELP_COMMANDS:
             pass
@@ -841,7 +857,7 @@ class Gui(wx.Frame):
         return save_dlg
 
     def save_file(self):
-        with wx.FileDialog(self, "Save file", wildcard="*.def",
+        with wx.FileDialog(self, "Choose where to save the file", wildcard="*.def",
                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -859,7 +875,6 @@ class Gui(wx.Frame):
             except IOError:
                 wx.LogError("Cannot save current data in file '%s'." % pathname)
                 return
-
         return
 
     def log_text(self, text):
