@@ -38,8 +38,6 @@ monitors = Monitors(names, devices, network)
  
 """DEVICE Block tests"""
 
-
-
 def test_parse_devices_success():
     """Test if parse_devices() returns True correctly for a valid file"""
     
@@ -83,7 +81,7 @@ def test_DEVICES_resued_name_error(capfd):
     assert out == "SemanticError: DEVICE_PRESENT\n"
    
 
-def test_DEVICE_expected_comma_error(capfd):
+def test_DEVICES_expected_comma_error(capfd):
     """Test if missing expected comma symbol is reported in DEVICE BLOCK"""
     
     string_io = StringIO("DEVICES SWITCH1 = SWITCH/1 SWITCH2 = SWITCH/0 ; ...")
@@ -94,8 +92,8 @@ def test_DEVICE_expected_comma_error(capfd):
     out,err = capfd.readouterr()
     assert out == "SyntaxError: Expected a comma\n"
 
-def test_DEVICE_expected_number_error(capfd):
-    """Test if missing expected sumber symbol is reported in DEVICE BLOCK"""
+def test_DEVICES_expected_number_error(capfd):
+    """Test if a missing expected sumber symbol is reported in DEVICE BLOCK"""
     
     string_io = StringIO("DEVICES SWITCH1 = SWITCH/a SWITCH2 = SWITCH/0 ; ...")
     scanner = Scanner(string_io, names)
@@ -113,7 +111,7 @@ def test_DEVICE_expected_number_error(capfd):
     out,err = capfd.readouterr()
     assert out == "SyntaxError: Expected a number\n"
 
-def test_DEVICE_semicolon_absense(capfd):
+def test_DEVICES_expected_semicolon_error(capfd):
     """Test if missing expected semicolon symbol is reported in DEVICE BLOCK"""
     
     string_io = StringIO("DEVICES SWITCH1 = SWITCH/1, SWITCH2 = SWITCH/0 MONITORS")
@@ -124,7 +122,7 @@ def test_DEVICE_semicolon_absense(capfd):
     out,err = capfd.readouterr()
     assert out == "SyntaxError: Expected a semicolon\n"
 
-def test_DEVICE_parameter_error(capfd):
+def test_DEVICES_parameter_error(capfd):
     """Test if lack of parameter labelling is reported in DEVICE BLOCK"""
     
     string_io = StringIO("DEVICES SWITCH1 = SWITCH/1, SWITCH2 = SWITCH/0; MONITORS")
@@ -136,14 +134,14 @@ def test_DEVICE_parameter_error(capfd):
     assert out == "This specific device needs parameter preceded by a '/' "
     # not handled
     
-def test_DEVICE_mutliple_errors():
+def test_DEVICES_mutliple_errors():
     """Test that a sequence of known errors are reported indicating proper recovery occurs
     within DEVICE block"""
     pass
     
 """CONNECTIONS Block tests""" 
 
-def test_parse_parse_connections_success():
+def test_parse_connections_success():
     """Test if parse_devices returns true correctly"""
     
     file_path = test_file_dir + "/test_model_2.txt"
@@ -152,9 +150,34 @@ def test_parse_parse_connections_success():
     parser.parse_devices()
     assert parser.parse_connections() is False
                                    
+def test_CONNECTIONS_expected_name_error(capfd):
+    pass                                 
                                    
+def test_CONNECTIONS_expected_comma_error(capfd):
+    pass                                                     
 
-
+def test_CONNECTIONS_expected_dot_error(capfd):
+    pass                  
     
-  
+def test_CONNECTIONS_expected_semicolon_error(capfd):
+    pass                    
    
+def test_DEVICES_mutliple_errors():
+    pass
+
+"""Monitors Block tests""" 
+
+def test_MONITORS_expected_name_error(capfd):
+    pass                                 
+                                   
+def test_MONITORS_expected_comma_error(capfd):
+    pass                                                     
+
+def test_MONITORS_expected_dot_error(capfd):
+    pass                  
+    
+def test_MONITORS_expected_semicolon_error(capfd):
+    pass                    
+   
+def test_MONITORS_mutliple_errors():
+    pass

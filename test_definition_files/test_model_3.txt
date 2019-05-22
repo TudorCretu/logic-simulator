@@ -1,3 +1,13 @@
-fsjfsfkdsgfksdkh fsdfsdf sfsdfsd fsfsdf sdfsff sfsdf dfsdf sdjasd sdsds dsds dsdsd s      
-fsdfsdfsdfsdf
-fdfsdf
+        
+
+        
+names = Names()
+scanner = Scanner('test_definition_files/test_model_3.txt',names)
+symbol = None
+for a in range(7):
+    symbol =scanner.get_symbol()
+    print(symbol.type)
+    
+scanner.display_error_location(symbol.cursor_position)
+print('j\u032D')
+
