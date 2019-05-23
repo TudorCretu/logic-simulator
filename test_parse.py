@@ -165,7 +165,7 @@ def test_parse_connections_success():
     assert parser.parse_connections() is True
                                    
 def test_CONNECTIONS_expected_name_error(capfd):
-    """Test if parse_devices returns true correctly"""
+    """Test if missing name symbol in CONNECTIONS is reported in CONNECTIONS BLOCK"""
     
     file_path = test_file_dir + "/expected_name_error.txt"
     scanner = Scanner(file_path, names)
@@ -188,6 +188,7 @@ def test_CONNECTIONS_expected_comma_error(capfd):
     assert out == "SyntaxError: Expected a comma\n"                                                     
 
 def test_CONNECTIONS_expected_dot_error(capfd):
+    
     pass                
     
 def test_CONNECTIONS_expected_semicolon_error(capfd):
@@ -205,17 +206,58 @@ def test_CONNECTIONS_mutliple_errors():
 
 """Monitors Block tests""" 
 
+test_file_dir = "test_definition_files/test_monitors"
+
+def test_parse_monitors_success():
+    """Test if parse_monitors returns true correctly"""
+    
+    file_path = test_file_dir + "/fully_correct.txt"
+    scanner = Scanner(file_path, names)
+    parser = Parser(names, devices, network, monitors, scanner)
+    parser.parse_devices()
+    parser.parse_connections()
+    
+    assert parser.parse_monitors() is True
+                                   
 def test_MONITORS_expected_name_error(capfd):
-    pass                                 
+    """Test if missing expected name symbol is reported in MONITORS BLOCK"""
+    
+    file_path = test_file_dir + "/expected_name_error.txt"
+    scanner = Scanner(file_path, names)
+    parser = Parser(names, devices, network, monitors, scanner)
+    parser.parse_devices()
+    parser.parse_connections()
+    assert parser.parse_monitors() is False
+    out,err = capfd.readouterr()
+    assert out == "SyntaxError: Expected a name\n"
+                                   
                                    
 def test_MONITORS_expected_comma_error(capfd):
-    pass                                                     
+    """Test if missing expected comma symbol is reported in MONITORS BLOCK"""
+    
+    file_path = test_file_dir + "/expected_comma_error.txt"
+    scanner = Scanner(file_path, names)
+    parser = Parser(names, devices, network, monitors, scanner)
+    parser.parse_devices()
+    parser.parse_connections()
+    assert parser.parse_monitors() is False
+    out,err = capfd.readouterr()
+    assert out == "SyntaxError: Expected a comma\n"                                                     
 
 def test_MONITORS_expected_dot_error(capfd):
-    pass                  
+    
+    pass                
     
 def test_MONITORS_expected_semicolon_error(capfd):
-    pass                    
+    """Test if missing expected ; symbol is reported in MONITORS BLOCK"""
+    file_path = test_file_dir + "/expected_semicolon_error.txt"
+    scanner = Scanner(file_path, names)
+    parser = Parser(names, devices, network, monitors, scanner)
+    parser.parse_devices()
+    parser.parse_connections()
+    assert parser.parse_monitors() is False
+    out,err = capfd.readouterr()
+    assert out == "SyntaxError: Expected a semicolon\n"                    
    
 def test_MONITORS_mutliple_errors():
     pass
