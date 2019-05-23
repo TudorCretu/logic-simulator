@@ -11,8 +11,8 @@ Gui - configures the main window and all the widgets.
 import wx
 import wx.glcanvas as wxcanvas
 import datetime
-import copy
 from OpenGL import GL, GLUT
+from command_manager import *
 
 
 class MyGLCanvas(wxcanvas.GLCanvas):
@@ -82,7 +82,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.cycle_width = 40
         # 25pt after the longest monitor name
         self.cycle_start_x = 25 + self.text_width("0") * self.monitors.get_margin()
-        self.cycle_axis_y = -30
+        self.cycle_axis_y = 0
         self.cycle_axis_y_padding = -7
         self.completed_cycles = 10
 
@@ -138,8 +138,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def render(self):
         """Handle all drawing operations."""
         self.SetCurrent(self.context)
-        if self.completed_cycles<10:
-            self.completed_cycles=10
+        if self.completed_cycles < 10:
+            self.completed_cycles = 10
         if not self.init:
             # Configure the viewport, modelview and projection matrices
             self.init_gl()
@@ -278,7 +278,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def draw_signal(self, device_id, output_id, monitor_number):
         """Handle each monitor output drawing operations."""
-        monitor_name = self.devices.get_signal_name(device_id, output_id)
         signal_list = self.monitors.monitors_dictionary[(device_id, output_id)]
         monitors_start_x = self.cycle_start_x + self.text_width(str(0))/2
         x_0 = monitors_start_x
@@ -286,8 +285,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         y_low = y_0 + self.monitors_padding
         y_high = y_0  + self.monitor_height - self.monitors_padding
 
-        color = self.color_cycle[monitor_number%len(self.color_cycle)]
-        color_light = self.color_cycle_light[monitor_number%len(self.color_cycle_light)]
+        color = self.color_cycle[monitor_number % len(self.color_cycle)]
+        color_light = self.color_cycle_light[monitor_number % len(self.color_cycle_light)]
         signal_thickness = 2
 
         # Draw thin black horizontal delimiter between monitors
@@ -337,9 +336,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             prev_signal = signal
         print("\n", end="")
 
-
-
-    def render_line(self, x_start, y_start, x_end, y_end, color = (0, 0, 1), thickness = 1.0):
+    def render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1), thickness=1.0):
         """Handle line drawing operations."""
         GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
         GL.glColor3f(*color)
@@ -350,7 +347,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glEnd()
         GL.glPopAttrib()
 
-    def render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color = (0, 0, 1)):
+    def render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color=(0, 0, 1)):
         """Handle transparent rectangle drawing operations."""
         GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA) # enables transparency
@@ -366,7 +363,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glEnd()
         GL.glPopAttrib()
 
-    def render_text(self, text, x_pos, y_pos, color = (0, 0, 0), font=GLUT.GLUT_BITMAP_HELVETICA_18):
+    def render_text(self, text, x_pos, y_pos, color=(0, 0, 0), font=GLUT.GLUT_BITMAP_HELVETICA_18):
         """Handle text drawing operations."""
         GL.glColor3f(*color)
         GL.glRasterPos2f(x_pos, y_pos)
@@ -378,7 +375,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                 GLUT.glutBitmapCharacter(font, ord(character))
 
     def update_cycle_axis_layout(self):
-        """Handle changes in monitor names"""
+        """Handle changes in monitors"""
+        self.monitors_number = len(self.monitors.monitors_dictionary)
         self.cycle_start_x = 25 + self.text_width("0") * self.monitors.get_margin()
         self.render()
 
@@ -399,6 +397,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         Return a list of the RGB float values.
         """
         return [c/256 for c in (r, g, b)]
+
 
 class Gui(wx.Frame):
     """Configure the main window and all the widgets.
@@ -432,21 +431,17 @@ class Gui(wx.Frame):
 
         # Saving, loading, and undo/redo variables
         self.is_saved = True
-        self.command_history = []
-        self.last_command_index = -1
-        self.initial_devices = copy.deepcopy(devices)
-        self.initial_network = copy.deepcopy(network)
-        self.initial_monitors = copy.deepcopy(monitors)
+        self.command_manager = CommandManager(self, names, devices, network, monitors)
 
         # Erros
         [self.NO_ERROR, self.INVALID_COMMAND, self.INVALID_ARGUMENT, self.SIGNAL_NOT_MONITORED, self.OSCILLATING_NETWORK,
-         self.CANNOT_OPEN_FILE, self.NOTHING_TO_UNDO, self.NOTHING_TO_REDO, self.UNKNOWN_ERROR] = names.unique_error_codes(9)
+         self.CANNOT_OPEN_FILE, self.NOTHING_TO_UNDO, self.NOTHING_TO_REDO, self.SIMULATION_NOT_STARTED, self.UNKNOWN_ERROR] = names.unique_error_codes(10)
 
-
-        # Configure the file menu
+        # Configure the menu
         menuBar = wx.MenuBar()
+
         fileMenu = wx.Menu()
-        fileMenu.Append(wx.ID_ABOUT, "&About")
+        fileMenu.Append(wx.ID_NEW, "&New")
         fileMenu.Append(wx.ID_OPEN, "&Load")
         fileMenu.Append(wx.ID_SAVE, "&Save")
         fileMenu.Append(wx.ID_SAVEAS, "&Save as")
@@ -454,17 +449,17 @@ class Gui(wx.Frame):
         menuBar.Append(fileMenu, "&File")
 
         editMenu = wx.Menu()
-        editMenu.Append(wx.ID_UNDO, "&Undo")
-        editMenu.Append(wx.ID_REDO, "&Redo")
+        editMenu.Append(wx.ID_UNDO, "&Undo\tCTRL+Z")
+        editMenu.Append(wx.ID_REDO, "&Redo\tCTRL+SHIFT+Z")
         menuBar.Append(editMenu, "&Edit")
 
         viewMenu = wx.Menu()
         wx.ID_FULLSCREEN = wx.NewId()
         viewMenu.Append(wx.ID_FULLSCREEN, "&Fullscreen")
-        viewMenu.Append(wx.ID_ZOOM_100, "&Zoom reset")
-        viewMenu.Append(wx.ID_ZOOM_FIT, "&Zoom fit")
-        viewMenu.Append(wx.ID_ZOOM_IN, "&Zoom in")
-        viewMenu.Append(wx.ID_ZOOM_OUT, "&Zoom out")
+        viewMenu.Append(wx.ID_ZOOM_100, "&Actual Size")
+        viewMenu.Append(wx.ID_ZOOM_FIT, "Zoom to &Fit")
+        viewMenu.Append(wx.ID_ZOOM_IN, "Zoom &In")
+        viewMenu.Append(wx.ID_ZOOM_OUT, "Zoom &Out")
         menuBar.Append(viewMenu, "&View")
 
         runMenu = wx.Menu()
@@ -474,10 +469,38 @@ class Gui(wx.Frame):
         menuBar.Append(runMenu, "&Run")
 
         helpMenu = wx.Menu()
+        helpMenu.Append(wx.ID_ABOUT, "&About")
         helpMenu.Append(wx.ID_HELP, "&Help")
         helpMenu.Append(wx.ID_HELP_COMMANDS, "&Help commands")
         menuBar.Append(helpMenu, "&Help")
         self.SetMenuBar(menuBar)
+
+        # Configure the tooblar
+        self.toolbar =  wx.ToolBar(self)
+        self.toolbar.AddTool(wx.ID_NEW, 'New file', wx.ArtProvider.GetBitmap(wx.ART_NEW))
+        self.toolbar.AddTool(wx.ID_OPEN, 'Load', wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN))
+        self.toolbar.AddTool(wx.ID_SAVE, 'Save', wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE))
+        self.toolbar.AddTool(wx.ID_UNDO, 'Undo', wx.ArtProvider.GetBitmap(wx.ART_UNDO))
+        self.toolbar.AddTool(wx.ID_REDO, 'Redo', wx.ArtProvider.GetBitmap(wx.ART_REDO))
+        self.toolbar.AddTool(wx.ID_EXIT, 'Exit', wx.ArtProvider.GetBitmap(wx.ART_QUIT))
+
+        self.toolbar.Realize()
+        self.toolbar.EnableTool(wx.ID_UNDO, False)
+        self.toolbar.EnableTool(wx.ID_REDO, False)
+        self.SetToolBar(self.toolbar)
+
+        # Configure the hotkeys
+        self.accel_tbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, ord('N'), wx.ID_NEW),
+                                              (wx.ACCEL_CTRL, ord('O'), wx.ID_OPEN),
+                                              (wx.ACCEL_CTRL, ord('S'), wx.ID_SAVE),
+                                              (wx.ACCEL_CTRL, ord('Z'), wx.ID_UNDO),
+                                              (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord('Z'), wx.ID_REDO),
+                                              (wx.ACCEL_CTRL, ord('Y'), wx.ID_REDO),
+                                              (wx.ACCEL_CTRL, ord('H'), wx.ID_HELP),
+                                              (wx.ACCEL_CTRL, ord('+'), wx.ID_ZOOM_IN),
+                                              (wx.ACCEL_CTRL, ord('-'), wx.ID_ZOOM_OUT)
+                                              ])
+        self.SetAcceleratorTable(self.accel_tbl)
 
         # Instances of the classes
         self.names = names
@@ -497,7 +520,7 @@ class Gui(wx.Frame):
 
         #  Activity log sizer
         self.activity_log_title = wx.StaticText(self, wx.ID_ANY, "Activity log")
-        self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, "", style= wx.TE_MULTILINE | wx.TE_READONLY | wx.ALIGN_TOP)
+        self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY | wx.ALIGN_TOP)
 
         #  Console sizer
         self.console = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
@@ -525,7 +548,13 @@ class Gui(wx.Frame):
         self.simulation_run_button = wx.Button(self, wx.ID_ANY, "Run")
         self.simulation_continue_button = wx.Button(self, wx.ID_ANY, "Continue")
 
-        #  StatiROWSc Strings
+        #   Zoom
+        zoom_button_size = wx.Size(25, 25)
+        self.zoom_minus_button = wx.Button(self, wx.ID_ANY, "-", size=zoom_button_size)
+        self.zoom_slider = wx.Slider(self, wx.ID_ANY, value=1, minValue=0.1, maxValue = 10, style=wx.SL_LABELS | wx.SL_TICKS, name="Zoom" )
+        self.zoom_plus_button = wx.Button(self, wx.ID_ANY, "+", size=zoom_button_size)
+
+        #  Static Strings
         console_title = wx.StaticText(self, wx.ID_ANY, "Console")
         side_title = wx.StaticText(self, wx.ID_ANY, "Properties")
         switches_title = wx.StaticText(self, wx.ID_ANY, "Change State of Switch")
@@ -584,23 +613,25 @@ class Gui(wx.Frame):
         monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
         simulation_title_sizer = wx.BoxSizer(wx.HORIZONTAL)
         simulation_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        vertical_fill_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        pan_zoom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         line_sizer_side = wx.BoxSizer(wx.VERTICAL)
         line_sizer_switches = wx.BoxSizer(wx.VERTICAL)
         line_sizer_monitors = wx.BoxSizer(wx.VERTICAL)
         line_sizer_run_simulation = wx.BoxSizer(wx.VERTICAL)
 
-        main_sizer.Add(top_sizer, 0, wx.TOP | wx.EXPAND, 5)
+        main_sizer.Add(top_sizer, 0, wx.EXPAND, 5)
         main_sizer.Add(central_sizer, 10, wx.EXPAND, 5)
-        main_sizer.Add(activity_log_sizer, 5, wx.ALL | wx.EXPAND, 5)
-        main_sizer.Add(console_sizer, 1, wx.ALL | wx.EXPAND, 5)
+        main_sizer.Add(activity_log_sizer, 3, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
+        main_sizer.Add(console_sizer, 1, wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, 5)
         
-        top_sizer.Add(self.load_file_button, 0, wx.LEFT| wx.TOP, 5)
-        top_sizer.Add(self.load_file_text_box, 1, wx.ALL , 5)
+        top_sizer.Add(self.load_file_button, 0, wx.LEFT, 5)
+        top_sizer.Add(self.load_file_text_box, 1, wx.LEFT | wx.RIGHT, 5)
 
         central_sizer.Add(self.canvas, 5, wx.EXPAND | wx.ALL, 5)
         central_sizer.Add(side_sizer, 1, wx.ALL, 5)
         
-        activity_log_sizer.Add(self.activity_log_title, 0, wx.TOP| wx. BOTTOM, 10)
+        activity_log_sizer.Add(self.activity_log_title, 0, wx.TOP, 10)
         activity_log_sizer.Add(self.activity_log_text, 2, wx.EXPAND, 5)
 
         console_sizer.Add(console_title, 1, wx.TOP, 5)
@@ -616,6 +647,8 @@ class Gui(wx.Frame):
         side_sizer.Add(simulation_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
         side_sizer.Add(simulation_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
         side_sizer.Add(line_run_simulation_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        side_sizer.Add(vertical_fill_sizer, 1, wx.ALL | wx.EXPAND, 1)
+        side_sizer.Add(pan_zoom_sizer, 0, wx.ALL | wx.EXPAND, 0)
 
         side_title_sizer.Add(side_title, 0, wx.TOP, 0)
         side_title_sizer.Add(line_sizer_side, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 3)
@@ -637,9 +670,13 @@ class Gui(wx.Frame):
         simulation_title_sizer.Add(run_simulation_title, 0, wx.LEFT | wx.TOP, 10)
         simulation_title_sizer.Add(line_sizer_run_simulation, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
 
-        simulation_sizer.Add(self.simulation_cycles_spin, 4, wx.LEFT| wx.TOP | wx.EXPAND, 12)
-        simulation_sizer.Add(self.simulation_run_button, 0, wx.LEFT| wx.TOP, 12)
-        simulation_sizer.Add(self.simulation_continue_button, 0, wx.LEFT| wx.TOP, 12)
+        simulation_sizer.Add(self.simulation_cycles_spin, 4, wx.LEFT | wx.TOP | wx.EXPAND, 12)
+        simulation_sizer.Add(self.simulation_run_button, 0, wx.LEFT | wx.TOP, 12)
+        simulation_sizer.Add(self.simulation_continue_button, 0, wx.LEFT | wx.TOP, 12)
+
+        pan_zoom_sizer.Add(self.zoom_minus_button, 0, wx.LEFT | wx.TOP, 8)
+        pan_zoom_sizer.Add(self.zoom_slider, 1, wx.EXPAND, 0)
+        pan_zoom_sizer.Add(self.zoom_plus_button, 0, wx.RIGHT | wx.TOP, 8)
 
         line_sizer_side.Add(line_side, 0, wx.ALL | wx.EXPAND, 5)
         line_sizer_switches.Add(line_switches, 0, wx.ALL | wx.EXPAND, 5)
@@ -665,18 +702,16 @@ class Gui(wx.Frame):
         if Id == wx.ID_SAVEAS:
             self.save_file() #TODO
         if Id == wx.ID_UNDO:
-            self.last_command_index -= 1
-            if self.last_command_index < -1:
-                self.raise_error(self.NOTHING_TO_UNDO)
+            error_code, error_message = self.command_manager.undo_command()
+            if error_code != self.command_manager.NO_ERROR:
+                self.raise_error(error_code, error_message)
             else:
-                self.execute_command_history()
                 self.log_text("Undo")
         if Id == wx.ID_REDO:
-            self.last_command_index += 1
-            if self.last_command_index == len(self.command_history):
-                self.raise_error(self.NOTHING_TO_REDO)
+            error_code, error_message = self.command_manager.redo_command()
+            if error_code!=self.command_manager.NO_ERROR:
+                self.raise_error(error_code, error_message)
             else:
-                self.execute_command_history()
                 self.log_text("Redo")
         if Id == wx.ID_MAXIMIZE_FRAME:
             self.Maximize(True)
@@ -693,14 +728,16 @@ class Gui(wx.Frame):
         if Id == wx.ID_ZOOM_OUT:
             pass
         if Id == wx.ID_EXECUTE:
+            self.run_command(10)
             pass
         if Id == wx.ID_CONTINUE:
+            self.continue_command(10)
             pass
         if Id == wx.ID_HELP:
+            self.help_command()
             pass
         if Id == wx.ID_HELP_COMMANDS:
             pass
-
 
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
@@ -730,13 +767,17 @@ class Gui(wx.Frame):
         self.canvas.Refresh()
         return True
 
+    def update_cycles(self, cycles):
+        self.completed_cycles = cycles
+        self.canvas.completed_cycles = cycles
+        self.canvas.render()
+
     def on_console(self, event):
         """Handle the event when the user enters a command in the console."""
         command, *args = self.console.GetValue().split()
 
-
         if command == "h":
-            self.help_command()
+            self.command_manager.execute_command(HelpCommand())
         elif command == "s" and len(args) == 2:
             self.switch_command(*args)
         elif command == "m" and len(args) == 1:
@@ -750,29 +791,13 @@ class Gui(wx.Frame):
         elif command == "q":
             self.quit_command()
         else:
-            wx.MessageBox("Invalid command. Enter 'h' for help.",
-                          "Invalid Command Error", wx.ICON_ERROR | wx.OK)
+            self.raise_error(self.INVALID_COMMAND, "Invalid command. Enter 'h' for help.")
 
         self.console.SetValue("")
         
     def on_switches_select(self, event):
-        """Handle the event when the user types text in switches text box.
-        If the text in the box matches the name of a switch, then the set
-        and clear buttons enable according to the current value of the switch.
-        """
-        device_name = self.switches_select.GetValue()
-        device_id = self.names.query(device_name)
-        if device_id is not None and device_id in self.switches:
-            device = self.devices.get_device(device_id)
-            if device.switch_state is self.devices.HIGH:
-                self.switches_set_button.Disable()
-                self.switches_clear_button.Enable()
-            else:
-                self.switches_set_button.Enable()
-                self.switches_clear_button.Disable()
-        else:
-            self.switches_set_button.Disable()
-            self.switches_clear_button.Disable()
+        """Handle the event when the user types text in switches text box."""
+        self.switches_update_toggle()
 
     def on_switches_set(self, event):
         """Handle the event when the user sets a switch."""
@@ -785,21 +810,8 @@ class Gui(wx.Frame):
         self.switch_command(device_name, self.devices.LOW)
 
     def on_monitors_select(self, event):
-        """Handle the event when the user types text in monitors text box.
-        If the text in the box matches the name of a signal, then the set
-        and zap buttons enable according to if the if it's monitored or not.
-        """
-        signal_name = self.monitors_select.GetValue()
-        monitored, unmonitored = self.monitors.get_signal_names()
-        if signal_name in monitored:
-            self.monitors_set_button.Disable()
-            self.monitors_zap_button.Enable()
-        elif signal_name in unmonitored:
-            self.monitors_set_button.Enable()
-            self.monitors_zap_button.Disable()
-        else:
-            self.monitors_set_button.Disable()
-            self.monitors_zap_button.Disable()
+        """Handle the event when the user types text in monitors text box."""
+        self.monitors_update_toggle()
 
     def on_monitors_set(self, event):
         """Handle the event when the user sets a monitor."""
@@ -809,20 +821,7 @@ class Gui(wx.Frame):
     def on_monitors_zap(self, event):
         """Handle the event when the user clears a monitor."""
         signal_name = self.monitors_select.GetValue()
-        ids = self.devices.get_signal_ids(signal_name)
-        if ids is not None:
-            [device_id, output_id] = ids
-            self.monitors.remove_monitor(device_id, output_id)
-            self.monitors_set_button.Enable()
-            self.monitors_zap_button.Disable()
-            self.monitors_zap_button.SetValue(False)
-            self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
-            self.canvas.update_cycle_axis_layout()
-            self.log_text("Zap monitor on " + signal_name)
-
-        else:
-            text = "DEBUG: ON MONITORS ZAP, ids is None"
-            self.canvas.render()
+        self.zap_command(signal_name)
 
     def on_load_file_button(self, event):
         """Handle the load file button"""
@@ -861,7 +860,7 @@ class Gui(wx.Frame):
         try:
             with open(pathname, 'r') as file:
                 self.load_file_text_box.SetValue(pathname)
-                # self.doLoadDataOrWhatever(file)
+                self.command_manager.execute_command(LoadCommand(pathname))
         except IOError:
             self.raise_error(self.CANNOT_OPEN_FILE, "Cannot open file '%s'." % pathname)
 
@@ -872,7 +871,24 @@ class Gui(wx.Frame):
         return save_dlg
 
     def save_file(self):
-        self.is_saved = True
+        with wx.FileDialog(self, "Choose where to save the file", wildcard="*.def",
+                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return  # the user changed their mind
+
+            # save the current contents in the file
+            pathname = fileDialog.GetPath()
+            try:
+                print("Saving")
+                error_code, error_message = self.command_manager.execute_command(SaveCommand(pathname))
+                if error_code==self.command_manager.NO_ERROR:
+                    self.is_saved = True
+                else:
+                    self.raise_error(error_code, error_message)
+            except IOError:
+                wx.LogError("Cannot save current data in file '%s'." % pathname)
+                return
         return
 
     def log_text(self, text):
@@ -893,126 +909,80 @@ class Gui(wx.Frame):
             "q            - quit the program"
         self.log_text(text)
 
+    def switches_update_toggle(self):
+        """Handle a change in switches."""
+
+        # If the text in the switches box matches the name of a switch, then the set
+        # and clear buttons enable according to the current value of the switch.
+        device_name = self.switches_select.GetValue()
+        device_id = self.names.query(device_name)
+        if device_id is not None and device_id in self.switches:
+            device = self.devices.get_device(device_id)
+            if device.switch_state is self.devices.HIGH:
+                self.switches_set_button.Disable()
+                self.switches_clear_button.Enable()
+                self.switches_clear_button.SetValue(False)
+
+            else:
+                self.switches_set_button.Enable()
+                self.switches_clear_button.Disable()
+                self.switches_set_button.SetValue(False)
+        else:
+            self.switches_set_button.Disable()
+            self.switches_clear_button.Disable()
+
+    def monitors_update_toggle(self):
+        """Handle a change in monitors"""
+
+        # If the text in the box matches the name of a signal, then the set
+        # and zap buttons enable according to if the if it's monitored or not.
+        signal_name = self.monitors_select.GetValue()
+        monitored, unmonitored = self.monitors.get_signal_names()
+        if signal_name in monitored:
+            self.monitors_set_button.Disable()
+            self.monitors_zap_button.Enable()
+            self.monitors_zap_button.SetValue(False)
+        elif signal_name in unmonitored:
+            self.monitors_set_button.Enable()
+            self.monitors_zap_button.Disable()
+            self.monitors_set_button.SetValue(False)
+        else:
+            self.monitors_set_button.Disable()
+            self.monitors_zap_button.Disable()
+
+    def update_toolbar(self):
+        """Handle an undo/redo action"""
+        # Enable or disable UNDO arrow
+        if len(self.command_manager.undo_stack) == 0:
+            self.toolbar.EnableTool(wx.ID_UNDO, False)
+        else:
+            self.toolbar.EnableTool(wx.ID_UNDO, True)
+
+        # Enable or disable REDO arrow
+        if len(self.command_manager.redo_stack) == 0:
+            self.toolbar.EnableTool(wx.ID_REDO, False)
+        else:
+            self.toolbar.EnableTool(wx.ID_REDO, True)
+
     def switch_command(self, switch_name, value):
         """Set the state of a switch"""
-        device_id = self.names.query(switch_name)
-        if device_id is not None and device_id in self.switches:
-            try:
-                value = int(value)
-                if value == self.devices.LOW or value == self.devices.HIGH:
-                    self.devices.set_switch(device_id, value)
-                    self.log_text("Set switch " + switch_name + " to  " + str(value))
-                    self.log_command("s "+ switch_name + " " + str(value))
-                    self.last_command_index = len(self.command_history) -1
-                    # Update set/clear switches toggle button
-                    if self.switches_select.GetValue() == switch_name:
-                        if value == self.devices.HIGH:
-                            self.switches_set_button.Disable()
-                            self.switches_clear_button.Enable()
-                            self.switches_set_button.SetValue(False)
-                        else:
-                            self.switches_set_button.Enable()
-                            self.switches_clear_button.Disable()
-                            self.switches_clear_button.SetValue(False)
-                else:
-                    raise ValueError
-            except ValueError:
-                self.raise_error(self.INVALID_ARGUMENT, "Switch can be set to only 0 or 1.")
-        else:
-            self.raise_error(self.INVALID_ARGUMENT, "Device " + switch_name + " is not a SWITCH")
+        self.command_manager.execute_command(SwitchCommand(switch_name, value))
 
     def monitor_command(self, signal_name):
         """Set monitor on a signal"""
-
-        monitored, unmonitored = self.monitors.get_signal_names()
-        if signal_name in monitored + unmonitored:
-            if signal_name in unmonitored:
-                ids = self.devices.get_signal_ids(signal_name)
-                if ids is not None:
-                    [device_id, output_id] = ids
-                    self.monitors.make_monitor(device_id, output_id, self.completed_cycles)
-                    self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
-                    self.canvas.update_cycle_axis_layout()
-                    self.log_text("Set monitor on " + signal_name)
-                    self.log_command("m "+ signal_name)
-                    self.last_command_index = len(self.command_history) -1
-                    # update monitors set/zap toggle button
-                    if signal_name == self.monitors_select.GetValue():
-                        self.monitors_set_button.Disable()
-                        self.monitors_zap_button.Enable()
-                        self.monitors_set_button.SetValue(False)
-                else:
-                    self.raise_error(self.UNKNOWN_ERROR, "Failed in monitor_command. ids is None.")
-            else:
-                self.raise_error(self.monitors.MONITOR_PRESENT, signal_name + " is already monitored")
-        else:
-            self.raise_error(self.monitors.NOT_OUTPUT, "Error: " + signal_name + " is not an output signal")
+        self.command_manager.execute_command(MonitorCommand(signal_name))
 
     def zap_command(self, signal_name):
         """Zap monitor on a signal"""
-        monitored, unmonitored = self.monitors.get_signal_names()
-        if signal_name in monitored + unmonitored:
-            if signal_name in monitored:
-                ids = self.devices.get_signal_ids(signal_name)
-                if ids is not None:
-                    [device_id, output_id] = ids
-                    self.monitors.remove_monitor(device_id, output_id)
-                    self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
-                    self.canvas.update_cycle_axis_layout()
-                    self.log_text("Zap monitor on " + signal_name)
-                    self.log_command("z "+ signal_name)
-                    self.last_command_index = len(self.command_history) -1
-                    # update monitors set/zap toggle button
-                    if signal_name == self.monitors_select.GetValue():
-                        self.monitors_set_button.Enable()
-                        self.monitors_zap_button.Disable()
-                        self.monitors_zap_button.SetValue(False)
-            else:
-                self.raise_error(self.SIGNAL_NOT_MONITORED, signal_name + " is not monitored")
-        else:
-            self.raise_error(self.monitors.NOT_OUTPUT, signal_name + " is not an output signal")
+        self.command_manager.execute_command(ZapCommand(signal_name))
 
     def run_command(self, cycles):
         """Run simulation from start for a number of cycles"""
-        try:
-            cycles = int(cycles)
-            if cycles<0:
-                raise ValueError
-            self.monitors.reset_monitors()
-            self.devices.cold_startup()
-            if self.run_network(cycles):
-                self.completed_cycles = cycles
-                self.canvas.completed_cycles = cycles
-                self.canvas.render()
-                self.log_text("Run simulation for " + str(cycles) + " cycles")
-                self.log_command("r " + str(cycles))
-                self.last_command_index = len(self.command_history) - 1
-            else:
-                self.raise_error(self.OSCILLATING_NETWORK,
-                                 "Cannot run network. The network doesn't have a stable state.")
-        except ValueError:
-            self.raise_error(self.INVALID_ARGUMENT,
-                             "Cannot continue network. The number of cycles is not a positive integer.")
+        self.command_manager.execute_command(RunCommand(cycles))
 
     def continue_command(self, cycles):
-        try:
-            cycles = int(cycles)
-            if cycles<0:
-                raise ValueError
-            cycles = int(cycles)
-            self.devices.cold_startup()
-            if self.run_network(cycles):
-                self.completed_cycles += cycles
-                self.canvas.completed_cycles = self.completed_cycles
-                self.canvas.render()
-                self.log_text("Continue simulation for " + str(cycles) + " cycles. Total cycles: " + str(
-                    self.completed_cycles))
-                self.log_command("c " + str(cycles))
-                self.last_command_index = len(self.command_history) - 1
-            else:
-                self.raise_error(self.OSCILLATING_NETWORK, "Cannot run network. The network doesn't have a stable state.")
-        except ValueError:
-            self.raise_error(self.INVALID_ARGUMENT, "Cannot continue network. The number of cycles is not a positive integer.")
+        """Continue simulation from start for a number of cycles"""
+        self.command_manager.execute_command(ContinueCommand(cycles))
 
     def quit_command(self):
         """Handle the quit command"""
@@ -1021,59 +991,16 @@ class Gui(wx.Frame):
             if answer == wx.CANCEL:
                 return
             elif answer == wx.YES:
-                self.save_file()
+                path = None
+                self.command_manager.execute_command(SaveCommand(path))
         self.Close(True)
-
-    def log_command(self, command):
-        """Handle a new command to the gui."""
-
-        # Delet the rest of the unused command history
-        self.command_history = self.command_history[:self.last_command_index+1]
-        self.command_history.append(command)
-        self.last_command_index = len(self.command_history)-1
-
-    def execute_command_history(self):
-        """Restarts and executes the command history"""
-        self.reset_to_initial_state()
-        print(self.command_history)
-        command_history_copy = list(self.command_history)
-        last_command_index_copy = self.last_command_index
-        for command_string in command_history_copy[:self.last_command_index+1]:
-            command, *args = command_string.split()
-            if command == "s" and len(args) == 2:
-                self.switch_command(*args)
-            elif command == "m" and len(args) == 1:
-                self.monitor_command(*args)
-            elif command == "z" and len(args) == 1:
-                self.zap_command(*args)
-            elif command == "r" and len(args) == 1:
-                self.run_command(*args)
-            elif command == "c" and len(args) == 1:
-                self.continue_command(*args)
-            else:
-                wx.MessageBox("Invalid command. Enter 'h' for help.",
-                              "Invalid Command Error", wx.ICON_ERROR | wx.OK)
-        self.canvas.monitors = self.monitors
-        self.canvas.devices = self.devices
-        self.canvas.monitors_number = len(self.monitors.monitors_dictionary)
-        self.canvas.update_cycle_axis_layout()
-        self.canvas.render()
-        self.command_history = list(command_history_copy)
-        self.last_command_index = last_command_index_copy
-
-    def reset_to_initial_state(self):
-        self.canvas.completed_cycles=0
-        self.completed_cycles=0
-        self.devices = copy.deepcopy(self.initial_devices)
-        self.network = copy.deepcopy(self.initial_network)
-        self.monitors = copy.deepcopy(self.initial_monitors)
 
     def raise_error(self, error, message=None):
         """Handle user's errors in GUI"""
-        if error == self.INVALID_COMMAND:
+        if error == self.command_manager.INVALID_COMMAND:
             wx.MessageBox("Invalid command. Enter 'h' for help.",
                           "Invalid Command Error", wx.ICON_ERROR | wx.OK)
-        elif error == self.INVALID_ARGUMENT:
+        elif error == self.command_manager.INVALID_ARGUMENT:
             wx.MessageBox(message, "Invalid Argument Error", wx.ICON_ERROR | wx.OK)
         elif error == self.monitors.MONITOR_PRESENT:
             wx.MessageBox(message, "Monitor Present Error", wx.ICON_ERROR | wx.OK)
@@ -1085,15 +1012,18 @@ class Gui(wx.Frame):
             wx.MessageBox(message, "Device Absent Error", wx.ICON_ERROR | wx.OK)
         elif error == self.devices.INVALID_QUALIFIER:
             wx.MessageBox(message, "Invalid Argument Error", wx.ICON_ERROR | wx.OK)
-        elif error == self.OSCILLATING_NETWORK:
+        elif error == self.command_manager.OSCILLATING_NETWORK:
             wx.MessageBox(message, "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
-        elif error == self.CANNOT_OPEN_FILE:
+        elif error == self.command_manager.CANNOT_OPEN_FILE:
             wx.MessageBox(message, "Cannot Open File Error", wx.ICON_ERROR | wx.OK)
-        elif error == self.NOTHING_TO_UNDO:
-            wx.MessageBox("No command left to undo. This is the initial state of the simulation", "Nothing To Undo",
+        elif error == self.command_manager.NOTHING_TO_UNDO:
+            wx.MessageBox("No command left to undo. This is the initial state of the simulation.", "Nothing To Undo",
                           wx.ICON_ERROR | wx.OK)
-        elif error == self.NOTHING_TO_REDO:
-            wx.MessageBox("No command left to redo. This is the last state of the simulation", "Nothing To Redo",
+        elif error == self.command_manager.NOTHING_TO_REDO:
+            wx.MessageBox("No command left to redo. This is the last state of the simulation.", "Nothing To Redo",
+                          wx.ICON_ERROR | wx.OK)
+        elif error == self.command_manager.SIMULATION_NOT_STARTED:
+            wx.MessageBox("Nothing to continue. Run first.", "Simulation Not Started",
                           wx.ICON_ERROR | wx.OK)
         else:
             wx.MessageBox(message, "Unknown Error", wx.ICON_ERROR | wx.OK)

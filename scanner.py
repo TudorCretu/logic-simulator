@@ -170,11 +170,18 @@ class Scanner:
         return number 
     
     def display_error_location(self,last_symbol_cursor_pos):
-        position_of_error = last_symbol_cursor_pos
+        pos_of_err = last_symbol_cursor_pos
+        caret_coll_num = pos_of_err - self.cursor_pos_at_start_of_line -1
+                
         self.file.seek(self.cursor_pos_at_start_of_line)
+                
+        line = self.file.readline()
+        print(line)
+        print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
+       
         
-        print (self.file.readline())
-        print(" " * (position_of_error - self.cursor_pos_at_start_of_line) + "^")
-        
+        #Now reset cursor position in appropriate place to allow
+        #searching for the next appropriate punctuation symbol
+        #for error recovery
         self.file.seek(last_symbol_cursor_pos)
         self.advance()
