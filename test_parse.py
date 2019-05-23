@@ -61,7 +61,7 @@ def test_DEVICES_missing_devices_keywords(capfd):
 def test_DEVICES_expected_name_error(capfd):
     """Test reporting of missing expected Name symbol in DEVICE block"""
     
-    string_io = StringIO("DEVICES 1SWITCH = SWITCH/1;...")
+    string_io = StringIO("DEVICES 1SWITCH = SWITCH/1;")
     scanner = Scanner(string_io, names)
     parser = Parser(names, devices, network, monitors, scanner)
     
@@ -72,7 +72,7 @@ def test_DEVICES_expected_name_error(capfd):
 def test_DEVICES_resued_name_error(capfd):
     """Test if reuse of device name is reported in DEVICE block"""
     
-    string_io = StringIO("DEVICES SWITCHe = SWITCH/1, SWITCHe = SWITCH/0 ; ...")
+    string_io = StringIO("DEVICES SWITCHe = SWITCH/1, SWITCHe = SWITCH/0 ;")
     scanner = Scanner(string_io, names)
     parser = Parser(names, devices, network, monitors, scanner)
     
@@ -84,18 +84,30 @@ def test_DEVICES_resued_name_error(capfd):
 def test_DEVICES_expected_comma_error(capfd):
     """Test if missing expected comma symbol is reported in DEVICE BLOCK"""
     
-    string_io = StringIO("DEVICES SWITCH1 = SWITCH/1 SWITCH2 = SWITCH/0 ; ...")
+    string_io = StringIO("DEVICES SWITCH1 = SWITCH/1 SWITCH2 = SWITCH/0 ;")
     scanner = Scanner(string_io, names)
     parser = Parser(names, devices, network, monitors, scanner)
     
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
     assert out == "SyntaxError: Expected a comma\n"
+    
+    
+def test_DEVICES_expected_equals_error(capfd):
+    """Test if missing expected equals symbol is reported in DEVICE BLOCK"""
+    
+    string_io = StringIO("DEVICES SWITCH1 = SWITCH/1, SWITCH2  SWITCH/0 ;")
+    scanner = Scanner(string_io, names)
+    parser = Parser(names, devices, network, monitors, scanner)
+    
+    assert parser.parse_devices() is False
+    out,err = capfd.readouterr()
+    assert out == "SyntaxError: Expected an Equals symbol"
 
 def test_DEVICES_expected_number_error(capfd):
     """Test if a missing expected sumber symbol is reported in DEVICE BLOCK"""
     
-    string_io = StringIO("DEVICES SWITCH1 = SWITCH/a SWITCH2 = SWITCH/0 ; ...")
+    string_io = StringIO("DEVICES SWITCH1 = SWITCH/a SWITCH2 = SWITCH/0 ;")
     scanner = Scanner(string_io, names)
     parser = Parser(names, devices, network, monitors, scanner)
     
@@ -103,7 +115,7 @@ def test_DEVICES_expected_number_error(capfd):
     out,err = capfd.readouterr()
     assert out == "SyntaxError: Expected a number\n"
     
-    string_io = StringIO("DEVICES SWITCH1 = SWITCH/ SWITCH2 = SWITCH/0 ; ...")
+    string_io = StringIO("DEVICES SWITCH1 = SWITCH/ SWITCH2 = SWITCH/0 ;")
     scanner = Scanner(string_io, names)
     parser = Parser(names, devices, network, monitors, scanner)
     
@@ -138,31 +150,57 @@ def test_DEVICES_mutliple_errors():
     """Test that a sequence of known errors are reported indicating proper recovery occurs
     within DEVICE block"""
     pass
+
     
 """CONNECTIONS Block tests""" 
+test_file_dir = "test_definition_files/test_connections"
 
 def test_parse_connections_success():
     """Test if parse_devices returns true correctly"""
     
-    file_path = test_file_dir + "/test_model_2.txt"
+    file_path = test_file_dir + "/fully_correct.txt"
+    scanner = Scanner(file_path, names)
+    parser = Parser(names, devices, network, monitors, scanner)
+    parser.parse_devices()
+    assert parser.parse_connections() is True
+                                   
+def test_CONNECTIONS_expected_name_error(capfd):
+    """Test if parse_devices returns true correctly"""
+    
+    file_path = test_file_dir + "/expected_name_error.txt"
     scanner = Scanner(file_path, names)
     parser = Parser(names, devices, network, monitors, scanner)
     parser.parse_devices()
     assert parser.parse_connections() is False
+    out,err = capfd.readouterr()
+    assert out == "SyntaxError: Expected a name\n"
                                    
-def test_CONNECTIONS_expected_name_error(capfd):
-    pass                                 
                                    
 def test_CONNECTIONS_expected_comma_error(capfd):
-    pass                                                     
+    """Test if missing expected comma symbol is reported in CONNECTIONS BLOCK"""
+    
+    file_path = test_file_dir + "/expected_comma_error.txt"
+    scanner = Scanner(file_path, names)
+    parser = Parser(names, devices, network, monitors, scanner)
+    
+    assert parser.parse_devices() is False
+    out,err = capfd.readouterr()
+    assert out == "SyntaxError: Expected a comma\n"                                                     
 
 def test_CONNECTIONS_expected_dot_error(capfd):
-    pass                  
+    pass                
     
 def test_CONNECTIONS_expected_semicolon_error(capfd):
-    pass                    
+    """Test if missing expected ; symbol is reported in CONNECTIONS BLOCK"""
+    file_path = test_file_dir + "/expected_semicolon_error.txt"
+    scanner = Scanner(file_path, names)
+    parser = Parser(names, devices, network, monitors, scanner)
+    
+    assert parser.parse_devices() is False
+    out,err = capfd.readouterr()
+    assert out == "SyntaxError: Expected a semicolon\n"                    
    
-def test_DEVICES_mutliple_errors():
+def test_CONNECTIONS_mutliple_errors():
     pass
 
 """Monitors Block tests""" 
