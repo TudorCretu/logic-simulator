@@ -225,7 +225,7 @@ class Parser:
         flag = True  # any error changes this to false
         if self.symbol.type != self.scanner.KEYWORD:
             self.symbol = self.read_symbol()  # check keyword first
-            
+
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.MONITORS_ID:
             current_device, current_port = self.signame() # add_monitor
             error_type = self.monitors.make_monitor(current_device,current_port)
