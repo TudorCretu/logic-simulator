@@ -544,7 +544,7 @@ class Gui(wx.Frame):
         self.monitors_zap_button.Disable()
 
         #   Simulation
-        self.simulation_cycles_spin = wx.SpinCtrl(self, wx.ID_ANY, "10")
+        self.simulation_cycles_spin = wx.SpinCtrl(self, wx.ID_ANY, "10", max=10**5)
         self.simulation_run_button = wx.Button(self, wx.ID_ANY, "Run")
         self.simulation_continue_button = wx.Button(self, wx.ID_ANY, "Continue")
 
