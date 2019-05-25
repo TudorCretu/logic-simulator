@@ -456,7 +456,7 @@ class Parser:
 
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
 
-<<<<<<< HEAD
+
 # Function to make "open" function to work with StringIo objects
 
 def replace_open():
