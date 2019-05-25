@@ -8,7 +8,7 @@ Classes
 Scanner - reads definition file and translates characters into symbols.
 Symbol - encapsulates a symbol and stores its properties.
 """
-from names import Names
+from names import Names # remove this later 
 import sys
 class Symbol:
 
@@ -213,11 +213,10 @@ class Scanner:
         
 
 
-       
 names = Names()
 scanner = Scanner('test_definition_files/test_model_3.txt',names)
 symbol = None
-for a in range(7):
+for a in range(1):
     symbol =scanner.get_symbol()
     try:
         print(symbol.type,names.get_name_string(symbol.id))
