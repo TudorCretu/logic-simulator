@@ -329,12 +329,3 @@ def replace_open():
 replace_open()
 # Folder to keep test definition files
 test_file_dir = "test_definition_files"
-
-names = Names()
-devices = Devices(names)
-network = Network(names, devices)
-monitors = Monitors(names, devices, network)
-file_path = test_file_dir + "/test_model.txt"
-scanner = Scanner(file_path, names)
-parser = Parser(names, devices, network, monitors, scanner)
-flag = parser.parse_devices()
