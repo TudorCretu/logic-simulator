@@ -60,7 +60,10 @@ class Parser:
         # skeleton code. When complete, should return False when there are
         # errors in the circuit definition file.
         flag1 = self.parse_devices()
+        self.names = self.scanner.names
+        self.network = Network(self.names, self.devices)
         flag2 = self.parse_connections()
+        self.monitors = Monitors(self.names,self.devices,self.network)
         flag3 = self.parse_monitors()
         success = (flag1 and flag2 and flag3)
         # success = True
@@ -91,6 +94,7 @@ class Parser:
         else:
             self.display_error(self.NO_KEYWORD)  # no keyword
             return False  # just raise error and exit
+        # print(self.names)
 
     def add_device(self):
         """
@@ -170,6 +174,8 @@ class Parser:
                     If this section is error-free then return True, else return False
         """
         flag = True
+        if self.symbol.type != self.scanner.KEYWORD and self.symbol.type != self.scanner.EOF: # currently a semicolon
+            self.symbol = self.read_symbol()
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.CONNECTIONS_ID:
             if self.add_connection() is False:
                 flag = False
@@ -226,6 +232,8 @@ class Parser:
                     If this section is error-free then return True, else return False
         """
         flag = True
+        if self.symbol.type != self.scanner.KEYWORD and self.symbol.type != self.scanner.EOF:
+            self.symbol = self.read_symbol()
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.MONITORS_ID:
             if self.add_monitor() is False:
                 flag = False
@@ -280,15 +288,15 @@ class Parser:
         device_id = self.symbol.id
         self.symbol = self.read_symbol()
 
-        if self.symbol == self.scanner.DOT: # input
+        if self.symbol.type == self.scanner.DOT: # input
             self.symbol = self.read_symbol()
             if self.check_names() is False:
                 return None, None, 1
             port_id = self.symbol.id
-            self.read_symbol()
+            self.symbol = self.read_symbol()
             return device_id, port_id, 0 # input & DTYPE
 
-        elif self.symbol == self.scanner.COMMA or self.symbol == self.scanner.SEMICOLON or self.symbol == self.scanner.EQUALS: # output
+        elif self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON or self.symbol.type == self.scanner.EQUALS: # output
             return device_id, None, 0 # output
 
         elif self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
@@ -354,7 +362,7 @@ class Parser:
             print("SyntaxError: Expected a legal symbol")
         else:
             print("Unknown error occurred") # not likely to occur
-        # self.scanner.display_error_location(self.symbol.cursor_position)
+        self.scanner.display_error_location(self.symbol.cursor_position)
 
     def display_error_device(self,error_type):
         """
@@ -465,27 +473,27 @@ replace_open()
 # Folder to keep test definition files
 test_file_dir = "test_definition_files"
 
-# def replace_open():
-#     # The next line redefines the open function
-#     old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
-#                                 if isinstance(args[0], StringIO) \
-#                                 else old_open(*args, **kwargs)
-#
-#     # The methods below have to be added to the StringIO class in order for the "with" statement to work
-#     # StringIO.__enter__ = lambda self: self
-#     # StringIO.__exit__= lambda self, a, b, c: None
-#
-#
-# replace_open()
-# # Folder to keep test definition files
-# test_file_dir = "test_definition_files"
-#
-# names = Names()
-# devices = Devices(names)
-# network = Network(names, devices)
-# monitors = Monitors(names, devices, network)
-# file_path = test_file_dir + "/test_model.txt"
-# scanner = Scanner(file_path, names)
-# parser = Parser(names, devices, network, monitors, scanner)
-# flag = parser.parse_devices()
+def replace_open():
+    # The next line redefines the open function
+    old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
+                                if isinstance(args[0], StringIO) \
+                                else old_open(*args, **kwargs)
+
+    # The methods below have to be added to the StringIO class in order for the "with" statement to work
+    # StringIO.__enter__ = lambda self: self
+    # StringIO.__exit__= lambda self, a, b, c: None
+
+
+replace_open()
+# Folder to keep test definition files
+test_file_dir = "test_definition_files"
+
+names = Names()
+devices = Devices(names)
+network = Network(names, devices)
+monitors = Monitors(names, devices, network)
+file_path = test_file_dir + "/test_model.txt"
+scanner = Scanner(file_path, names)
+parser = Parser(names, devices, network, monitors, scanner)
+flag = parser.parse_network()
 
