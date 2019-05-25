@@ -483,8 +483,9 @@ def replace_open():
     # StringIO.__enter__ = lambda self: self
     # StringIO.__exit__= lambda self, a, b, c: None
 
-
+'''
 replace_open()
+
 # Folder to keep test definition files
 test_file_dir = "test_definition_files"
 
@@ -496,4 +497,4 @@ file_path = test_file_dir + "/test_model.txt"
 scanner = Scanner(file_path, names)
 parser = Parser(names, devices, network, monitors, scanner)
 flag = parser.parse_network()
-
+'''
