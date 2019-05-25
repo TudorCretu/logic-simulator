@@ -1,0 +1,2 @@
+DEVICES
+SW1  SWITCH/1; # missing equals sign here

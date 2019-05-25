@@ -6,4 +6,3 @@ SW4 = SWITCH/0,
 D1 = DTYPE,
 CK1 = CLOCK/2,
 XOR1 = XOR;
-
