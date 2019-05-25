@@ -36,21 +36,21 @@ def main(arg_list):
                      "Command line user interface: logsim.py -c <file path>\n"
                      "Graphical user interface: logsim.py <file path>")
     try:
-        options, arguments = getopt.getopt(arg_list, "hct:")
+        options, arguments = getopt.getopt(arg_list, "hc:")
     except getopt.GetoptError:
         print("Error: invalid command line arguments\n")
         print(usage_message)
         sys.exit()
 
     # Initialise instances of the four inner simulator classes
-    # names = Names()
-    # devices = Devices(names)
-    # network = Network(names, devices)
-    # monitors = Monitors(names, devices, network)
-    names = None
-    devices = None
-    network = None
-    monitors = None
+    names = Names()
+    devices = Devices(names)
+    network = Network(names, devices)
+    monitors = Monitors(names, devices, network)
+    # names = None
+    # devices = None
+    # network = None
+    # monitors = None
 
     for option, path in options:
         if option == "-h":  # print the usage message
