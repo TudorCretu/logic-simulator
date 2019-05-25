@@ -47,7 +47,7 @@ def create_parser(file_path):
     return parser
 """DEVICE Block tests"""
 
-def test_parse_devices_success(new_network):
+def test_parse_devices_success():
     """Test if parse_devices() returns True correctly for a valid file"""
     
     file_path = test_file_dir + "/test_model_2.txt"
