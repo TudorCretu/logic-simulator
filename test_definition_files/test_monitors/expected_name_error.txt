@@ -13,9 +13,8 @@ SW2 = XOR1.I2 ,
 XOR1 = D1.DATA ,
 CK1 = D1.CLK ,
 SW3 = D1.SET ,
-SW4 = D1.CLEAR , 
-1SW4 = D1.CLK; # add wrong name here 
+SW4 = D1.CLEAR ;
 
-MONITORS 
-D1.Q ,
+MONITORS
+1D1.Q , # name error here
 D1.QBAR ;
