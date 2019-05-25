@@ -60,10 +60,10 @@ class Parser:
         # skeleton code. When complete, should return False when there are
         # errors in the circuit definition file.
         flag1 = self.parse_devices()
-        self.names = self.scanner.names
-        self.network = Network(self.names, self.devices)
+        #self.names = self.scanner.names
+        #self.network = Network(self.names, self.devices)
         flag2 = self.parse_connections()
-        self.monitors = Monitors(self.names,self.devices,self.network)
+        #self.monitors = Monitors(self.names,self.devices,self.network)
         flag3 = self.parse_monitors()
         success = (flag1 and flag2 and flag3)
         # success = True
@@ -456,6 +456,7 @@ class Parser:
 
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
 
+<<<<<<< HEAD
 # Function to make "open" function to work with StringIo objects
 
 def replace_open():
@@ -498,3 +499,4 @@ scanner = Scanner(file_path, names)
 parser = Parser(names, devices, network, monitors, scanner)
 flag = parser.parse_network()
 '''
+
