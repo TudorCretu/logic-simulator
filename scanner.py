@@ -8,7 +8,7 @@ Classes
 Scanner - reads definition file and translates characters into symbols.
 Symbol - encapsulates a symbol and stores its properties.
 """
-
+#from names import Names
 import sys
 class Symbol:
 
@@ -80,10 +80,8 @@ class Scanner:
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
-        self.skip_spaces()
-        while self.current_character == "#":
-            self.skip_comment()
-            self.skip_spaces() # current character now not whitespace
+        self.skip_comments()
+        
         
         symbol.cursor_position = self.file.tell()
         if self.current_character.isalpha(): # name
@@ -140,12 +138,35 @@ class Scanner:
         self.current_character = self.file.read(1)
         return self.current_character
 
-    def skip_comment(self):
-        """Once a # is reached, skip to next line"""
-        if self.current_character == '#':
-            self.file.readline()            
+   
+            
+            
+    def skip_single_line_cmt(self):
+        self.file.readline()            
+        self.advance()
+        self.update_line_data()
+        
+    
+    def skip_mult_line_cmt(self):
+        self.advance()
+        while self.current_character !='*' and self.current_character !='':
             self.advance()
-            self.update_line_data()
+        self.advance()
+    
+    def skip_comments(self):
+        """Once a # is reached, skip to next line"""
+        self.skip_spaces()
+        if self.current_character == '#':
+            self.skip_single_line_cmt()
+        
+        elif self.current_character == '*':
+            self.skip_mult_line_cmt()
+        
+        else:
+            return
+        
+        self.skip_comments()
+    
     
     def skip_spaces(self):
         """Skip to the non - white space character in the file"""
@@ -185,3 +206,23 @@ class Scanner:
         #for error recovery
         self.file.seek(last_symbol_cursor_pos)
         self.advance()
+        
+        
+
+
+'''        
+names = Names()
+scanner = Scanner('test_definition_files/test_model_3.txt',names)
+symbol = None
+for a in range(19):
+    symbol =scanner.get_symbol()
+    try:
+        print(symbol.type,names.get_name_string(symbol.id))
+    except:
+        print(symbol.type,symbol.id)
+
+    
+#scanner.display_error_location(symbol.cursor_position)
+print('j\u032D')
+
+'''
