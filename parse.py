@@ -42,16 +42,17 @@ class Parser:
     """
 
     def __init__(self, names, devices, network, monitors, scanner):
-        """Initialise constants."""
+        """Initialise attributes and types of syntax error."""
         self.names = names
         self.devices = devices
         self.network = network
         self.monitors = monitors
         self.scanner = scanner
         self.symbol = Symbol()
+        # self.cursor = 0 # this might be needed
         self.error_count = 0
-
-        self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NO_BACKSLASH, self.NOT_NAME, self.NOT_NUMBER, self.NOT_SYMBOL] = self.names.unique_error_codes(8)
+        self.exist_semerr = 0 # marking variable, once a semantic error detected, stop adding anything and detect syntax error only
+        self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NOT_NAME, self.NOT_NUMBER, self.NOT_SYMBOL] = self.names.unique_error_codes(7)
 
     def parse_network(self):
         """Parse the circuit definition file."""
@@ -66,12 +67,14 @@ class Parser:
         return success
 
     def parse_devices(self):
-        if self.symbol.type == self.scanner.EOF:
-            return False
-        flag = True  # any error changes this to false
-        if self.symbol.type != self.scanner.KEYWORD:
-            self.symbol = self.read_symbol()  # check keyword first
+        """
+        Parse the section starting with the keyword DEVICES.
 
+        :return: flag, a boolean variable indicating if the DEVICES section is error-free.
+                    If this section is error-free then return True, else return False
+        """
+        self.symbol = self.read_symbol()
+        flag = True
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.DEVICES_ID:
             if self.add_device() is False:  # type not name
                 flag = False
@@ -90,10 +93,18 @@ class Parser:
             return False  # just raise error and exit
 
     def add_device(self):
+        """
+        Read in each syntax in DEVICE section, try to detect syntax errors before adding a device
+        and raise possible semantic error when adding the device.
+        If there is no error, then a new device is added according to the syntax.
+
+        :return: a bool value indicating if a device can be added according to the current syntax.
+                    If it can be added return True, else return False.
+        """
         self.symbol = self.read_symbol()
         if self.check_names() is False:
             return False
-        identifier = self.symbol  # current self.symbol is the IDENTIFIER
+        identifier = self.symbol.id  # current self.symbol is the IDENTIFIER
 
         self.symbol = self.read_symbol() # read in the following '='
         if self.symbol.type == self.scanner.EQUALS:
@@ -102,8 +113,8 @@ class Parser:
             if self.check_names() is False: # type not a name
                 return False
 
-            device_type = self.symbol
-            type_id = device_type.id # type of device to be passed to make_device
+            # device_type = self.symbol
+            type_id = self.symbol.id # type of device to be passed to make_device
             self.symbol = self.read_symbol() # now self.symbol maybe ','or '/' or ';'
 
             param = None
@@ -114,12 +125,17 @@ class Parser:
                     return False
 
             if self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
-                # make device using the type and param, have 1 param
-                error_type = self.devices.make_device(identifier.id,type_id,param)
-                if error_type != self.devices.NO_ERROR:
-                    self.display_error_device(error_type)
-                    return False
-                return True
+                if self.exist_semerr == 0:
+                    # make device using the type and param, have 1 param
+                    error_type = self.devices.make_device(identifier,type_id,param)
+                    if error_type != self.devices.NO_ERROR:
+                        self.exist_semerr = 1
+                        self.display_error_device(error_type)
+                        return False
+                    else:
+                        return True
+                else:
+                    return True
             elif self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
                 self.display_error(self.NO_SEMICOLON)
                 return False
@@ -134,6 +150,11 @@ class Parser:
             return False
 
     def get_parameter(self):
+        """
+        Get the parameter value right after the backslash for syntax in DEVICE section.
+
+        :return: If there is a number after the backslash then return this number, else return None
+        """
         self.symbol = self.read_symbol() # read in a param
         if self.check_number() is False:
             return None
@@ -142,6 +163,12 @@ class Parser:
         return param
 
     def parse_connections(self):
+        """
+        Parse the section starting with the keyword CONNECTIONS.
+
+        :return: flag, a boolean variable indicating if the CONNECTIONS section is error-free.
+                    If this section is error-free then return True, else return False
+        """
         flag = True
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.CONNECTIONS_ID:
             if self.add_connection() is False:
@@ -160,36 +187,51 @@ class Parser:
             return False # just raise error and exit
 
     def add_connection(self):
-        sig1_device, sig1_port = self.signame()
+        """
+        Read in each syntax in CONNECTIONS section, try to detect syntax errors before adding a connection
+        and raise possible semantic error when adding the connection.
+        If there is no error, then a new connection is added according to the syntax.
+
+        :return: a bool value indicating if a connection can be added according to the current syntax.
+                    If it can be added return True, else return False.
+        """
+        sig1_device, sig1_port, syntax_err = self.signame()
+        if syntax_err == 1:
+            return False
         if self.symbol.type == self.scanner.EQUALS:
-            sig2_device, sig2_port = self.signame()
-            # make connection between sig1 and sig2
-            error_type = self.network.make_connection(sig1_device, sig1_port, sig2_device, sig2_port)
-            if error_type != self.network.NO_ERROR:
-                self.display_error_connection(error_type)
+            sig2_device, sig2_port, syntax_err = self.signame()
+            if syntax_err == 1:
                 return False
-            return True
+            if self.exist_semerr == 0:
+                # make connection between sig1 and sig2
+                error_type = self.network.make_connection(sig1_device, sig1_port, sig2_device, sig2_port)
+                if error_type != self.network.NO_ERROR:
+                    self.exist_semerr = 1
+                    self.display_error_connection(error_type)
+                    return False
+                else:
+                    return True
+            else:
+                return True
         else:
             self.display_error(self.NO_EQUALS)  # no equal
             self.skip_erratic_part()
             return False
 
     def parse_monitors(self):
+        """
+        Parse the section starting with the keyword MONITORS.
 
+        :return: flag, a boolean variable indicating if the MONITORS section is error-free.
+                    If this section is error-free then return True, else return False
+        """
         flag = True
         if self.symbol.type == self.scanner.KEYWORD and self.symbol.id == self.scanner.MONITORS_ID:
-            current_device, current_port = self.signame() # add_monitor
-            error_type = self.monitors.make_monitor(current_device,current_port)
-            if error_type != self.monitors.NO_ERROR:
-                self.display_error_monitor(error_type)
+            if self.add_monitor() is False:
                 flag = False
-            # if self.add_monitor()
 
             while self.symbol.type == self.scanner.COMMA:
-                current_device, current_port = self.signame()
-                error_type = self.monitors.make_monitor(current_device, current_port)
-                if error_type != self.monitors.NO_ERROR:
-                    self.display_error_monitor(error_type)
+                if self.add_monitor() is False:
                     flag = False
 
             if self.symbol.type == self.scanner.SEMICOLON:
@@ -200,36 +242,72 @@ class Parser:
             self.display_error(self.NO_KEYWORD)
             return False # just raise error and exit
 
-    # def add_monitor(self):
+    def add_monitor(self):
+        """
+        Read in each syntax in MONITORS section, try to detect syntax errors before adding a monitor
+        and raise possible semantic error when adding the monitor.
+        If there is no error, then a new monitor is added according to the syntax.
+
+        :return: a bool value indicating if a monitor can be added according to the current syntax.
+                    If it can be added return True, else return False.
+        """
+        current_device, current_port, syntax_err = self.signame()  # add_monitor
+        if syntax_err == 1:
+            return False
+        if self.exist_semerr == 0:
+            error_type = self.monitors.make_monitor(current_device, current_port)
+            if error_type != self.monitors.NO_ERROR:
+                self.exist_semerr = 1
+                self.display_error_monitor(error_type)
+                return False
+            else:
+                return True
+        else:
+            return True
 
     def signame(self): # get the name of the signal
+        """
+        Get the signal names for syntax in CONNECTIONS and MONITORS section.
+
+        :return: device_id (the id of current device)
+                port_id (the id of the port to be monitored)
+                syntax_err (a boolean variable indicating if there is a syntax error in current syntax)
+                    if syntax_err=1 then there is a syntax error, otherwise syntax_err=0
+        """
         self.symbol = self.read_symbol()
         if self.check_names() is False:
-            return None, None
+            return None, None, 1
         device_id = self.symbol.id
         self.symbol = self.read_symbol()
 
         if self.symbol == self.scanner.DOT: # input
             self.symbol = self.read_symbol()
             if self.check_names() is False:
-                return None, None
+                return None, None, 1
             port_id = self.symbol.id
             self.read_symbol()
-            return device_id, port_id # input & DTYPE
+            return device_id, port_id, 0 # input & DTYPE
 
         elif self.symbol == self.scanner.COMMA or self.symbol == self.scanner.SEMICOLON or self.symbol == self.scanner.EQUALS: # output
-            return device_id, None # output
+            return device_id, None, 0 # output
 
         elif self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
             self.display_error(self.NO_SEMICOLON)
-            return None, None
+            return None, None, 1
 
         else:
             self.display_error(self.NO_COMMA)
             self.skip_erratic_part()
-            return None
+            return None, None, 1
 
-    def check_names(self): # skip erratic part then symbol becomes the next ',' or ';' or KEYWORD or EOF
+    def check_names(self): # with skip_erratic_part(), self.symbol becomes the next ',' or ';' or KEYWORD or EOF
+        """
+        Check if current self.symbol is a valid NAME according to the EBNF grammar.
+        If it is not a NAME, then raise syntax error and skip current syntax.
+
+        :return: a bool value indicating if self.symbol is a NAME symbol.
+                    If it is a NAME, return True, otherwise return False.
+        """
         if self.symbol.type != self.scanner.NAME:  # the type of device should be a name
             self.display_error(self.NOT_NAME)
             self.skip_erratic_part()
@@ -238,6 +316,13 @@ class Parser:
             return True
 
     def check_number(self): # similar to check_names
+        """
+        Check if current self.symbol is a valid NUMBER according to the EBNF grammar.
+        If it is not a NUMBER, then raise syntax error and skip current syntax.
+
+        :return: a bool value indicating if self.symbol is a NUMBER symbol.
+                    If it is a NUMBER, return True, otherwise return False.
+        """
         if self.symbol.type != self.scanner.NUMBER:  # param should be a number
             self.display_error(self.NOT_NUMBER)
             self.skip_erratic_part()
@@ -246,6 +331,12 @@ class Parser:
             return True
 
     def display_error(self, error_type):
+        """
+        Report and locate a syntax error "error_type" defined in the Parser() class.
+
+        :param error_type: a integer indicating the type of syntax error.
+        :return: no returned value.
+        """
         self.error_count += 1
         if error_type == self.NO_KEYWORD:
             print("SyntaxError: Expected a keyword")
@@ -255,10 +346,6 @@ class Parser:
             print("SyntaxError: Expected a semicolon")
         elif error_type == self.NO_COMMA:
             print("SyntaxError: Expected a comma")
-        # elif error_type == self.NO_DOT:
-        #     print("SyntaxError: Expected a dot")
-        # elif error_type == self.NO_BACKSLASH:
-        #    print("SyntaxError: Expected a backslash")
         elif error_type == self.NOT_NAME:
             print("SyntaxError: Expected a name")
         elif error_type == self.NOT_NUMBER:
@@ -266,9 +353,16 @@ class Parser:
         elif error_type == self.NOT_SYMBOL:
             print("SyntaxError: Expected a legal symbol")
         else:
-            print("Unknown error occurred")
+            print("Unknown error occurred") # not likely to occur
+        # self.scanner.display_error_location(self.symbol.cursor_position)
 
     def display_error_device(self,error_type):
+        """
+        Report and locate a semantic error "error_type" defined in the Devices() class.
+
+        :param error_type: a integer indicating the type of semantic error.
+        :return: no returned value.
+        """
         self.error_count += 1
         if error_type == self.devices.INVALID_QUALIFIER:
             print("SemanticError: INVALID_QUALIFIER")
@@ -280,8 +374,17 @@ class Parser:
             print("SemanticError: BAD_DEVICE")
         if error_type == self.devices.DEVICE_PRESENT:
             print("SemanticError: DEVICE_PRESENT")
+        else:
+            print("Unknown error occurred")  # not likely to occur
+        self.scanner.display_error_location(self.symbol.cursor_position)
 
     def display_error_connection(self,error_type):
+        """
+        Report and locate a semantic error "error_type" defined in the Network() class.
+
+        :param error_type: a integer indicating the type of semantic error.
+        :return: no returned value.
+        """
         self.error_count += 1
         if error_type == self.network.INPUT_TO_INPUT:
             print("Semantic error: INPUT_TO_INPUT")
@@ -293,48 +396,79 @@ class Parser:
             print("Semantic error: PORT_ABSENT")
         if error_type == self.network.DEVICE_ABSENT:
             print("Semantic error: DEVICE_ABSENT")
+        else:
+            print("Unknown error occurred") # not likely to occur
+        self.scanner.display_error_location(self.symbol.cursor_position)
 
     def display_error_monitor(self,error_type):
+        """
+        Report and locate a semantic error "error_type" defined in the Monitors() class.
+
+        :param error_type: a integer indicating the type of semantic error.
+        :return: no returned value.
+        """
         self.error_count += 1
         if error_type == self.monitors.NOT_OUTPUT:
             print("SemanticError: NOT_OUTPUT")
         if error_type == self.monitors.MONITOR_PRESENT:
             print("SemanticError: MONITOR_PRESENT")
+        else:
+            print("Unknown error occurred") # not likely to occur
+        self.scanner.display_error_location(self.symbol.cursor_position)
 
     def skip_erratic_part(self): # so-called recovery
+        """
+        This function is used for error recovery, it skips everything in the file before finding the next punctuation.
+        These types of symbols defined in Scanner() are punctuations: COMMA, SEMICOLON, KEYWORD, EOF
+        If a syntax error is detected, then this function is called.
+        If a semantic error is detected, the parser stops adding anything, and it will only focus on syntax errors.
+
+        :return: no returned value.
+        """
         while self.symbol.type != self.scanner.COMMA: # go to the next comma within the section
             if self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.SEMICOLON or self.symbol.type == self.scanner.EOF:
-                return # end of section or file, terminate
+                return # end of section or file, must terminate here
             self.symbol = self.read_symbol()
 
     def read_symbol(self):
+        """
+        Read in the next symbol to be considered by the parser.
+        If the scanner gets an invalid symbol, report syntax error and move on to get the next symbol.
+
+        :return: current_symbol, the next valid symbol to be considered by the parser.
+        """
+        # self.cursor = self.symbol.cursor_position
         current_symbol = self.scanner.get_symbol()
         while current_symbol.type is None:
             self.display_error(self.NOT_SYMBOL)
             current_symbol = self.scanner.get_symbol()
         return current_symbol
 
+
+
+#--------------------------------------local testing allowed-----------------------------------------------------------------------
+
 # Function to make "open" function to work with StringIo objects
-def replace_open():
-    # The next line redefines the open function
-    old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
-                                if isinstance(args[0], StringIO) \
-                                else old_open(*args, **kwargs)
-
-    # The methods below have to be added to the StringIO class in order for the "with" statement to work
-    # StringIO.__enter__ = lambda self: self
-    # StringIO.__exit__= lambda self, a, b, c: None
-
-
-replace_open()
-# Folder to keep test definition files
-test_file_dir = "test_definition_files"
-
-names = Names()
-devices = Devices(names)
-network = Network(names, devices)
-monitors = Monitors(names, devices, network)
-file_path = test_file_dir + "/test_model.txt"
-scanner = Scanner(file_path, names)
-parser = Parser(names, devices, network, monitors, scanner)
-flag = parser.parse_devices()
+# def replace_open():
+#     # The next line redefines the open function
+#     old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
+#                                 if isinstance(args[0], StringIO) \
+#                                 else old_open(*args, **kwargs)
+#
+#     # The methods below have to be added to the StringIO class in order for the "with" statement to work
+#     # StringIO.__enter__ = lambda self: self
+#     # StringIO.__exit__= lambda self, a, b, c: None
+#
+#
+# replace_open()
+# # Folder to keep test definition files
+# test_file_dir = "test_definition_files"
+#
+# names = Names()
+# devices = Devices(names)
+# network = Network(names, devices)
+# monitors = Monitors(names, devices, network)
+# file_path = test_file_dir + "/test_model.txt"
+# scanner = Scanner(file_path, names)
+# parser = Parser(names, devices, network, monitors, scanner)
+# flag = parser.parse_devices()
