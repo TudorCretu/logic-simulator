@@ -60,10 +60,10 @@ class Parser:
         # skeleton code. When complete, should return False when there are
         # errors in the circuit definition file.
         flag1 = self.parse_devices()
-        self.names = self.scanner.names
-        self.network = Network(self.names, self.devices)
+        #self.names = self.scanner.names
+        #self.network = Network(self.names, self.devices)
         flag2 = self.parse_connections()
-        self.monitors = Monitors(self.names,self.devices,self.network)
+        #self.monitors = Monitors(self.names,self.devices,self.network)
         flag3 = self.parse_monitors()
         success = (flag1 and flag2 and flag3)
         # success = True
@@ -456,44 +456,44 @@ class Parser:
 
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
 
-# Function to make "open" function to work with StringIo objects
-
-def replace_open():
-    # The next line redefines the open function
-    old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
-                                if isinstance(args[0], StringIO) \
-                                else old_open(*args, **kwargs)
-
-    # The methods below have to be added to the StringIO class in order for the "with" statement to work
-    # StringIO.__enter__ = lambda self: self
-    # StringIO.__exit__= lambda self, a, b, c: None
-
-
-replace_open()
-# Folder to keep test definition files
-test_file_dir = "test_definition_files"
-
-def replace_open():
-    # The next line redefines the open function
-    old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
-                                if isinstance(args[0], StringIO) \
-                                else old_open(*args, **kwargs)
-
-    # The methods below have to be added to the StringIO class in order for the "with" statement to work
-    # StringIO.__enter__ = lambda self: self
-    # StringIO.__exit__= lambda self, a, b, c: None
-
-
-replace_open()
-# Folder to keep test definition files
-test_file_dir = "test_definition_files"
-
-names = Names()
-devices = Devices(names)
-network = Network(names, devices)
-monitors = Monitors(names, devices, network)
-file_path = test_file_dir + "/test_model.txt"
-scanner = Scanner(file_path, names)
-parser = Parser(names, devices, network, monitors, scanner)
-flag = parser.parse_network()
-
+# # Function to make "open" function to work with StringIo objects
+#
+# def replace_open():
+#     # The next line redefines the open function
+#     old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
+#                                 if isinstance(args[0], StringIO) \
+#                                 else old_open(*args, **kwargs)
+#
+#     # The methods below have to be added to the StringIO class in order for the "with" statement to work
+#     # StringIO.__enter__ = lambda self: self
+#     # StringIO.__exit__= lambda self, a, b, c: None
+#
+#
+# replace_open()
+# # Folder to keep test definition files
+# test_file_dir = "test_definition_files"
+#
+# def replace_open():
+#     # The next line redefines the open function
+#     old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
+#                                 if isinstance(args[0], StringIO) \
+#                                 else old_open(*args, **kwargs)
+#
+#     # The methods below have to be added to the StringIO class in order for the "with" statement to work
+#     # StringIO.__enter__ = lambda self: self
+#     # StringIO.__exit__= lambda self, a, b, c: None
+#
+#
+# replace_open()
+# # Folder to keep test definition files
+# test_file_dir = "test_definition_files"
+#
+# names = Names()
+# devices = Devices(names)
+# network = Network(names, devices)
+# monitors = Monitors(names, devices, network)
+# file_path = test_file_dir + "/test_model.txt"
+# scanner = Scanner(file_path, names)
+# parser = Parser(names, devices, network, monitors, scanner)
+# flag = parser.parse_network()
+#
