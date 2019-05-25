@@ -198,9 +198,9 @@ class Scanner:
                 
         line = self.file.readline()
         #print(line)
-        print('File :',self.file.name)
-        print('Line',self.line_number,':', end =' ')
-        print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
+        #print('File :',self.file.name)
+        #print('Line',self.line_number,':', end =' ')
+        #print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
        
         
         #Now reset cursor position in appropriate place to allow
