@@ -8,7 +8,7 @@ Classes
 Scanner - reads definition file and translates characters into symbols.
 Symbol - encapsulates a symbol and stores its properties.
 """
-#from names import Names
+from names import Names
 import sys
 class Symbol:
 
@@ -193,11 +193,13 @@ class Scanner:
     def display_error_location(self,last_symbol_cursor_pos):
         pos_of_err = last_symbol_cursor_pos
         caret_coll_num = pos_of_err - self.cursor_pos_at_start_of_line -1
-                
+        #caret_coll_num = 1       
         self.file.seek(self.cursor_pos_at_start_of_line)
                 
         line = self.file.readline()
-        print(line)
+        #print(line)
+        print('File :',self.file.name)
+        print('Line',self.line_number,':', end =' ')
         print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
        
         
@@ -205,16 +207,17 @@ class Scanner:
         #searching for the next appropriate punctuation symbol
         #for error recovery
         self.file.seek(last_symbol_cursor_pos)
+        
         self.advance()
         
         
 
 
-'''        
+       
 names = Names()
 scanner = Scanner('test_definition_files/test_model_3.txt',names)
 symbol = None
-for a in range(19):
+for a in range(7):
     symbol =scanner.get_symbol()
     try:
         print(symbol.type,names.get_name_string(symbol.id))
@@ -222,7 +225,5 @@ for a in range(19):
         print(symbol.type,symbol.id)
 
     
-#scanner.display_error_location(symbol.cursor_position)
-print('j\u032D')
+scanner.display_error_location(symbol.cursor_position)
 
-'''
