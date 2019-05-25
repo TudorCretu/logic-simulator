@@ -16,5 +16,5 @@ SW3 = D1.SET ,
 SW4 = D1.CLEAR ;
 
 MONITORS
-1D1.Q , # name error here
+D1.Q ,
 D1.QBAR ;

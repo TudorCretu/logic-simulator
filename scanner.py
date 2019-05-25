@@ -8,7 +8,7 @@ Classes
 Scanner - reads definition file and translates characters into symbols.
 Symbol - encapsulates a symbol and stores its properties.
 """
-
+from names import Names # remove this later 
 import sys
 class Symbol:
 
@@ -70,7 +70,7 @@ class Scanner:
         self.symbol_type_list = [self.DOT, self.BACKSLASH, self.COMMA, self.SEMICOLON,
             self.EQUALS, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(9)
         self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITORS"]
-        [self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITOR_ID] = self.names.lookup(self.keywords_list)
+        [self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITORS_ID] = self.names.lookup(self.keywords_list)
         self.current_character = self.file.read(1)
         self.line_number = 1
         self.cursor_pos_at_start_of_line = 0
@@ -80,10 +80,8 @@ class Scanner:
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
-        self.skip_spaces()
-        while self.current_character == "#":
-            self.skip_comment()
-            self.skip_spaces() # current character now not whitespace
+        self.skip_comments()
+        
         
         symbol.cursor_position = self.file.tell()
         if self.current_character.isalpha(): # name
@@ -140,12 +138,35 @@ class Scanner:
         self.current_character = self.file.read(1)
         return self.current_character
 
-    def skip_comment(self):
-        """Once a # is reached, skip to next line"""
-        if self.current_character == '#':
-            self.file.readline()            
+   
+            
+            
+    def skip_single_line_cmt(self):
+        self.file.readline()            
+        self.advance()
+        self.update_line_data()
+        
+    
+    def skip_mult_line_cmt(self):
+        self.advance()
+        while self.current_character !='*' and self.current_character !='':
             self.advance()
-            self.update_line_data()
+        self.advance()
+    
+    def skip_comments(self):
+        """Once a # is reached, skip to next line"""
+        self.skip_spaces()
+        if self.current_character == '#':
+            self.skip_single_line_cmt()
+        
+        elif self.current_character == '*':
+            self.skip_mult_line_cmt()
+        
+        else:
+            return
+        
+        self.skip_comments()
+    
     
     def skip_spaces(self):
         """Skip to the non - white space character in the file"""
@@ -172,16 +193,37 @@ class Scanner:
     def display_error_location(self,last_symbol_cursor_pos):
         pos_of_err = last_symbol_cursor_pos
         caret_coll_num = pos_of_err - self.cursor_pos_at_start_of_line -1
-                
+        #caret_coll_num = 1       
         self.file.seek(self.cursor_pos_at_start_of_line)
                 
         line = self.file.readline()
-        print(line)
-        print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
+        #print(line)
+        #print('File :',self.file.name)
+        #print('Line',self.line_number,':', end =' ')
+        #print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
        
         
         #Now reset cursor position in appropriate place to allow
         #searching for the next appropriate punctuation symbol
         #for error recovery
         self.file.seek(last_symbol_cursor_pos)
+        
         self.advance()
+        
+
+#
+#
+# names = Names()
+# scanner = Scanner('test_definition_files/test_model_3.txt',names)
+# symbol = None
+# for a in range(7):
+#     symbol =scanner.get_symbol()
+#     try:
+#         print(symbol.type,names.get_name_string(symbol.id))
+#     except:
+#         print(symbol.type,symbol.id)
+#
+#
+# scanner.display_error_location(symbol.cursor_position)
+#
+
