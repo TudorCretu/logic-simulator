@@ -70,7 +70,7 @@ class Scanner:
         self.symbol_type_list = [self.DOT, self.BACKSLASH, self.COMMA, self.SEMICOLON,
             self.EQUALS, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(9)
         self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITORS"]
-        [self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITOR_ID] = self.names.lookup(self.keywords_list)
+        [self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITORS_ID] = self.names.lookup(self.keywords_list)
         self.current_character = self.file.read(1)
         self.line_number = 1
         self.cursor_pos_at_start_of_line = 0
@@ -210,19 +210,20 @@ class Scanner:
         
         self.advance()
         
-        
 
-
-names = Names()
-scanner = Scanner('test_definition_files/test_model_3.txt',names)
-symbol = None
-for a in range(1):
-    symbol =scanner.get_symbol()
-    try:
-        print(symbol.type,names.get_name_string(symbol.id))
-    except:
-        print(symbol.type,symbol.id)
-
-    
-scanner.display_error_location(symbol.cursor_position)
+#
+#
+# names = Names()
+# scanner = Scanner('test_definition_files/test_model_3.txt',names)
+# symbol = None
+# for a in range(7):
+#     symbol =scanner.get_symbol()
+#     try:
+#         print(symbol.type,names.get_name_string(symbol.id))
+#     except:
+#         print(symbol.type,symbol.id)
+#
+#
+# scanner.display_error_location(symbol.cursor_position)
+#
 
