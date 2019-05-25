@@ -22,7 +22,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     also contains handlers for events relating to the canvas.
 
     Parameters
-    ----------
+    ----------save
     parent: parent window.
     devices: instance of the devices.Devices() class.
     monitors: instance of the monitors.Monitors() class.
@@ -444,7 +444,6 @@ class Gui(wx.Frame):
         fileMenu.Append(wx.ID_NEW, "&New")
         fileMenu.Append(wx.ID_OPEN, "&Load")
         fileMenu.Append(wx.ID_SAVE, "&Save")
-        fileMenu.Append(wx.ID_SAVEAS, "&Save as")
         fileMenu.Append(wx.ID_EXIT, "&Exit")
         menuBar.Append(fileMenu, "&File")
 
@@ -509,10 +508,13 @@ class Gui(wx.Frame):
         self.monitors = monitors
         self.switches = devices.find_devices(devices.SWITCH)
 
-        # Canvas for drawing signals
-        self.canvas = MyGLCanvas(self, devices, monitors)
-
         # Configure the widgets
+        #  Canvas for drawing signals
+        self.canvas = MyGLCanvas(self, devices, monitors)
+        self.canvas_scrollbar_hor = wx.ScrollBar(self, wx.ID_ANY)
+        self.canvas_scrollbar_ver = wx.ScrollBar(self, wx.ID_ANY, style=wx.SB_VERTICAL)
+        self.update_scrollbars()
+
         #  Top sizer
         self.load_file_button = wx.Button(self, wx.ID_ANY, "Load file")
         self.load_file_text_box = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
@@ -544,7 +546,7 @@ class Gui(wx.Frame):
         self.monitors_zap_button.Disable()
 
         #   Simulation
-        self.simulation_cycles_spin = wx.SpinCtrl(self, wx.ID_ANY, "10", max=10**5)
+        self.simulation_cycles_spin = wx.SpinCtrl(self, wx.ID_ANY, "10", max=10**10)
         self.simulation_run_button = wx.Button(self, wx.ID_ANY, "Run")
         self.simulation_continue_button = wx.Button(self, wx.ID_ANY, "Continue")
 
@@ -603,6 +605,8 @@ class Gui(wx.Frame):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         central_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        canvas_sizer = wx.BoxSizer(wx.VERTICAL)
+        canvas_scrollbar_ver_sizer = wx.BoxSizer(wx.HORIZONTAL)
         activity_log_sizer = wx.BoxSizer(wx.VERTICAL)
         console_sizer = wx.BoxSizer(wx.VERTICAL)
         side_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -628,9 +632,15 @@ class Gui(wx.Frame):
         top_sizer.Add(self.load_file_button, 0, wx.LEFT, 5)
         top_sizer.Add(self.load_file_text_box, 1, wx.LEFT | wx.RIGHT, 5)
 
-        central_sizer.Add(self.canvas, 5, wx.EXPAND | wx.ALL, 5)
+        central_sizer.Add(canvas_sizer, 5, wx.EXPAND | wx.TOP | wx.LEFT | wx.BOTTOM, 5)
+        central_sizer.Add(canvas_scrollbar_ver_sizer, 0, wx.EXPAND | wx.TOP | wx.RIGHT | wx.BOTTOM, 5)
         central_sizer.Add(side_sizer, 1, wx.ALL, 5)
-        
+
+        canvas_sizer.Add(self.canvas, 5, wx.EXPAND, 0)
+        canvas_sizer.Add(self.canvas_scrollbar_hor, 0, wx.EXPAND, 0)
+
+        canvas_scrollbar_ver_sizer.Add(self.canvas_scrollbar_ver, 0, wx.EXPAND | wx.BOTTOM, 15)
+
         activity_log_sizer.Add(self.activity_log_title, 0, wx.TOP, 10)
         activity_log_sizer.Add(self.activity_log_text, 2, wx.EXPAND, 5)
 
@@ -699,8 +709,6 @@ class Gui(wx.Frame):
             self.on_load_file_button(None)
         if Id == wx.ID_SAVE:
             self.save_file()
-        if Id == wx.ID_SAVEAS:
-            self.save_file() #TODO
         if Id == wx.ID_UNDO:
             error_code, error_message = self.command_manager.undo_command()
             if error_code != self.command_manager.NO_ERROR:
@@ -963,6 +971,11 @@ class Gui(wx.Frame):
             self.toolbar.EnableTool(wx.ID_REDO, False)
         else:
             self.toolbar.EnableTool(wx.ID_REDO, True)
+
+    def update_scrollbars(self):
+        """Handle a change in pan or zoom"""
+        self.canvas_scrollbar_hor.SetScrollbar(0, 16, 50, 15)
+        self.canvas_scrollbar_ver.SetScrollbar(0,16,50,15)
 
     def switch_command(self, switch_name, value):
         """Set the state of a switch"""
