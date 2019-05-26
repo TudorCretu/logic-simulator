@@ -1,5 +1,6 @@
 
-# Define Devices
+
+!Symbol
 DEVICES
 CK1 = CLOCK/2,      # Clock Period 2
 CK2 = CLOCK/1,      # Clock Period 1
@@ -8,17 +9,4 @@ NAND1 = NAND/2,     # 2 input NAND gate
 OR1 = OR/2,         # 2 input OR gate
 NOR1 = NOR/2;       # 2 input NOR gate
 
-# Set Connections
-CONNECTIONS
-CK1 = AND1.I1,      
-CK2 = AND1.I2,
-CK2 = NAND1.I2,
-CK2 = OR1.I2,
-CK2 = NOR1.I2,
-AND1 = NAND1.I1,
-NAND1 = OR1.I1,
-OR1 = NOR1.I1;
 
-# Set Monitors
-MONITORS
-NOR1;
