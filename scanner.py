@@ -80,10 +80,14 @@ class Scanner:
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
-        self.skip_comments()
         
+        # skip past single and multi - line comments
+        self.skip_comments() 
         
+        # get cursor position at start of symbol
         symbol.cursor_position = self.file.tell()
+        
+        # Check for various symbol types
         if self.current_character.isalpha(): # name
             
             name_string = self.get_name()
@@ -93,11 +97,11 @@ class Scanner:
                 symbol.type = self.NAME
             [symbol.id] = self.names.lookup([name_string])
 
-        elif self.current_character.isdigit():
+        elif self.current_character.isdigit(): # number
             symbol.id = self.get_number()
             symbol.type = self.NUMBER
             
-        elif self.current_character == ".":
+        elif self.current_character == ".": # and so on ...
             symbol.type = self.DOT
             self.advance()
 
@@ -120,14 +124,19 @@ class Scanner:
         elif self.current_character == "":          
             symbol.type = self.EOF
 
-        else:
+        else: 
+            # An invalid symbol type corresponds to a symbol
+            # with default type and id of None and None
+            
             self.advance()
             
 
         return symbol 
     
     def update_line_data(self):
-        self.line_number +=1
+        """Handle update of line number and cursor position at line beginning"""
+        
+        self.line_number +=1 
         self.cursor_pos_at_start_of_line = self.file.tell()
 
     def advance(self):
@@ -137,39 +146,49 @@ class Scanner:
             
         self.current_character = self.file.read(1)
         return self.current_character
-
-   
-            
-            
+          
     def skip_single_line_cmt(self):
-        self.file.readline()            
-        self.advance()
-        self.update_line_data()
+        """Skip past single line comments"""
+        self.file.readline() # progress to the end of line           
+        self.advance() # progress to first character on new line
+        self.update_line_data() 
         
     
     def skip_mult_line_cmt(self):
-        self.advance()
+        """Skip to end of multiline comment or end of file"""
+        self.advance() # move to first character after the '*'
+        
+        # keep skipping characters until the end of the M-L comment (*)
+        # or the end of the file is reached
         while self.current_character !='*' and self.current_character !='':
             self.advance()
-        self.advance()
+            
+        self.advance() # move on to the next character
     
     def skip_comments(self):
-        """Once a # is reached, skip to next line"""
-        self.skip_spaces()
-        if self.current_character == '#':
+        """Keeps skipping until we reach a non - comment - initiating
+        character """
+        self.skip_spaces() # move to next non - whitespace character 
+        
+        # The specific comment punctuation is landed on determines
+        # the type of comment that will have to be skipped past
+                
+        if self.current_character == '#': # '#' marks single line comments
             self.skip_single_line_cmt()
         
-        elif self.current_character == '*':
+        elif self.current_character == '*': # '*' initiates a multi - line comment
             self.skip_mult_line_cmt()
         
         else:
-            return
+            return # indicates we did not land on a comment starting 
+                   # character, ending the process
         
-        self.skip_comments()
+        self.skip_comments() # keep repeating until we don't land on a 
+                             # comment starting character
     
     
     def skip_spaces(self):
-        """Skip to the non - white space character in the file"""
+        """Skip to the next non - white space character in the file"""
         while self.current_character.isspace():
             self.advance()
 
@@ -191,23 +210,31 @@ class Scanner:
         return number 
     
     def display_error_location(self,last_symbol_cursor_pos):
+        """Displays the location of an error. Shows the file that
+        contains it, the line number of the error and the specific
+        point on that line where the error occurs"""
+        
+        '''
         pos_of_err = last_symbol_cursor_pos
-        caret_coll_num = pos_of_err - self.cursor_pos_at_start_of_line -1
-        #caret_coll_num = 1       
-        self.file.seek(self.cursor_pos_at_start_of_line)
-                
+        # find the collumn number of the error location within the line
+        caret_coll_num = pos_of_err - self.cursor_pos_at_start_of_line 
+        # move cursor to start of current line
+        self.file.seek(self.cursor_pos_at_start_of_line) -1
+        
+        # add a caret to the point where the error begins on current line 
+        # display all error location information referreed to above        
         line = self.file.readline()
-        #print(line)
-        #print('File :',self.file.name)
-        #print('Line',self.line_number,':', end =' ')
-        #print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
-       
+        print('File :',self.file.name)
+        print('Line',self.line_number,':', end =' ')
+        print(caret_coll_num)
+        print('ss',line,'ss')
+        print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
+        '''
         
         #Now reset cursor position in appropriate place to allow
         #searching for the next appropriate punctuation symbol
         #for error recovery
         self.file.seek(last_symbol_cursor_pos)
-        
         self.advance()
         
 
