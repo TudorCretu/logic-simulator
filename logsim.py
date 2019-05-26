@@ -36,7 +36,7 @@ def main(arg_list):
                      "Command line user interface: logsim.py -c <file path>\n"
                      "Graphical user interface: logsim.py <file path>")
     try:
-        options, arguments = getopt.getopt(arg_list, "hc:")
+        options, arguments = getopt.getopt(arg_list, "hct:")
     except getopt.GetoptError:
         print("Error: invalid command line arguments\n")
         print(usage_message)
