@@ -86,7 +86,7 @@ class Scanner:
         
         # get cursor position at start of symbol
         symbol.cursor_position = self.file.tell()
-        
+        print(symbol.cursor_position,":test if cursor pos(left) None ")
         # Check for various symbol types
         if self.current_character.isalpha(): # name
             
@@ -213,23 +213,20 @@ class Scanner:
         """Displays the location of an error. Shows the file that
         contains it, the line number of the error and the specific
         point on that line where the error occurs"""
-        
-        '''
+                
         pos_of_err = last_symbol_cursor_pos
         # find the collumn number of the error location within the line
-        caret_coll_num = pos_of_err - self.cursor_pos_at_start_of_line 
+        caret_coll_num = pos_of_err - self.cursor_pos_at_start_of_line -1
         # move cursor to start of current line
-        self.file.seek(self.cursor_pos_at_start_of_line) -1
+        self.file.seek(self.cursor_pos_at_start_of_line)
         
         # add a caret to the point where the error begins on current line 
         # display all error location information referreed to above        
         line = self.file.readline()
         print('File :',self.file.name)
         print('Line',self.line_number,':', end =' ')
-        print(caret_coll_num)
-        print('ss',line,'ss')
         print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
-        '''
+       
         
         #Now reset cursor position in appropriate place to allow
         #searching for the next appropriate punctuation symbol
@@ -238,19 +235,21 @@ class Scanner:
         self.advance()
         
 
-#
-#
-# names = Names()
-# scanner = Scanner('test_definition_files/test_model_3.txt',names)
-# symbol = None
-# for a in range(7):
-#     symbol =scanner.get_symbol()
-#     try:
-#         print(symbol.type,names.get_name_string(symbol.id))
-#     except:
-#         print(symbol.type,symbol.id)
-#
-#
-# scanner.display_error_location(symbol.cursor_position)
-#
+
+
+names = Names()
+ 
+scanner = Scanner('test_definition_files/test_model_3.txt',names)
+ 
+symbol = None
+for a in range(1):
+    symbol =scanner.get_symbol()
+    try:
+        print(symbol.type,names.get_name_string(symbol.id))
+    except:
+        print(symbol.type,symbol.id)
+
+
+scanner.display_error_location(symbol.cursor_position)
+
 
