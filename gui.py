@@ -756,11 +756,25 @@ class Gui(wx.Frame):
         """Handle the event when the user clicks the run button."""
         cycles = self.simulation_cycles_spin.GetValue()
         self.run_command(cycles)
+        
+        #reset panning variables upon running from scratch
+        self.canvas.pan_x = 0
+        self.canvas.pan_y = 300
+        self.canvas.init_gl()
+        self.canvas.Refresh()
 
     def on_continue_button(self, event):
         """Handle the event when the user clicks the continue button."""
         cycles = self.simulation_cycles_spin.GetValue()
         self.continue_command(cycles)
+        
+        #pan so that end of signal profile at right edge of canvas 
+        canvas = self.canvas
+        x_at_end_of_signal = canvas.pan_x + canvas.zoom * (canvas.cycle_start_x + 
+            canvas.completed_cycles*canvas.cycle_width)
+        canvas.pan_x -= x_at_end_of_signal - canvas.GetClientSize().width +50
+        canvas.init_gl()
+        canvas.Refresh()
 
     def run_network(self, cycles):
         """Run the network for the specified number of simulation cycles.
