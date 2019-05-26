@@ -1,0 +1,5 @@
+AND1 = AND/3,
+AND2 = AND/,
+AND3 AND,
+AND2 = AND/5,
+AND1 = AND/6
