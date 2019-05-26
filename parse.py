@@ -198,7 +198,7 @@ class Parser:
         :return: a bool value indicating if a connection can be added according to the current syntax.
                     If it can be added return True, else return False.
         """
-        sig1_device, sig1_port, syntax_err = self.signame()
+        sig1_device, sig1_port, syntax_err = self.signame(0)
         if syntax_err == 1:
             return False
         if self.symbol.type == self.scanner.EQUALS:
@@ -270,10 +270,12 @@ class Parser:
         else:
             return True
 
-    def signame(self): # get the name of the signal
+    def signame(self, side=1): # get the name of the signal
         """
         Get the signal names for syntax in CONNECTIONS and MONITORS section.
 
+        :param side: 0 if the signal is on the left hand side, 1 if on the right hand side.
+                    Considering the MONITORS section, the default value of side is 1.
         :return: device_id (the id of current device)
                 port_id (the id of the port to be monitored)
                 syntax_err (a boolean variable indicating if there is a syntax error in current syntax)
@@ -285,7 +287,6 @@ class Parser:
             return None, None, 1
         device_id = self.symbol.id
         self.symbol = self.read_symbol()
-
         if self.symbol.type == self.scanner.DOT: # input
             self.symbol = self.read_symbol()
             if self.check_names() is False:
@@ -293,12 +294,17 @@ class Parser:
                 return None, None, 1
             port_id = self.symbol.id
             self.symbol = self.read_symbol()
-            return device_id, port_id, 0 # input & DTYPE
+            if self.check_side(side) is True:
+                return device_id, port_id, 0
+            else:
+                return None, None, 1
 
         elif self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON or self.symbol.type == self.scanner.EQUALS: # output
+            # do not need check_side() since this signal now must be on the RHS
             return device_id, None, 0 # output
 
         elif self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
+            # do not need check_side() since this signal now must be on the RHS
             self.display_error(self.NO_SEMICOLON)
             return None, None, 1
 
@@ -336,6 +342,33 @@ class Parser:
             return False
         else:
             return True
+
+    def check_side(self, side):
+        """
+        Check syntax errors after getting a syntactically valid signal.
+
+        :param side: 0 if the signal is on the left hand side, 1 if on the right hand side.
+        :return: a bool value indicating if there is a syntax error after current signal.
+                    If there is, return False, otherwise return True.
+        """
+        if side == 0:  # left hand side, expect a '='
+            if self.symbol.type != self.scanner.EQUALS:
+                self.display_error(self.NO_EQUALS)
+                self.skip_erratic_part()
+                return False
+            else:
+                return True  # input & DTYPE
+        else:
+            if self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
+                self.display_error(self.NO_SEMICOLON)
+                self.skip_erratic_part()
+                return False
+            elif self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
+                return True  # input & DTYPE
+            else:
+                self.display_error(self.NO_COMMA)
+                self.skip_erratic_part()
+                return False
 
     def display_error(self, error_type):
         """
@@ -427,7 +460,7 @@ class Parser:
         """
         This function is used for error recovery, it skips everything in the file before finding the next punctuation.
         These types of symbols defined in Scanner() are punctuations: COMMA, SEMICOLON, KEYWORD, EOF
-        If a syntax error is detected, then this function is called.
+        If a syntax error is detected, this function maybe called. Otherwise it is not called
         If a semantic error is detected, the parser stops adding anything, and it will only focus on syntax errors.
 
         :return: no returned value.
@@ -455,45 +488,14 @@ class Parser:
 
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
 
-#
-# # Function to make "open" function to work with StringIo objects
-#
-# def replace_open():
-#     # The next line redefines the open function
-#     old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
-#                                 if isinstance(args[0], StringIO) \
-#                                 else old_open(*args, **kwargs)
-#
-#     # The methods below have to be added to the StringIO class in order for the "with" statement to work
-#     # StringIO.__enter__ = lambda self: self
-#     # StringIO.__exit__= lambda self, a, b, c: None
-#
-#
-# replace_open()
 # # Folder to keep test definition files
-# test_file_dir = "test_definition_files"
-#
-# def replace_open():
-#     # The next line redefines the open function
-#     old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
-#                                 if isinstance(args[0], StringIO) \
-#                                 else old_open(*args, **kwargs)
-#
-#     # The methods below have to be added to the StringIO class in order for the "with" statement to work
-#     # StringIO.__enter__ = lambda self: self
-#     # StringIO.__exit__= lambda self, a, b, c: None
-#
-#
-# replace_open()
-#
-# # Folder to keep test definition files
-test_file_dir = "test_definition_files"
-#
-names = Names()
-devices = Devices(names)
-network = Network(names, devices)
-monitors = Monitors(names, devices, network)
-file_path = test_file_dir + "/test_model.txt"
-scanner = Scanner(file_path, names)
-parser = Parser(names, devices, network, monitors, scanner)
-flag = parser.parse_devices()
+# test_file_dir = "test_definition_files/test_connections"
+# names = Names()
+# devices = Devices(names)
+# network = Network(names, devices)
+# monitors = Monitors(names, devices, network)
+# file_path = test_file_dir + "/expected_comma_error.txt"
+# scanner = Scanner(file_path, names)
+# parser = Parser(names, devices, network, monitors, scanner)
+# _ = parser.parse_devices()
+# flag = parser.parse_connections()
