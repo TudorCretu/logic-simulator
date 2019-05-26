@@ -287,29 +287,54 @@ class Parser:
             return None, None, 1
         device_id = self.symbol.id
         self.symbol = self.read_symbol()
+        # current legal symbol: '.' ',' '=' ';'
         if self.symbol.type == self.scanner.DOT: # input
             self.symbol = self.read_symbol()
             if self.check_names() is False:
                 self.skip_erratic_part()
                 return None, None, 1
             port_id = self.symbol.id
-            self.symbol = self.read_symbol()
+            self.symbol = self.read_symbol() # current legal symbol: ',' '=' ';'
             if self.check_side(side) is True:
                 return device_id, port_id, 0
             else:
                 return None, None, 1
 
-        elif self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON or self.symbol.type == self.scanner.EQUALS: # output
-            # do not need check_side() since this signal now must be on the RHS
-            return device_id, None, 0 # output
+        elif self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
+            if side == 1: # RHS
+                return device_id, None, 0
+            else:
+                self.display_error(self.NO_EQUALS)
+                return None, None, 1
+
+        elif self.symbol.type == self.scanner.EQUALS: # output
+            if side == 0: # LHS
+                return device_id, None, 0 # output
+            else:
+                self.symbol = self.read_symbol() # does not matter because will skip_erratic_part
+                if self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
+                    self.display_error(self.NO_SEMICOLON)
+                else:
+                    self.display_error(self.NO_COMMA)
+                self.skip_erratic_part()
+                return None, None, 1
 
         elif self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
-            # do not need check_side() since this signal now must be on the RHS
-            self.display_error(self.NO_SEMICOLON)
+            if side == 1:
+                self.display_error(self.NO_SEMICOLON)
+            else:
+                self.display_error(self.NO_EQUALS)
             return None, None, 1
 
         else:
-            self.display_error(self.NO_COMMA)
+            if side == 1:
+                self.symbol = self.read_symbol()  # does not matter because will skip_erratic_part
+                if self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
+                    self.display_error(self.NO_SEMICOLON)
+                else:
+                    self.display_error(self.NO_COMMA)
+            else:
+                self.display_error(self.NO_EQUALS)
             self.skip_erratic_part()
             return None, None, 1
 
