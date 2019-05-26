@@ -511,7 +511,7 @@ class Parser:
         """
         # self.cursor = self.symbol.cursor_position
         current_symbol = self.scanner.get_symbol()
-        print(current_symbol.type)
+        # print(current_symbol.type)
         while current_symbol.type is None:
             self.display_error(self.NOT_SYMBOL)
             current_symbol = self.scanner.get_symbol()
