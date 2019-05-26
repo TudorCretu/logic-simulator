@@ -1,0 +1,8 @@
+# Define Devices
+DEVICES
+CK1 = CLOCK/2,      # Clock Period 2
+CK2 = CLOCK/1,      # Clock Period 1
+AND1 = AND/2,       # 2 input AND gate
+NAND1 = NAND/2,     # 2 input NAND gate
+OR1 = OR/2,         # 2 input OR gate
+NOR1 = NOR/2;       # 2 input NOR gate

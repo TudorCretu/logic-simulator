@@ -60,10 +60,7 @@ class Parser:
         # skeleton code. When complete, should return False when there are
         # errors in the circuit definition file.
         flag1 = self.parse_devices()
-        #self.names = self.scanner.names
-        #self.network = Network(self.names, self.devices)
         flag2 = self.parse_connections()
-        #self.monitors = Monitors(self.names,self.devices,self.network)
         flag3 = self.parse_monitors()
         success = (flag1 and flag2 and flag3)
         # success = True
@@ -284,6 +281,7 @@ class Parser:
         """
         self.symbol = self.read_symbol()
         if self.check_names() is False:
+            self.skip_erratic_part()
             return None, None, 1
         device_id = self.symbol.id
         self.symbol = self.read_symbol()
@@ -291,6 +289,7 @@ class Parser:
         if self.symbol.type == self.scanner.DOT: # input
             self.symbol = self.read_symbol()
             if self.check_names() is False:
+                self.skip_erratic_part()
                 return None, None, 1
             port_id = self.symbol.id
             self.symbol = self.read_symbol()
@@ -374,13 +373,13 @@ class Parser:
         self.error_count += 1
         if error_type == self.devices.INVALID_QUALIFIER:
             print("SemanticError: INVALID_QUALIFIER")
-        if error_type == self.devices.NO_QUALIFIER:
+        elif error_type == self.devices.NO_QUALIFIER:
             print("SemanticError: NO_QUALIFIER")
-        if error_type == self.devices.QUALIFIER_PRESENT:
+        elif error_type == self.devices.QUALIFIER_PRESENT:
             print("SemanticError: QUALIFIER_PRESENT")
-        if error_type == self.devices.BAD_DEVICE:
+        elif error_type == self.devices.BAD_DEVICE:
             print("SemanticError: BAD_DEVICE")
-        if error_type == self.devices.DEVICE_PRESENT:
+        elif error_type == self.devices.DEVICE_PRESENT:
             print("SemanticError: DEVICE_PRESENT")
         else:
             print("Unknown error occurred")  # not likely to occur
@@ -395,15 +394,15 @@ class Parser:
         """
         self.error_count += 1
         if error_type == self.network.INPUT_TO_INPUT:
-            print("Semantic error: INPUT_TO_INPUT")
-        if error_type == self.network.OUTPUT_TO_OUTPUT:
-            print("Semantic error: OUTPUT_TO_OUTPUT")
-        if error_type == self.network.INPUT_CONNECTED:
-            print("Semantic error: INPUT_CONNECTED")
-        if error_type == self.network.PORT_ABSENT:
-            print("Semantic error: PORT_ABSENT")
-        if error_type == self.network.DEVICE_ABSENT:
-            print("Semantic error: DEVICE_ABSENT")
+            print("SemanticError: INPUT_TO_INPUT")
+        elif error_type == self.network.OUTPUT_TO_OUTPUT:
+            print("SemanticError: OUTPUT_TO_OUTPUT")
+        elif error_type == self.network.INPUT_CONNECTED:
+            print("SemanticError: INPUT_CONNECTED")
+        elif error_type == self.network.PORT_ABSENT:
+            print("SemanticError: PORT_ABSENT")
+        elif error_type == self.network.DEVICE_ABSENT:
+            print("SemanticError: DEVICE_ABSENT")
         else:
             print("Unknown error occurred") # not likely to occur
         self.scanner.display_error_location(self.symbol.cursor_position)
@@ -418,7 +417,7 @@ class Parser:
         self.error_count += 1
         if error_type == self.monitors.NOT_OUTPUT:
             print("SemanticError: NOT_OUTPUT")
-        if error_type == self.monitors.MONITOR_PRESENT:
+        elif error_type == self.monitors.MONITOR_PRESENT:
             print("SemanticError: MONITOR_PRESENT")
         else:
             print("Unknown error occurred") # not likely to occur
@@ -456,40 +455,40 @@ class Parser:
 
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
 
-
-# Function to make "open" function to work with StringIo objects
-
-def replace_open():
-    # The next line redefines the open function
-    old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
-                                if isinstance(args[0], StringIO) \
-                                else old_open(*args, **kwargs)
-
-    # The methods below have to be added to the StringIO class in order for the "with" statement to work
-    # StringIO.__enter__ = lambda self: self
-    # StringIO.__exit__= lambda self, a, b, c: None
-
-
-replace_open()
-# Folder to keep test definition files
+#
+# # Function to make "open" function to work with StringIo objects
+#
+# def replace_open():
+#     # The next line redefines the open function
+#     old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
+#                                 if isinstance(args[0], StringIO) \
+#                                 else old_open(*args, **kwargs)
+#
+#     # The methods below have to be added to the StringIO class in order for the "with" statement to work
+#     # StringIO.__enter__ = lambda self: self
+#     # StringIO.__exit__= lambda self, a, b, c: None
+#
+#
+# replace_open()
+# # Folder to keep test definition files
+# test_file_dir = "test_definition_files"
+#
+# def replace_open():
+#     # The next line redefines the open function
+#     old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
+#                                 if isinstance(args[0], StringIO) \
+#                                 else old_open(*args, **kwargs)
+#
+#     # The methods below have to be added to the StringIO class in order for the "with" statement to work
+#     # StringIO.__enter__ = lambda self: self
+#     # StringIO.__exit__= lambda self, a, b, c: None
+#
+#
+# replace_open()
+#
+# # Folder to keep test definition files
 test_file_dir = "test_definition_files"
-
-def replace_open():
-    # The next line redefines the open function
-    old_open, builtins.open = builtins.open, lambda *args, **kwargs: args[0] \
-                                if isinstance(args[0], StringIO) \
-                                else old_open(*args, **kwargs)
-
-    # The methods below have to be added to the StringIO class in order for the "with" statement to work
-    # StringIO.__enter__ = lambda self: self
-    # StringIO.__exit__= lambda self, a, b, c: None
-
-'''
-replace_open()
-
-# Folder to keep test definition files
-test_file_dir = "test_definition_files"
-
+#
 names = Names()
 devices = Devices(names)
 network = Network(names, devices)
@@ -497,6 +496,4 @@ monitors = Monitors(names, devices, network)
 file_path = test_file_dir + "/test_model.txt"
 scanner = Scanner(file_path, names)
 parser = Parser(names, devices, network, monitors, scanner)
-flag = parser.parse_network()
-'''
-
+flag = parser.parse_devices()
