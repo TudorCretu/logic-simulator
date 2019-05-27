@@ -38,7 +38,7 @@ def test_DEVICES_missing_devices_keyword(capfd):
     parser =create_parser(file_path)
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a keyword\n"
+    assert parser.error_output[0] == "SyntaxError: Expected a keyword"
 
 
 def test_DEVICES_expected_name_error(capfd):
@@ -48,7 +48,7 @@ def test_DEVICES_expected_name_error(capfd):
     parser =create_parser(file_path)
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a name\n"
+    assert parser.error_output[0] == "SyntaxError: Expected a name"
 
 def test_DEVICES_resued_name_error(capfd):
     """Test if reuse of device name is reported in DEVICE block"""
@@ -58,7 +58,7 @@ def test_DEVICES_resued_name_error(capfd):
 
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert out == "SemanticError: DEVICE_PRESENT\n"
+    assert parser.error_output[0] == "SemanticError: DEVICE_PRESENT"
 
 
 def test_DEVICES_expected_comma_error(capfd):
@@ -69,7 +69,7 @@ def test_DEVICES_expected_comma_error(capfd):
 
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a comma\n"
+    assert parser.error_output[0] == "SyntaxError: Expected a comma"
 
 
 def test_DEVICES_expected_equals_error(capfd):
@@ -80,7 +80,7 @@ def test_DEVICES_expected_equals_error(capfd):
 
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected an equals sign\n"
+    assert parser.error_output[0] == "SyntaxError: Expected an equals sign"
 
 def test_DEVICES_expected_number_error(capfd):
     """Test if a missing expected sumber symbol is reported in DEVICE BLOCK"""
@@ -90,7 +90,7 @@ def test_DEVICES_expected_number_error(capfd):
 
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a number\n"
+    assert parser.error_output[0] == "SyntaxError: Expected a number"
 
 def test_DEVICES_expected_semicolon_error(capfd):
     """Test if missing expected semicolon symbol is reported in DEVICE BLOCK"""
@@ -100,7 +100,7 @@ def test_DEVICES_expected_semicolon_error(capfd):
 
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a semicolon\n"
+    assert parser.error_output[0] == "SyntaxError: Expected a semicolon"
 
 def test_DEVICES_parameter_error(capfd):
     """Test if lack of parameter labelling is reported in DEVICE BLOCK"""
@@ -110,7 +110,7 @@ def test_DEVICES_parameter_error(capfd):
 
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert out == "SemanticError: NO_QUALIFIER\n"
+    assert parser.error_output[0] == "SemanticError: NO_QUALIFIER"
     # not handled
 
 def test_DEVICES_mutliple_errors():
@@ -141,7 +141,7 @@ def test_CONNECTIONS_expected_name_error(capfd):
     assert parser.parse_connections() is False
 
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a name\n"
+    assert parser.error_output[0] == "SyntaxError: Expected a name"
 
 
 def test_CONNECTIONS_expected_comma_error(capfd):
@@ -154,7 +154,7 @@ def test_CONNECTIONS_expected_comma_error(capfd):
     assert parser.parse_connections() is False
 
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a comma\n"
+    assert parser.error_output[0] == "SyntaxError: Expected a comma"
 
 
 def test_CONNECTIONS_expected_semicolon_error(capfd):
@@ -167,7 +167,7 @@ def test_CONNECTIONS_expected_semicolon_error(capfd):
     assert parser.parse_connections() is False
 
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a semicolon\n"
+    assert parser.error_output[0] == "SyntaxError: Expected a semicolon"
 
 def test_CONNECTIONS_mutliple_errors():
     test_file_dir = "test_definition_files/test_connections"
@@ -198,7 +198,7 @@ def test_MONITORS_expected_name_error(capfd):
 
     assert parser.parse_monitors() is False
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a name\n"
+    assert parser.error_output[0] == "SyntaxError: Expected a name"
 
 def test_MONITORS_expected_comma_error(capfd):
     """Test if missing expected comma symbol is reported in MONITORS BLOCK"""
@@ -212,7 +212,7 @@ def test_MONITORS_expected_comma_error(capfd):
     assert parser.parse_monitors() is False
 
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a comma\n"
+    assert parser.error_output[0] == "SyntaxError: Expected a comma"
 
 
 def test_MONITORS_expected_semicolon_error(capfd):
@@ -226,7 +226,7 @@ def test_MONITORS_expected_semicolon_error(capfd):
 
     assert parser.parse_monitors() is False
     out,err = capfd.readouterr()
-    assert out == "SyntaxError: Expected a semicolon\n"
+    assert parser.error_output[0] == "SyntaxError: Expected a semicolon"
 
 def test_MONITORS_mutliple_errors():
     test_file_dir = "test_definition_files/test_monitors"

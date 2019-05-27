@@ -86,11 +86,10 @@ class Scanner:
 
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
-        symbol = Symbol(self.line_number, self.cursor_pos_at_start_of_line)
         
         # skip past single and multi - line comments
         self.skip_comments() 
-        
+        symbol = Symbol(self.line_number, self.cursor_pos_at_start_of_line)
         # get cursor position at start of symbol
         symbol.cursor_position = self.file.tell() - 1
         print(symbol.cursor_position,":test if cursor pos(left) None ")
@@ -234,7 +233,7 @@ class Scanner:
         line = self.file.readline()
         print(line)
         print('File :',self.file.name)
-        print('Line',self.line_number,':', end =' ')
+        print('Line',line_number,':', end =' ')
 
         print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
 
@@ -243,8 +242,8 @@ class Scanner:
         #searching for the next appropriate punctuation symbol
         #for error recovery
         
-        self.file.seek(last_symbol_cursor_pos)
-        self.advance()
+        #self.file.seek(last_symbol_cursor_pos)
+        #self.advance()
         
    
         pass
@@ -254,7 +253,7 @@ class Scanner:
 
 names = Names()
 
-scanner = Scanner('test_definition_files/test_model_3.txt',names)
+scanner = Scanner('test_functions/read_symbol.txt',names)
 
 symbol = None
 for a in range(3):
@@ -267,13 +266,13 @@ for a in range(3):
 
     scanner.display_error_location(symbol.cursor_position)
     '''
-    print (symbol.cursor_position,scanner.cursor_pos_at_start_of_line,scanner.line_number)
+    print (symbol.cursor_position,symbol.cursor_pos_at_start_of_line,symbol.line_number)
+    
+    scanner.display_error_location(symbol.line_number,symbol.cursor_pos_at_start_of_line,symbol.cursor_position)
 
 
 #scanner.display_error_location(symbol.cursor_position)
 
-scanner.display_error_location(1,0,3)
-scanner.display_error_location(1,0,8)
-scanner.display_error_location(1,0,11)
-print('@'+'\u032D')
-print('*')
+#scanner.display_error_location(1,0,0)
+#scanner.display_error_location(7,7,5)
+#canner.display_error_location(7,10,10)
