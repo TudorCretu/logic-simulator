@@ -247,12 +247,13 @@ names = Names()
 scanner = Scanner('test_definition_files/test_model_3.txt',names)
  
 symbol = None
-for a in range(4):
+for a in range(3):
     symbol =scanner.get_symbol()
     try:
         print(symbol.type,names.get_name_string(symbol.id))
     except:
         print(symbol.type,symbol.id)
+    print (symbol.cursor_position)
 
 
 scanner.display_error_location(symbol.cursor_position)
