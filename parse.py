@@ -49,13 +49,13 @@ class Parser:
         self.monitors = monitors
         self.scanner = scanner
         self.symbol = Symbol()
-        # self.cursor = 0 # this might be needed
         self.error_count = 0
         self.semerr_count = 0 # count semantic errors detected
         self.error_output = []
         self.error_cursor = []
         self.errline_num = []
         self.errline_pos = []
+        # self.out_for_gui = []
         self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NOT_NAME, self.NOT_NUMBER, self.NOT_SYMBOL] = self.names.unique_error_codes(7)
 
     def parse_network(self):
@@ -80,11 +80,14 @@ class Parser:
         """
         if success is True:
             print("Parsed successfully! Valid definition file!")
+            # self.out_for_gui.append("Parsed successfully! Valid definition file!")
         else:
             print("Totally %d errors detected: %d syntax errors and %d semantic errors"%(self.error_count, self.error_count-self.semerr_count,self.semerr_count))
             for i in range(self.error_count):
                 print(self.error_output[i])
+                # self.out_for_gui.append(self.error_output[i])
                 self.scanner.display_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
+                # self.out_for_gui.append(sth)
 
     def parse_devices(self):
         """
