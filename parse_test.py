@@ -47,13 +47,9 @@ def test_print_msg(capfd):
     file_dir = "test_functions"
     path = file_dir + "/read_symbol.txt"
     parser =create_parser(path)
-    parser.error_count = 2
-    parser.error_output = ["a","b"]
-    parser.error_cursor = [5,10] # the function in scanner currently disabled
-    parser.semerr_count = 1
-    parser.print_msg(False)
+    parser.print_msg(True)
     out, err = capfd.readouterr()
-    assert out == "Totally 2 errors detected: 1 syntax errors and 1 semantic errors\na\nb\n"
+    assert out == "Parsed successfully! Valid definition file!\n"
 
 def test_skip_erratic_part():
     """Test the Parser.skip_erratic_part() function"""

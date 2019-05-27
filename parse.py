@@ -441,15 +441,15 @@ class Parser:
         """
         self.error_count += 1
         if error_type == self.devices.INVALID_QUALIFIER:
-            self.error_output.append("SemanticError: INVALID_QUALIFIER")
+            self.error_output.append("SemanticError: InvalidParameterError")
         elif error_type == self.devices.NO_QUALIFIER:
-            self.error_output.append("SemanticError: NO_QUALIFIER")
+            self.error_output.append("SemanticError: MissingParameterError")
         elif error_type == self.devices.QUALIFIER_PRESENT:
-            self.error_output.append("SemanticError: QUALIFIER_PRESENT")
+            self.error_output.append("SemanticError: ExcessParametersError")
         elif error_type == self.devices.BAD_DEVICE:
-            self.error_output.append("SemanticError: BAD_DEVICE")
+            self.error_output.append("SemanticError: TypeNotFoundError")
         elif error_type == self.devices.DEVICE_PRESENT:
-            self.error_output.append("SemanticError: DEVICE_PRESENT")
+            self.error_output.append("SemanticError: RepeatedIdentifierError")
         else:
             self.error_output.append("Unknown error occurred")  # not likely to occur
         self.error_cursor.append(self.symbol.cursor_position)
@@ -465,15 +465,15 @@ class Parser:
         """
         self.error_count += 1
         if error_type == self.network.INPUT_TO_INPUT:
-            self.error_output.append("SemanticError: INPUT_TO_INPUT")
+            self.error_output.append("SemanticError: IllegalConnectionError")
         elif error_type == self.network.OUTPUT_TO_OUTPUT:
-            self.error_output.append("SemanticError: OUTPUT_TO_OUTPUT")
+            self.error_output.append("SemanticError: IllegalConnectionError")
         elif error_type == self.network.INPUT_CONNECTED:
-            self.error_output.append("SemanticError: INPUT_CONNECTED")
+            self.error_output.append("SemanticError: InputPortConnectionPresentError")
         elif error_type == self.network.PORT_ABSENT:
-            self.error_output.append("SemanticError: PORT_ABSENT")
+            self.error_output.append("SemanticError: InvalidPortError")
         elif error_type == self.network.DEVICE_ABSENT:
-            self.error_output.append("SemanticError: DEVICE_ABSENT")
+            self.error_output.append("SemanticError: DeviceAbsentError")
         else:
             self.error_output.append("Unknown error occurred") # not likely to occur
         self.error_cursor.append(self.symbol.cursor_position)
@@ -489,12 +489,14 @@ class Parser:
         """
         self.error_count += 1
         if error_type == self.monitors.NOT_OUTPUT:
-            self.error_output.append("SemanticError: NOT_OUTPUT")
+            self.error_output.append("SemanticError: MonitorOnInputSignalError")
         elif error_type == self.monitors.MONITOR_PRESENT:
-            self.error_output.append("SemanticError: MONITOR_PRESENT")
+            self.error_output.append("SemanticError: MonitorPresentError")
         else:
             self.error_output.append("Unknown error occurred") # not likely to occur
         self.error_cursor.append(self.symbol.cursor_position)
+        self.errline_num.append(self.symbol.line_number)
+        self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
 
     def skip_erratic_part(self): # so-called recovery
         """
@@ -531,17 +533,18 @@ class Parser:
 
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
 
-# Folder to keep test definition files
-test_file_dir = "test_functions"
-names = Names()
-devices = Devices(names)
-network = Network(names, devices)
-monitors = Monitors(names, devices, network)
-file_path = test_file_dir + "/read_symbol.txt"
-scanner = Scanner(file_path, names)
-parser = Parser(names, devices, network, monitors, scanner)
-a = parser.read_symbol()
-a = parser.read_symbol()
-print(parser.error_cursor)
-# print(parser.error_cursor[0]) # the cursor is None, msg captured right
-parser.print_msg(False)
+# # Folder to keep test definition files
+# test_file_dir = "test_definition_files/test_monitors"
+# names = Names()
+# devices = Devices(names)
+# network = Network(names, devices)
+# monitors = Monitors(names, devices, network)
+# file_path = test_file_dir + "/expected_name_error.txt"
+# scanner = Scanner(file_path, names)
+# parser = Parser(names, devices, network, monitors, scanner)
+# #a = parser.read_symbol()
+# #a = parser.read_symbol()
+# #print(parser.error_cursor)
+# # print(parser.error_cursor[0]) # the cursor is None, msg captured right
+# parser.parse_network()
+# parser.print_msg(False)
