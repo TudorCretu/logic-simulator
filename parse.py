@@ -595,18 +595,18 @@ class Parser:
 
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
 
-# # Folder to keep test definition files
-# test_file_dir = "test_definition_files/test_monitors"
-# names = Names()
-# devices = Devices(names)
-# network = Network(names, devices)
-# monitors = Monitors(names, devices, network)
-# file_path = test_file_dir + "/expected_name_error.txt"
-# scanner = Scanner(file_path, names)
-# parser = Parser(names, devices, network, monitors, scanner)
-# #a = parser.read_symbol()
-# #a = parser.read_symbol()
-# #print(parser.error_cursor)
-# # print(parser.error_cursor[0]) # the cursor is None, msg captured right
-# parser.parse_network()
-# parser.print_msg(False)
+# Folder to keep test definition files
+test_file_dir = "test_definition_files/test_devices"
+names = Names()
+devices = Devices(names)
+network = Network(names, devices)
+monitors = Monitors(names, devices, network)
+file_path = test_file_dir + "/invalid_parameter_error.txt"
+scanner = Scanner(file_path, names)
+parser = Parser(names, devices, network, monitors, scanner)
+#a = parser.read_symbol()
+#a = parser.read_symbol()
+#print(parser.error_cursor)
+# print(parser.error_cursor[0]) # the cursor is None, msg captured right
+parser.parse_network()
+parser.print_msg(False)
