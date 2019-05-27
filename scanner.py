@@ -264,7 +264,7 @@ for a in range(3):
         print(symbol.type,names.get_name_string(symbol.id))
     except:
         print(symbol.type,symbol.id)
-    
+
     scanner.display_error_location(symbol.cursor_position)
     '''
     print (symbol.cursor_position,scanner.cursor_pos_at_start_of_line,scanner.line_number)
