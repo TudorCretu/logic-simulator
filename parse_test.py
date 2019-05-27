@@ -75,8 +75,8 @@ def test_display_error_device():
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
-    parser.display_error_device(parser.devices.BAD_DEVICE)
-    assert parser.error_output[-1] == "SemanticError: BAD_DEVICE"
+    parser.display_error_device(parser.devices.INVALID_QUALIFIER, parser.symbol.id)
+    assert parser.error_output[-1] == "InvalidParameterError: Parameter value of Device 'AND1' is not valid"
 
 def test_display_error_connection():
     """Test the Parser.display_error_connection(error_type) function"""
@@ -85,16 +85,17 @@ def test_display_error_connection():
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
     parser.display_error_connection(parser.network.INPUT_TO_INPUT)
-    assert parser.error_output[-1] == "SemanticError: INPUT_TO_INPUT"
+    assert parser.error_output[-1] == "IllegalConnectionError: Signal '' and '' are both input signals"
 
 def test_display_error_monitor():
     """Test the Parser.display_error_monitor(error_type) function"""
     file_dir = "test_functions"
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
-    parser.symbol = parser.read_symbol()
-    parser.display_error_monitor(parser.monitors.NOT_OUTPUT)
-    assert parser.error_output[-1] == "SemanticError: NOT_OUTPUT"
+    symbol1 = parser.read_symbol()
+    symbol2 = parser.read_symbol()
+    parser.display_error_monitor(parser.monitors.NOT_OUTPUT, symbol1.id, symbol2.id)
+    assert parser.error_output[-1] == "MonitorOnInputSignalError: Monitored signal 'AND1.AND2' is an input signal"
 
 def test_check_names():
     """Test the Parser.check_names() function"""
@@ -133,18 +134,19 @@ def test_signame():
     file_dir = "test_functions"
     path = file_dir + "/signame.txt"
     parser = create_parser(path)
-    device_id, port_id, syntax_err = parser.signame()
+    _ = parser.parse_devices()
+    device_id, port_id, err = parser.signame()
     assert device_id is not None
     assert port_id is not None
-    assert syntax_err == 0
-    device_id, port_id, syntax_err = parser.signame()
-    assert device_id is not None
-    assert port_id is None
-    assert syntax_err == 0
-    device_id, port_id, syntax_err = parser.signame()
+    assert err == 0
+    device_id, port_id, err = parser.signame()
     assert device_id is None
     assert port_id is None
-    assert syntax_err == 1
+    assert err == 2
+    device_id, port_id, err = parser.signame()
+    assert device_id is None
+    assert port_id is None
+    assert err == 1
 
 def test_get_parameter():
     """Test the Parser.get_parameter() function"""

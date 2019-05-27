@@ -92,7 +92,7 @@ class Scanner:
         symbol = Symbol(self.line_number, self.cursor_pos_at_start_of_line)
         # get cursor position at start of symbol
         symbol.cursor_position = self.file.tell() - 1
-        print(symbol.cursor_position,":test if cursor pos(left) None ")
+        # print(symbol.cursor_position,":test if cursor pos(left) None ")
         # Check for various symbol types
         if self.current_character.isalpha(): # name
             
@@ -249,26 +249,26 @@ class Scanner:
         pass
         
 
-
-
-names = Names()
-
-scanner = Scanner('test_functions/read_symbol.txt',names)
-
-symbol = None
-for a in range(3):
-    symbol =scanner.get_symbol()
-    '''
-    try:
-        print(symbol.type,names.get_name_string(symbol.id))
-    except:
-        print(symbol.type,symbol.id)
-
-    scanner.display_error_location(symbol.cursor_position)
-    '''
-    print (symbol.cursor_position,symbol.cursor_pos_at_start_of_line,symbol.line_number)
-    
-    scanner.display_error_location(symbol.line_number,symbol.cursor_pos_at_start_of_line,symbol.cursor_position)
+#
+#
+# names = Names()
+#
+# scanner = Scanner('test_functions/read_symbol.txt',names)
+#
+# symbol = None
+# for a in range(3):
+#     symbol =scanner.get_symbol()
+#     '''
+#     try:
+#         print(symbol.type,names.get_name_string(symbol.id))
+#     except:
+#         print(symbol.type,symbol.id)
+#
+#     scanner.display_error_location(symbol.cursor_position)
+#     '''
+#     print (symbol.cursor_position,symbol.cursor_pos_at_start_of_line,symbol.line_number)
+#
+#     scanner.display_error_location(symbol.line_number,symbol.cursor_pos_at_start_of_line,symbol.cursor_position)
 
 
 #scanner.display_error_location(symbol.cursor_position)
