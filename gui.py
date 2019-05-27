@@ -761,9 +761,9 @@ class Gui(wx.Frame):
                                      maxValue=self.zoom_resolution*self.canvas.zoom_max, style=wx.SL_LABELS | wx.SL_TICKS, name="Zoom")
         self.zoom_slider.SetTickFreq(250)
         if wx.Platform == '__WXGTK__':  # If available, use zoom bitmaps
-            plus = wx.ArtProvider.GetBitmap("gtk-zoom-in", wx.ART_MENU)
+            plus = wx.ArtProvider.GetBitmap("gtk-zoom-in", wx.ART_MENU, size=zoom_button_size)
             self.zoom_plus_button = wx.BitmapButton(self, wx.ID_ANY, plus, size=zoom_button_size)
-            minus = wx.ArtProvider.GetBitmap("gtk-zoom-out", wx.ART_MENU)
+            minus = wx.ArtProvider.GetBitmap("gtk-zoom-out", wx.ART_MENU, size=zoom_button_size)
             self.zoom_minus_button = wx.BitmapButton(self, wx.ID_ANY, minus, size=zoom_button_size)
 
         else:  # otherwise, just use +/- string
