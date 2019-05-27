@@ -245,7 +245,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         # Draw numbers
         for i in range(0, self.completed_cycles + 1, self.clock_display_frequency):
-            self.render_text(str(i), self.cycle_start_x + i * self.cycle_width, self.cycle_axis_y - self.cycle_axis_y_padding)
+            self.render_text(str(i), self.cycle_start_x + i * self.cycle_width,
+                             self.cycle_axis_y - self.cycle_axis_y_padding)
 
         # Draw the horizontal axis
         GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
@@ -253,8 +254,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glLineWidth(2.0)
         for i in range(1, self.completed_cycles + 1, self.clock_display_frequency):
             GL.glBegin(GL.GL_LINES)
-            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i-1/2)+char_width/2, self.cycle_axis_y)
-            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i+1/2)-char_width/2, self.cycle_axis_y)
+            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i-1/2)+char_width/2,
+                          self.cycle_axis_y)
+            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i+1/2)-char_width/2,
+                          self.cycle_axis_y)
             GL.glEnd()
         GL.glPopAttrib()
 
@@ -266,7 +269,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glColor3f(0.4, 0.4, 0.4)  # signal trace is blue
         GL.glEnable(GL.GL_LINE_STIPPLE)
         for i in range(0, self.completed_cycles, self.clock_display_frequency):
-            char_width = self.text_width(str(i))
             GL.glBegin(GL.GL_LINES)
             GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i + 1 / 2),
                           self.cycle_axis_y)
@@ -288,7 +290,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         x_0 = monitors_start_x
         y_0 = -self.monitor_height * monitor_number + self.cycle_axis_y - self.monitor_height
         y_low = y_0 + self.monitors_padding
-        y_high = y_0  + self.monitor_height - self.monitors_padding
+        y_high = y_0 + self.monitor_height - self.monitors_padding
 
         color = self.color_cycle[monitor_number % len(self.color_cycle)]
         color_light = self.color_cycle_light[monitor_number % len(self.color_cycle_light)]
@@ -413,18 +415,76 @@ class Gui(wx.Frame):
     Parameters
     ----------
     title: title of the window.
+    path: initial path of the file loaded
+    names - instance of the names.Names() class.
+    devices - instance of the devices.Devices() class.
+    network: instance of the network.Network() class.
+    monitors - instance of the monitors.Monitors() class.
 
     Public methods
     --------------
     on_menu(self, event): Event handler for the file menu.
 
-    on_spin(self, event): Event handler for when the user changes the spin
-                           control value.
+    on_spin(self, event): Event handler for when the user changes the spin control value.
 
-    on_run_button(self, event): Event handler for when the user clicks the run
-                                button.
+    on_run_button(self, event): Event handler for when the user clicks the run button.
 
-    on_text_box(self, event): Event handler for when the user enters text.
+    on_continue_button(self, event): Event handler for when the user clicks the continue button.
+
+    on_console(self, event): Event handler for when the user types in the console.
+
+    on_switches_select(self, event): Event handler for when the user types in the switches text box.
+
+    on_switches_set(self, event): Event handler for when the user clicks the switches set button.
+
+    on_switches_clear(self, event): Event handler for when the user clicks the switches clear button.
+
+    on_monitors_select(self, event): Event handler for when the user types in the monitors text box.
+
+    on_monitors_set(self, event): Event handler for when the user clicks the monitors set button.
+
+    on_monitors_zap(self, event): Event handler for when the user clicks the monitors zap button.
+
+    on_load_file_button(self, event): Event handler for when the user clicks the load file button.
+
+    on_load_file_text_box(self, event): Event handler for when the user enters a filepath into load file text box.
+
+    open_file(self, pathname): Creates a new network for another definition file.
+
+    ask_to_save(self, action_title): Opens a save message box.
+
+    save_file(self): Open a save file dialog and executes the save command.
+
+    log_text(self, text): Writes text along with timestamp in activity log.
+
+    help_command(self): Prints a list of valid commands in activity log.
+
+    switches_update_toggle(self): Updates the visibility of the set/clear switch buttons when switches change.
+
+    monitors_update_toggle(self): Updates the visibility of the set/zap monitor buttons when monitors change.
+
+    update_toolbar(self): Update undo/redo visibility buttons in toolbar display when a command is undone or redone.
+
+    update_scrollbars(self): Updates the canvas' scrollbars position, size, visibility when the users pans/zooms.
+
+    update_cycles(self, cycles): Updates the number of completed cycles in both the gui and the canvas.
+
+    switch_command(self, switch_name, value): Set the value state to a switch.
+
+    monitor_command(self, signal_name): Set a monitor on a signal.
+
+    zap_command(self, signal_name): Zap a monitor on a signal.
+
+    run_command(self, cycles): Run the simulation for a number of cycles.
+
+    continue_command(self, cycles): Continue the simulation for a number of cycles.
+
+    quit_command(self): Handle the quit command.
+
+    raise_error(self, error, message=None): Display a message box with the error to the user.
+
+    on_key(self, event): Event handler for when the user presses a key.
+
     """
 
     def __init__(self, title, path, names, devices, network, monitors):
@@ -437,10 +497,6 @@ class Gui(wx.Frame):
         # Saving, loading, and undo/redo variables
         self.is_saved = True
         self.command_manager = CommandManager(self, names, devices, network, monitors)
-
-        # Erros
-        [self.NO_ERROR, self.INVALID_COMMAND, self.INVALID_ARGUMENT, self.SIGNAL_NOT_MONITORED, self.OSCILLATING_NETWORK,
-         self.CANNOT_OPEN_FILE, self.NOTHING_TO_UNDO, self.NOTHING_TO_REDO, self.SIMULATION_NOT_STARTED, self.UNKNOWN_ERROR] = names.unique_error_codes(10)
 
         # Configure the menu
         menuBar = wx.MenuBar()
@@ -480,7 +536,7 @@ class Gui(wx.Frame):
         self.SetMenuBar(menuBar)
 
         # Configure the tooblar
-        self.toolbar =  wx.ToolBar(self)
+        self.toolbar = wx.ToolBar(self)
         self.toolbar.AddTool(wx.ID_NEW, 'New file', wx.ArtProvider.GetBitmap(wx.ART_NEW))
         self.toolbar.AddTool(wx.ID_OPEN, 'Load', wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN))
         self.toolbar.AddTool(wx.ID_SAVE, 'Save', wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE))
@@ -538,7 +594,7 @@ class Gui(wx.Frame):
         #   Switches
         toggle_button_size = wx.Size(50, wx.DefaultSize.GetHeight())
         switches_names = [names.get_name_string(switch_id) for switch_id in self.switches]
-        self.switches_select = wx.ComboBox(self, wx.ID_ANY, style = wx.CB_SORT, choices=switches_names)
+        self.switches_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT, choices=switches_names)
         self.switches_set_button = wx.ToggleButton(self, wx.ID_ANY, "HIGH", style=wx.BORDER_NONE, size=toggle_button_size)
         self.switches_clear_button = wx.ToggleButton(self, wx.ID_ANY, "LOW", style=wx.BORDER_NONE, size=toggle_button_size)
         self.switches_set_button.Disable()
@@ -560,7 +616,7 @@ class Gui(wx.Frame):
         #   Zoom
         zoom_button_size = wx.Size(25, 25)
         self.zoom_minus_button = wx.Button(self, wx.ID_ANY, "-", size=zoom_button_size)
-        self.zoom_slider = wx.Slider(self, wx.ID_ANY, value=1, minValue=0.1, maxValue = 10, style=wx.SL_LABELS | wx.SL_TICKS, name="Zoom" )
+        self.zoom_slider = wx.Slider(self, wx.ID_ANY, value=1, minValue=0.1, maxValue=10, style=wx.SL_LABELS | wx.SL_TICKS, name="Zoom")
         self.zoom_plus_button = wx.Button(self, wx.ID_ANY, "+", size=zoom_button_size)
 
         #  Static Strings
@@ -724,7 +780,7 @@ class Gui(wx.Frame):
                 self.log_text("Undo")
         if Id == wx.ID_REDO:
             error_code, error_message = self.command_manager.redo_command()
-            if error_code!=self.command_manager.NO_ERROR:
+            if error_code != self.command_manager.NO_ERROR:
                 self.raise_error(error_code, error_message)
             else:
                 self.log_text("Redo")
@@ -783,24 +839,6 @@ class Gui(wx.Frame):
         canvas.init_gl()
         canvas.Refresh()
 
-    def run_network(self, cycles):
-        """Run the network for the specified number of simulation cycles.
-
-        Return True if successful.
-        """
-        for _ in range(cycles):
-            if self.network.execute_network():
-                self.monitors.record_signals()
-            else:
-                return False
-        self.canvas.Refresh()
-        return True
-
-    def update_cycles(self, cycles):
-        """Update the number of completed cycles"""
-        self.completed_cycles = cycles
-        self.canvas.completed_cycles = cycles
-        self.canvas.render()
 
     def on_console(self, event):
         """Handle the event when the user enters a command in the console."""
@@ -821,7 +859,7 @@ class Gui(wx.Frame):
         elif command == "q":
             self.quit_command()
         else:
-            self.raise_error(self.INVALID_COMMAND, "Invalid command. Enter 'h' for help.")
+            self.raise_error(self.command_manager.INVALID_COMMAND, "Invalid command. Enter 'h' for help.")
 
         self.console.SetValue("")
         
@@ -888,10 +926,10 @@ class Gui(wx.Frame):
     def open_file(self, pathname):
         """Create a new network for another definition file"""
         try:
-            with open(pathname, 'r') as file:
+            with open(pathname, 'r') as _:
                 self.command_manager.execute_command(LoadCommand(pathname))
         except IOError:
-            self.raise_error(self.CANNOT_OPEN_FILE, "Cannot open file '%s'." % pathname)
+            self.raise_error(self.command_manager.CANNOT_OPEN_FILE, "Cannot open file '%s'." % pathname)
 
     def ask_to_save(self, action_title):
         """Handle the quit or load actions if the state is not save"""
@@ -912,7 +950,7 @@ class Gui(wx.Frame):
             try:
                 print("Saving")
                 error_code, error_message = self.command_manager.execute_command(SaveCommand(pathname))
-                if error_code==self.command_manager.NO_ERROR:
+                if error_code == self.command_manager.NO_ERROR:
                     self.is_saved = True
                 else:
                     self.raise_error(error_code, error_message)
@@ -925,11 +963,11 @@ class Gui(wx.Frame):
         """Handle the logging in activity_log of an event"""
         text = "".join([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: "), text])
         self.activity_log_text.AppendText(text+'\n')
-        self.is_saved=False
+        self.is_saved = False
 
     def help_command(self):
         """Print a list of valid commands."""
-        text ="User commands:\n" + \
+        text = "User commands:\n" + \
             "r N         - run the simulation for N cycles\n" + \
             "c N         - continue the simulation for N cycles\n" + \
             "s X N     - set switch X to N (0 or 1)\n" + \
@@ -997,7 +1035,13 @@ class Gui(wx.Frame):
     def update_scrollbars(self):
         """Handle a change in pan or zoom"""
         self.canvas_scrollbar_hor.SetScrollbar(0, 16, 50, 15)
-        self.canvas_scrollbar_ver.SetScrollbar(0,16,50,15)
+        self.canvas_scrollbar_ver.SetScrollbar(0, 16, 50, 15)
+
+    def update_cycles(self, cycles):
+        """Update the number of completed cycles"""
+        self.completed_cycles = cycles
+        self.canvas.completed_cycles = cycles
+        self.canvas.render()
 
     def switch_command(self, switch_name, value):
         """Set the state of a switch"""
@@ -1039,7 +1083,7 @@ class Gui(wx.Frame):
             wx.MessageBox(message, "Invalid Argument Error", wx.ICON_ERROR | wx.OK)
         elif error == self.monitors.MONITOR_PRESENT:
             wx.MessageBox(message, "Monitor Present Error", wx.ICON_ERROR | wx.OK)
-        elif error == self.SIGNAL_NOT_MONITORED:
+        elif error == self.command_manager.SIGNAL_NOT_MONITORED:
             wx.MessageBox(message, "Signal Not Monitored Error", wx.ICON_ERROR | wx.OK)
         elif error == self.monitors.NOT_OUTPUT:
             wx.MessageBox(message, "Monitor On Input Signal Error", wx.ICON_ERROR | wx.OK)

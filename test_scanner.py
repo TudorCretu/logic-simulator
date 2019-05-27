@@ -230,7 +230,7 @@ def test_comment_between_sections(names):
 
 def test_definition_file_1(names):
     """Test if definition_file_1 is scanned correctly."""
-    scanner = Scanner(os.path.join(test_file_dir, "test_model_1.txt"), names)
+    scanner = Scanner(os.path.join(test_file_dir, "test_model_1.def"), names)
     assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("DEVICES"))
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("SW1"))
     assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)
@@ -324,7 +324,7 @@ def test_definition_file_1(names):
 
 def test_definition_file_2(names):
     """Test if definition_file_2 is scanned correctly."""
-    scanner = Scanner(os.path.join(test_file_dir, "test_model_2.txt"), names)
+    scanner = Scanner(os.path.join(test_file_dir, "test_model_2.def"), names)
     assert_symbol(scanner.get_symbol(), scanner.KEYWORD, names.query("DEVICES"))
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("CK1"))
     assert_symbol(scanner.get_symbol(), scanner.EQUALS, None)

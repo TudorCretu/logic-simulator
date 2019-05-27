@@ -19,6 +19,7 @@ from monitors import Monitors
 from scanner import Scanner
 from parse import Parser
 
+
 class Command(metaclass=abc.ABCMeta):
     """Abstract / Interface base class for commands."""
     @abc.abstractmethod
@@ -200,6 +201,7 @@ class MonitorCommand(Command):
         self.gui.monitors_update_toggle()
         return self.command_manager.NO_ERROR, None
 
+
 class ZapCommand(Command):
     """Zap command implementation."""
 
@@ -298,12 +300,14 @@ class RunCommand(Command):
                 if self.command_manager.network.execute_network():
                     self.command_manager.monitors.record_signals()
                 else:
-                    return self.command_manager.OSCILLATING_NETWORK, "Cannot run network. The network doesn't have a stable state."
+                    return self.command_manager.OSCILLATING_NETWORK, \
+                           "Cannot run network. The network doesn't have a stable state."
             self.gui.update_cycles(self.cycles)
             self.gui.log_text("Run simulation for " + str(self.cycles) + " cycles")
 
         except ValueError:
-            return self.command_manager.INVALID_ARGUMENT, "Cannot run network. The number of cycles is not a positive integer."
+            return self.command_manager.INVALID_ARGUMENT, \
+                   "Cannot run network. The number of cycles is not a positive integer."
         self.final_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
         self.final_devices_state = copy.deepcopy(command_manager.devices.devices_list)
 
@@ -409,7 +413,8 @@ class SaveCommand(Command):
         self.command_manager = command_manager
         self.gui = command_manager.gui
         with open(self.path, 'wb') as fp:
-            data = [self.command_manager.monitors, self.command_manager.devices, self.command_manager.network, self.command_manager.names, self.command_manager.gui.completed_cycles]
+            data = [self.command_manager.monitors, self.command_manager.devices, self.command_manager.network,
+                    self.command_manager.names, self.command_manager.gui.completed_cycles]
             pickle.dump(data, fp)
 
         self.gui.log_text("Save file " + self.path)
@@ -450,14 +455,14 @@ class LoadCommand(Command):
         """
         self.command_manager = command_manager
         self.gui = command_manager.gui
-        if self.path.split('.')[-1] == "defb": # File is an already built network
+        if self.path.split('.')[-1] == "defb":  # File is an already built network
             with open(self.path, 'rb') as fp:
                 try:
                     monitors, devices, network, names, completed_cycles = pickle.load(fp)
-                except:
+                except pickle.UnpicklingError:
                     return self.command_manager.INVALID_DEFINITION_FILE, None
 
-        else: # File is a definition file
+        else:  # File is a definition file
             names = Names()
             devices = Devices(names)
             network = Network(names, devices)
@@ -550,7 +555,8 @@ class CommandManager:
         # Errors
         [self.NO_ERROR, self.INVALID_COMMAND, self.INVALID_ARGUMENT, self.SIGNAL_NOT_MONITORED,
          self.OSCILLATING_NETWORK, self.CANNOT_OPEN_FILE, self.NOTHING_TO_UNDO, self.NOTHING_TO_REDO,
-         self.SIMULATION_NOT_STARTED, self.NO_FILE, self.INVALID_DEFINITION_FILE, self.UNKNOWN_ERROR] = names.unique_error_codes(12)
+         self.SIMULATION_NOT_STARTED, self.NO_FILE, self.INVALID_DEFINITION_FILE,
+         self.UNKNOWN_ERROR] = names.unique_error_codes(12)
 
     def execute_command(self, command):
         """Execute command given as argument
