@@ -40,6 +40,14 @@ def test_DEVICES_missing_devices_keyword(capfd):
     out,err = capfd.readouterr()
     assert parser.error_output[0] == "SyntaxError: Expected a keyword"
 
+def test_DEVICES_type_not_found_error(capfd):
+    """Test if parse_devices returns true correctly"""
+    test_file_dir = "test_definition_files/test_devices"
+    file_path = test_file_dir + "/type_not_found_error.txt"
+    parser =create_parser(file_path)
+    assert parser.parse_devices() is False
+    out,err = capfd.readouterr()
+    assert parser.error_output[0] == "TypeNotFoundError: Device's type 'SWITCHEY' does not match one of the following:\n'CLOCK','SWITCH','AND','NAND','OR','NOR','XOR','DTYPE'"
 
 def test_DEVICES_expected_name_error(capfd):
     """Test reporting of missing expected Name symbol in DEVICE block"""
@@ -58,7 +66,7 @@ def test_DEVICES_resued_name_error(capfd):
 
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert parser.error_output[0] == "SemanticError: RepeatedIdentifierError"
+    assert parser.error_output[0] == "RepeatedIdentifierError: Device 'SW1' is already defined"
 
 
 def test_DEVICES_expected_comma_error(capfd):
@@ -102,21 +110,52 @@ def test_DEVICES_expected_semicolon_error(capfd):
     out,err = capfd.readouterr()
     assert parser.error_output[0] == "SyntaxError: Expected a semicolon"
 
-def test_DEVICES_parameter_error(capfd):
+def test_DEVICES_missing_parameter_error(capfd):
     """Test if lack of parameter labelling is reported in DEVICE BLOCK"""
     test_file_dir = "test_definition_files/test_devices"
-    file_path = test_file_dir + "/parameter_error.txt"
+    file_path = test_file_dir + "/missing_parameter_error.txt"
     parser =create_parser(file_path)
 
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert parser.error_output[0] == "SemanticError: MissingParameterError"
-    # not handled
+    assert parser.error_output[0] == "MissingParameterError: Parameter value of Device 'SW1' is not specified"
+
+def test_DEVICES_invalid_parameter_error(capfd):
+    """Test if lack of parameter labelling is reported in DEVICE BLOCK"""
+    test_file_dir = "test_definition_files/test_devices"
+    file_path = test_file_dir + "/invalid_parameter_error.txt"
+    parser =create_parser(file_path)
+
+    assert parser.parse_devices() is False
+    out,err = capfd.readouterr()
+    assert parser.error_output[0] == "InvalidParameterError: Parameter value of Device 'AND1' is not valid"
+    
+def test_DEVICES_excess_parameter_error(capfd):
+    """Test if lack of parameter labelling is reported in DEVICE BLOCK"""
+    test_file_dir = "test_definition_files/test_devices"
+    file_path = test_file_dir + "/excess_parameter_error.txt"
+    parser =create_parser(file_path)
+
+    assert parser.parse_devices() is False
+    out,err = capfd.readouterr()
+    assert parser.error_output[0] == "ExcessParametersError: Device 'XOR1' has too many parameters specified"
 
 def test_DEVICES_mutliple_errors():
     """Test that a sequence of known errors are reported indicating proper recovery occurs
     within DEVICE block"""
-    pass
+    test_file_dir = "test_definition_files/test_devices"
+    file_path = test_file_dir + "/multiple_errors.txt"
+    parser =create_parser(file_path)
+
+    assert parser.parse_devices() is False
+    
+    assert parser.error_output[0] == "SyntaxError: Expected a name"
+    assert parser.error_output[1] == "RepeatedIdentifierError: Device 'SW2' is already defined"
+    assert parser.error_output[2] == "InvalidParameterError: Parameter value of Device 'SW4' is not valid"
+    assert parser.error_output[3] == "SyntaxError: Expected a comma"
+    assert parser.error_output[4] == "SyntaxError: Expected a semicolon"
+
+    
 
 
 # -------------------------------------CONNECTION Block tests----------------------------------------
@@ -166,16 +205,6 @@ def test_CONNECTIONS_expected_equals_error(capfd):
     out,err = capfd.readouterr()
     assert parser.error_output[0] == "SyntaxError: Expected an equals sign"
     
-def test_CONNECTIONS_expected_dot__or_comma_error(capfd):
-    """Test if missing expected equals symbol is reported in DEVICE BLOCK"""
-    test_file_dir = "test_definition_files/test_connections"
-    file_path = test_file_dir + "/missing_dot_error.txt"
-    parser =create_parser(file_path)
-    parser.parse_devices()
-    assert parser.parse_connections() is False
-    out,err = capfd.readouterr()
-    assert parser.error_output[0] == "SyntaxError: Expected a comma or a dot"
-    
 
 def test_CONNECTIONS_expected_semicolon_error(capfd):
     """Test if missing expected ; symbol is reported in CONNECTIONS BLOCK"""
@@ -189,21 +218,85 @@ def test_CONNECTIONS_expected_semicolon_error(capfd):
     out,err = capfd.readouterr()
     assert parser.error_output[0] == "SyntaxError: Expected a semicolon"
     
-def test_CONNECTIONS_device_not_present_error(capfd):
+def test_CONNECTIONS_device_absent_error(capfd):
     """Test if missing expected ; symbol is reported in CONNECTIONS BLOCK"""
     test_file_dir = "test_definition_files/test_connections"
-    file_path = test_file_dir + "/device_not_present_error.txt"
+    file_path = test_file_dir + "/device_absent_error.txt"
     parser =create_parser(file_path)
 
     parser.parse_devices()
     assert parser.parse_connections() is False
 
     out,err = capfd.readouterr()
-    assert parser.error_output[0] == "Specified device doesn't exist"
+    assert parser.error_output[0] == "DeviceAbsentError:Device 'XOR8' is not defined"
+    
+                              
+    
+def test_CONNECTIONS_invalid_port_error(capfd):
+    """Test if missing expected ; symbol is reported in CONNECTIONS BLOCK"""
+    test_file_dir = "test_definition_files/test_connections"
+    file_path = test_file_dir + "/invalid_port_error.txt"
+    parser =create_parser(file_path)
+
+    parser.parse_devices()
+    assert parser.parse_connections() is False
+
+    out,err = capfd.readouterr()
+    assert parser.error_output[0] == "InvalidPortError: Device 'XOR1' does not have port '.I9'"
+  
+                              
+def test_CONNECTIONS_2sig(capfd):
+    """Test if missing expected ; symbol is reported in CONNECTIONS BLOCK"""
+    test_file_dir = "test_definition_files/test_connections"
+    file_path = test_file_dir + "/input_2signals.txt"
+    parser =create_parser(file_path)
+
+    parser.parse_devices()
+    assert parser.parse_connections() is False
+
+    out,err = capfd.readouterr()
+    assert parser.error_output[0] == "InputPortConnectionPresentError: Connection between signals 'SW2' and 'XOR1.I1' already exists"
+                              
+def test_CONNECTIONS_input_input_error(capfd):
+    """Test if missing expected ; symbol is reported in CONNECTIONS BLOCK"""
+    test_file_dir = "test_definition_files/test_connections"
+    file_path = test_file_dir + "/input_input.txt"
+    parser =create_parser(file_path)
+
+    parser.parse_devices()
+    assert parser.parse_connections() is False
+
+    out,err = capfd.readouterr()
+    assert parser.error_output[0] == "IllegalConnectionError: Signal 'D1.CLEAR' and 'XOR1.I1' are both input signals"
+    
+def test_CONNECTIONS_output_output_error(capfd):
+    """Test if missing expected ; symbol is reported in CONNECTIONS BLOCK"""
+    test_file_dir = "test_definition_files/test_connections"
+    file_path = test_file_dir + "/output_output.txt"
+    parser =create_parser(file_path)
+
+    parser.parse_devices()
+    assert parser.parse_connections() is False
+
+    out,err = capfd.readouterr()
+    assert parser.error_output[0] == "IllegalConnectionError: Signal 'SW1' and 'SW2' are both output signals"
 
 def test_CONNECTIONS_mutliple_errors():
+    """Test if missing expected ; symbol is reported in CONNECTIONS BLOCK"""
     test_file_dir = "test_definition_files/test_connections"
-    pass
+    file_path = test_file_dir + "/multiple_errors.txt"
+    parser =create_parser(file_path)
+
+    parser.parse_devices()
+    assert parser.parse_connections() is False
+
+
+    assert parser.error_output[0] == "SyntaxError: Expected a name"
+    assert parser.error_output[1] == "InvalidPortError: Device 'XOR1' does not have port '.I3'"
+    assert parser.error_output[2] == "SyntaxError: Expected a semicolon"
+    
+# problem of DTYPE with no port specified ie XOR1.I1 = D1 ; # no dot for port                               
+                              
 
 # -------------------------------------MONITOR Block tests----------------------------------------
 def test_parse_monitors_success():
@@ -259,6 +352,7 @@ def test_MONITORS_expected_semicolon_error(capfd):
     assert parser.parse_monitors() is False
     out,err = capfd.readouterr()
     assert parser.error_output[0] == "SyntaxError: Expected a semicolon"
+
 
 def test_MONITORS_mutliple_errors():
     test_file_dir = "test_definition_files/test_monitors"
