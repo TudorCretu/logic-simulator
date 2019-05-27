@@ -81,7 +81,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.monitors_padding = 15
         self.cycle_width = 40
         # 25pt after the longest monitor name
-        self.cycle_start_x = 25 + self.text_width("0") * self.monitors.get_margin()
+        margin = self.monitors.get_margin()
+        if margin is None:
+            longest_monitor = len("Cycles")
+        else:
+            longest_monitor = max(len("Cycles"), margin)
+        self.cycle_start_x = 25 + self.text_width("0") * longest_monitor
         self.cycle_axis_y = 0
         self.cycle_axis_y_padding = -7
         self.completed_cycles = 10
@@ -502,6 +507,7 @@ class Gui(wx.Frame):
         self.SetAcceleratorTable(self.accel_tbl)
 
         # Instances of the classes
+        self.path = path
         self.names = names
         self.devices = devices
         self.network = network
@@ -518,7 +524,8 @@ class Gui(wx.Frame):
         #  Top sizer
         self.load_file_button = wx.Button(self, wx.ID_ANY, "Load file")
         self.load_file_text_box = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
-        self.load_file_text_box.SetValue(path)
+        if path is not None:
+            self.load_file_text_box.SetValue(path)
 
         #  Activity log sizer
         self.activity_log_title = wx.StaticText(self, wx.ID_ANY, "Activity log")
@@ -790,6 +797,7 @@ class Gui(wx.Frame):
         return True
 
     def update_cycles(self, cycles):
+        """Update the number of completed cycles"""
         self.completed_cycles = cycles
         self.canvas.completed_cycles = cycles
         self.canvas.render()
@@ -854,7 +862,7 @@ class Gui(wx.Frame):
             elif answer == wx.YES:
                 self.save_file()
         # otherwise ask the user what new file to open
-        with wx.FileDialog(self, "Open another definition file", wildcard="*.def",
+        with wx.FileDialog(self, "Open another definition file", wildcard="Definiton files (*.def)|*.def|Network files (*.defb)|*.defb|All files (*)|*",
                            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -881,7 +889,6 @@ class Gui(wx.Frame):
         """Create a new network for another definition file"""
         try:
             with open(pathname, 'r') as file:
-                self.load_file_text_box.SetValue(pathname)
                 self.command_manager.execute_command(LoadCommand(pathname))
         except IOError:
             self.raise_error(self.CANNOT_OPEN_FILE, "Cannot open file '%s'." % pathname)
@@ -893,7 +900,8 @@ class Gui(wx.Frame):
         return save_dlg
 
     def save_file(self):
-        with wx.FileDialog(self, "Choose where to save the file", wildcard="*.def",
+        """Handle file dialog for choosing the saving file destination"""
+        with wx.FileDialog(self, "Choose where to save the file", wildcard="Network files (*.defb)|*.defb",
                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -973,7 +981,7 @@ class Gui(wx.Frame):
             self.monitors_zap_button.Disable()
 
     def update_toolbar(self):
-        """Handle an undo/redo action"""
+        """Handle an undo/redo action in toolbar display"""
         # Enable or disable UNDO arrow
         if len(self.command_manager.undo_stack) == 0:
             self.toolbar.EnableTool(wx.ID_UNDO, False)
@@ -1051,6 +1059,12 @@ class Gui(wx.Frame):
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.SIMULATION_NOT_STARTED:
             wx.MessageBox("Nothing to continue. Run first.", "Simulation Not Started",
+                          wx.ICON_ERROR | wx.OK)
+        elif error == self.command_manager.NO_FILE:
+            wx.MessageBox("No network avilable. Load a valid definition file.", "No network available",
+                          wx.ICON_ERROR | wx.OK)
+        elif error == self.command_manager.INVALID_DEFINITION_FILE:
+            wx.MessageBox("The file loaded contains errors", "Invalid definition file",
                           wx.ICON_ERROR | wx.OK)
         else:
             wx.MessageBox(message, "Unknown Error", wx.ICON_ERROR | wx.OK)
