@@ -104,7 +104,7 @@ class SwitchCommand(Command):
         device_id = self.command_manager.names.query(self.switch_name)
         if device_id is not None and device_id in self.gui.switches:
             try:
-                self.value = self.value
+                self.value = int(self.value)
                 if self.value == self.command_manager.devices.LOW or self.value == self.command_manager.devices.HIGH:
                     self.command_manager.devices.set_switch(device_id, self.value)
                     self.gui.log_text("Set switch " + self.switch_name + " to  " + str(self.value))
@@ -303,6 +303,8 @@ class RunCommand(Command):
                     return self.command_manager.OSCILLATING_NETWORK, \
                            "Cannot run network. The network doesn't have a stable state."
             self.gui.update_cycles(self.cycles)
+            self.gui.canvas.update_cycle_axis_layout()
+            self.gui.canvas.reset_pan()
             self.gui.log_text("Run simulation for " + str(self.cycles) + " cycles")
 
         except ValueError:
@@ -321,6 +323,8 @@ class RunCommand(Command):
         self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
         self.command_manager.devices.devices_list = self.initial_devices_state
         self.gui.update_cycles(self.initial_cycles)
+        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.pan_to_right_end()
         return self.command_manager.NO_ERROR, None
 
     def redo(self):
@@ -331,6 +335,8 @@ class RunCommand(Command):
         self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
         self.command_manager.devices.devices_list = self.final_devices_state
         self.gui.update_cycles(self.cycles)
+        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.pan_to_right_end()
         return self.command_manager.NO_ERROR, None
 
 
@@ -342,7 +348,11 @@ class ContinueCommand(Command):
         self.command_manager = None
         self.gui = None
         self.cycles = cycles
+        self.initial_cycles = None
         self.initial_monitors_state = None
+        self.final_monitors_state = None
+        self.initial_devices_state = None
+        self.final_devices_state = None
 
     def execute(self, command_manager):
         """Continue simulation for a number of cycles
@@ -351,7 +361,9 @@ class ContinueCommand(Command):
         """
         self.command_manager = command_manager
         self.gui = command_manager.gui
+        self.initial_cycles = self.gui.completed_cycles
         self.initial_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
+        self.initial_devices_state = copy.deepcopy(command_manager.devices.devices_list)
 
         if self.gui.completed_cycles == 0:
             return self.command_manager.SIMULATION_NOT_STARTED, None
@@ -367,11 +379,16 @@ class ContinueCommand(Command):
                     return self.command_manager.OSCILLATING_NETWORK, \
                             "Cannot continue network. The network doesn't have a stable state."
             self.gui.update_cycles(self.gui.completed_cycles + self.cycles)
+            self.gui.canvas.update_cycle_axis_layout()
+            self.gui.canvas.pan_to_right_end()
             self.gui.log_text("Continue simulation for " + str(self.cycles)
                               + " cycles. Total cycles: " + str(self.gui.completed_cycles))
         except ValueError:
             return self.command_manager.INVALID_ARGUMENT, \
                    "Cannot continue network. The number of cycles is not a positive integer."
+
+        self.final_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
+        self.final_devices_state = copy.deepcopy(command_manager.devices.devices_list)
         return self.command_manager.NO_ERROR, None
 
     def undo(self):
@@ -382,7 +399,10 @@ class ContinueCommand(Command):
 
         # Resets monitors to the state before continuing and also updates the cycles counters
         self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
-        self.gui.update_cycles(self.gui.completed_cycles - self.cycles)
+        self.command_manager.devices.devices_list = self.initial_devices_state
+        self.gui.update_cycles(self.initial_cycles)
+        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.pan_to_right_end()
         return self.command_manager.NO_ERROR, None
 
     def redo(self):
@@ -391,9 +411,13 @@ class ContinueCommand(Command):
         Return NO_ERROR, None if successful.
         """
 
-        # This command is deterministic, so no need to keep final states too. Can just execute it again.
-        error_code, error_message = self.execute(self.command_manager)
-        return error_code, error_message
+        # Restore the state before undo
+        self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
+        self.command_manager.devices.devices_list = self.final_devices_state
+        self.gui.update_cycles(self.initial_cycles + self.cycles)
+        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.pan_to_right_end()
+        return self.command_manager.NO_ERROR, None
 
 
 class SaveCommand(Command):

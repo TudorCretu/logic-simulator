@@ -39,8 +39,39 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     on_mouse(self, event): Handles mouse events.
 
-    render_text(self, text, x_pos, y_pos): Handles text drawing
-                                           operations.
+    draw_monitors_names(self): Handles monitor names drawing operations.
+
+    draw_cycles_axis(self): Handles cycles axis drawing operations.
+
+    draw_monitored_signals(self): Handles monitors records drawing operations.
+
+    draw_signal(self, device_id, output_id, monitor_number): Handles each monitor record drawing operations
+
+    render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1), thickness=1.0): Handle line drawing operations.
+
+    render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color=(0, 0, 1)): Handle transparent rectangle drawing operations.
+
+    render_text(self, text, x_pos, y_pos): Handles text drawing operations.
+
+    zoom_in(self): Zooms in by 25%.
+
+    zoom_out(self): Zooms out by 25%.
+
+    set_zoom(self, zoom): Sets zoom to a specific value.
+
+    set_pan_x(self, scroll_x): Sets pan x to a specific value.
+
+    set_pan_y(self, scroll_x): Sets pan y to a specific value.
+
+    reset_pan(self, scroll_x): Resets pan to the start of the signals.
+
+    pan_to_right_end(self, scroll_x): Pans to the right of the signals.
+
+    update_cycle_axis_layout(self): Handle changes in monitors or cycles counter.
+
+    text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18): Return the length of the text in pts.
+
+    rgb_to_gl(self, r, g, b): Converse an 8bit RGB colour to OpenGL format
     """
 
     def __init__(self, parent, devices, monitors):
@@ -58,9 +89,16 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.pan_y = 300
         self.last_mouse_x = 0  # previous mouse x position
         self.last_mouse_y = 0  # previous mouse y position
+        self.width = 100
+        self.height = 100
+        size = self.GetClientSize()
+        self.display_width = size.width
+        self.display_height = size.height
 
         # Initialise variables for zooming
         self.zoom = 1
+        self.zoom_min = 0.5
+        self.zoom_max = 2.5
 
         # Bind events to the canvas
         self.Bind(wx.EVT_PAINT, self.on_paint)
@@ -68,6 +106,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.Bind(wx.EVT_MOUSE_EVENTS, self.on_mouse)
 
         # Simulation instances
+        self.gui = parent
         self.devices = devices
         self.monitors = monitors
 
@@ -189,7 +228,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def on_mouse(self, event):
         """Handle mouse events."""
-        text = ""
         if event.ButtonDown():
             self.last_mouse_x = event.GetX()
             self.last_mouse_y = event.GetY()
@@ -207,27 +245,37 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.last_mouse_x = event.GetX()
             self.last_mouse_y = event.GetY()
             self.init = False
-            text = "".join(["Mouse dragged to: ", str(event.GetX()),
-                            ", ", str(event.GetY()), ". Pan is now: ",
-                            str(self.pan_x), ", ", str(self.pan_y)])
-        if event.GetWheelRotation() < 0:
-            self.zoom *= (1.0 + (
-                event.GetWheelRotation() / (20 * event.GetWheelDelta())))
-            self.init = False
-            text = "".join(["Negative mouse wheel rotation. Zoom is now: ",
-                            str(self.zoom)])
 
-        if event.GetWheelRotation() > 0:
-            self.zoom /= (1.0 - (
-                event.GetWheelRotation() / (20 * event.GetWheelDelta())))
-            self.init = False
-            text = "".join(["Positive mouse wheel rotation. Zoom is now: ",
-                            str(self.zoom)])
-        if text:
-            print(text)
-            self.render()
-        else:
-            self.Refresh()  # triggers the paint event
+        if event.GetWheelRotation() > 0:  # zoom in
+            if self.zoom < self.zoom_max:
+                self.zoom /= (1.0 - (event.GetWheelRotation() / (40 * event.GetWheelDelta())))
+                self.zoom = min(self.zoom, self.zoom_max)
+                self.init = False
+                self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+            else:
+                self.zoom = self.zoom_max
+                self.init = False
+                self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+
+        if event.GetWheelRotation() < 0:  # zoom out
+            if self.zoom > self.zoom_min:
+                self.zoom /= (1.0 - (event.GetWheelRotation() / (40 * event.GetWheelDelta())))
+                self.zoom = max(self.zoom, self.zoom_min)
+                self.init = False
+                self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+            else:
+                self.zoom = self.zoom_min
+                self.init = False
+                self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+
+        # Don't allow panning outside the drawn area
+        self.pan_x = max(-(self.width - self.display_width), self.pan_x)
+        self.pan_x = min(0, self.pan_x)
+        self.pan_y = min(300 + self.height - self.display_height, self.pan_y)
+        self.pan_y = max(300, self.pan_y)
+        self.update_cycle_axis_layout()
+        self.gui.update_scrollbars()
+        self.Refresh()  # triggers the paint event
 
     def draw_monitors_names(self):
         """Handle monitor names drawing operations."""
@@ -323,25 +371,25 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                     self.render_line(x_0, y_low, x_0, y_high, color, signal_thickness)
 
                 x_0 += self.cycle_width
-                print("-", end="")
+                # print("-", end="")
             elif signal == self.devices.LOW:
                 self.render_line(x_0, y_low, x_0 + self.cycle_width, y_low, color, signal_thickness)
                 if prev_signal == self.devices.HIGH:
                     # Draw a falling edge
                     self.render_line(x_0, y_high, x_0, y_low, color, signal_thickness)
                 x_0 += self.cycle_width
-                print("_", end="")
+                # print("_", end="")
             elif signal == self.devices.RISING:
                 self.render_line(x_0, y_low, x_0, y_high, color, signal_thickness)
-                print("/", end="")
+                # print("/", end="")
             elif signal == self.devices.FALLING:
                 self.render_line(x_0, y_high, x_0, y_low, color, signal_thickness)
-                print("\\", end="")
+                # print("\\", end="")
             elif signal == self.devices.BLANK:
                 x_0 += self.cycle_width
-                print(" ", end="")
+                # print(" ", end="")
             prev_signal = signal
-        print("\n", end="")
+        # print("\n", end="")
 
     def render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1), thickness=1.0):
         """Handle line drawing operations."""
@@ -381,10 +429,75 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             else:
                 GLUT.glutBitmapCharacter(font, ord(character))
 
+    def zoom_in(self):
+        """Zoom in by 25%"""
+
+        self.zoom *= 1.25
+        self.zoom = min(self.zoom, self.zoom_max)
+        self.init = False
+        self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+        self.update_cycle_axis_layout()
+        self.Refresh()
+
+    def zoom_out(self):
+        """Zoom out by 25%"""
+
+        self.zoom /= 1.25
+        self.zoom = max(self.zoom, self.zoom_min)
+        self.init = False
+        self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+        self.update_cycle_axis_layout()
+        self.Refresh()
+
+    def set_zoom(self, zoom):
+        """Set zoom to a specific value"""
+
+        self.zoom = zoom
+        self.zoom = min(self.zoom, self.zoom_max)
+        self.zoom = max(self.zoom, self.zoom_min)
+        self.init = False
+        self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+        self.update_cycle_axis_layout()
+        self.Refresh()
+
+    def set_pan_x(self, scroll_x):
+        """Set pan x to a specific value"""
+
+        self.pan_x = -scroll_x
+        self.init = False
+        self.Refresh()
+
+    def set_pan_y(self, scroll_y):
+        """Set pan y to a specific value"""
+        self.pan_y = scroll_y + 300
+        self.init = False
+        self.Refresh()
+
+    def reset_pan(self):
+        """Reset pan to start of displayed signals"""
+        self.pan_x = 0
+        self.pan_y = 300
+        self.init_gl()
+        self.render()
+
+    def pan_to_right_end(self):
+        """Pan to the right of the signals"""
+
+        x_at_end_of_signal = self.pan_x + self.zoom * (self.cycle_start_x + self.completed_cycles * self.cycle_width)
+        self.pan_x -= x_at_end_of_signal - self.GetClientSize().width + 50
+        self.init_gl()
+        self.render()
+
     def update_cycle_axis_layout(self):
         """Handle changes in monitors"""
         self.monitors_number = len(self.monitors.monitors_dictionary)
         self.cycle_start_x = 25 + self.text_width("0") * self.monitors.get_margin()
+        self.width = (self.cycle_start_x + self.completed_cycles*self.cycle_width + 30) * self.zoom
+        self.height = ((self.monitors_number+1) * self.monitor_height + 30) * self.zoom
+        size = self.GetClientSize()
+        self.display_width = size.width
+        self.display_height = size.height
+        self.gui.update_scrollbars()
         self.render()
 
     def text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18):
@@ -448,6 +561,16 @@ class Gui(wx.Frame):
     on_load_file_button(self, event): Event handler for when the user clicks the load file button.
 
     on_load_file_text_box(self, event): Event handler for when the user enters a filepath into load file text box.
+
+    on_scrollbar_ver(self, event): Event handler for when the user scrolls the vertical scrollbar
+
+    on_scrollbar_hor(self, event): Event handler for when the user scrolls the horizontal scrollbar
+
+    on_zoom_minus_button(self, event): Event handler for when the user clicks the zoom minus button
+
+    on_zoom_plus_button(self, event): Event handler for when the user clicks the zoom plus button
+
+    on_zoom_scroll(self, event): Event handler for when the user scrolls the zoom slider
 
     open_file(self, pathname): Creates a new network for another definition file.
 
@@ -616,7 +739,10 @@ class Gui(wx.Frame):
         #   Zoom
         zoom_button_size = wx.Size(25, 25)
         self.zoom_minus_button = wx.Button(self, wx.ID_ANY, "-", size=zoom_button_size)
-        self.zoom_slider = wx.Slider(self, wx.ID_ANY, value=1, minValue=0.1, maxValue=10, style=wx.SL_LABELS | wx.SL_TICKS, name="Zoom")
+        self.zoom_resolution = 100
+        self.zoom_slider = wx.Slider(self, wx.ID_ANY, value=1*self.zoom_resolution, minValue=self.zoom_resolution*self.canvas.zoom_min,
+                                     maxValue=self.zoom_resolution*self.canvas.zoom_max, style=wx.SL_LABELS | wx.SL_TICKS, name="Zoom")
+        self.zoom_slider.SetTickFreq(250)
         self.zoom_plus_button = wx.Button(self, wx.ID_ANY, "+", size=zoom_button_size)
 
         #  Static Strings
@@ -625,6 +751,7 @@ class Gui(wx.Frame):
         switches_title = wx.StaticText(self, wx.ID_ANY, "Change State of Switch")
         monitors_title = wx.StaticText(self, wx.ID_ANY, "Set or Zap Monitors")
         run_simulation_title = wx.StaticText(self, wx.ID_ANY, "Simulate")
+        zoom_title = wx.StaticText(self, wx.ID_ANY, "Zoom")
 
         #  Lines
         line_side = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
@@ -634,6 +761,8 @@ class Gui(wx.Frame):
         line_monitors_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
         line_run_simulation = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
         line_run_simulation_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_zoom = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_zoom_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
 
         # Bind events to widgets
         #  Menu
@@ -645,6 +774,10 @@ class Gui(wx.Frame):
         #  Load file
         self.load_file_button.Bind(wx.EVT_BUTTON, self.on_load_file_button)
         self.load_file_text_box.Bind(wx.EVT_TEXT_ENTER, self.on_load_file_text_box)
+
+        #  Scrollbars
+        self.canvas_scrollbar_ver.Bind(wx.EVT_SCROLL, self.on_scrollbar_ver)
+        self.canvas_scrollbar_hor.Bind(wx.EVT_SCROLL, self.on_scrollbar_hor)
 
         #  Console
         self.console.Bind(wx.EVT_TEXT_ENTER, self.on_console)
@@ -664,6 +797,11 @@ class Gui(wx.Frame):
         self.simulation_run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
         self.simulation_continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
 
+        #  Zoom
+        self.zoom_minus_button.Bind(wx.EVT_BUTTON, self.on_zoom_minus_button)
+        self.zoom_slider.Bind(wx.EVT_SCROLL, self.on_zoom_scroll)
+        self.zoom_plus_button.Bind(wx.EVT_BUTTON, self.on_zoom_plus_button)
+
         # Configure sizers for layout
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -680,18 +818,19 @@ class Gui(wx.Frame):
         monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
         simulation_title_sizer = wx.BoxSizer(wx.HORIZONTAL)
         simulation_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        vertical_fill_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        pan_zoom_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        zoom_title_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        zoom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         line_sizer_side = wx.BoxSizer(wx.VERTICAL)
         line_sizer_switches = wx.BoxSizer(wx.VERTICAL)
         line_sizer_monitors = wx.BoxSizer(wx.VERTICAL)
         line_sizer_run_simulation = wx.BoxSizer(wx.VERTICAL)
+        line_sizer_zoom = wx.BoxSizer(wx.VERTICAL)
 
         main_sizer.Add(top_sizer, 0, wx.EXPAND, 5)
         main_sizer.Add(central_sizer, 10, wx.EXPAND, 5)
         main_sizer.Add(activity_log_sizer, 3, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
         main_sizer.Add(console_sizer, 1, wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, 5)
-        
+
         top_sizer.Add(self.load_file_button, 0, wx.LEFT, 5)
         top_sizer.Add(self.load_file_text_box, 1, wx.LEFT | wx.RIGHT, 5)
 
@@ -720,8 +859,10 @@ class Gui(wx.Frame):
         side_sizer.Add(simulation_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
         side_sizer.Add(simulation_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
         side_sizer.Add(line_run_simulation_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
-        side_sizer.Add(vertical_fill_sizer, 1, wx.ALL | wx.EXPAND, 1)
-        side_sizer.Add(pan_zoom_sizer, 0, wx.ALL | wx.EXPAND, 0)
+        side_sizer.AddSpacer(10)
+        side_sizer.Add(zoom_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(zoom_sizer, 0, wx.ALL | wx.EXPAND, 0)
+        side_sizer.Add(line_zoom_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
 
         side_title_sizer.Add(side_title, 0, wx.TOP, 0)
         side_title_sizer.Add(line_sizer_side, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 3)
@@ -747,17 +888,26 @@ class Gui(wx.Frame):
         simulation_sizer.Add(self.simulation_run_button, 0, wx.LEFT | wx.TOP, 12)
         simulation_sizer.Add(self.simulation_continue_button, 0, wx.LEFT | wx.TOP, 12)
 
-        pan_zoom_sizer.Add(self.zoom_minus_button, 0, wx.LEFT | wx.TOP, 8)
-        pan_zoom_sizer.Add(self.zoom_slider, 1, wx.EXPAND, 0)
-        pan_zoom_sizer.Add(self.zoom_plus_button, 0, wx.RIGHT | wx.TOP, 8)
+        zoom_title_sizer.Add(zoom_title, 0, wx.LEFT | wx.RIGHT | wx.TOP, 10)
+        if wx.Platform == '__WXGTK__':
+            bmp = wx.ArtProvider.GetBitmap("gtk-find", wx.ART_MENU)
+            zoom_bmp = wx.StaticBitmap(self, wx.ID_ANY, bmp)
+            zoom_title_sizer.Add(zoom_bmp, 0, wx.Left | wx.TOP, 10)
+        zoom_title_sizer.Add(line_sizer_zoom, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
+
+        zoom_sizer.Add(self.zoom_minus_button, 0, wx.LEFT | wx.TOP, 8)
+        zoom_sizer.Add(self.zoom_slider, 1, wx.EXPAND, 0)
+        zoom_sizer.Add(self.zoom_plus_button, 0, wx.RIGHT | wx.TOP, 8)
 
         line_sizer_side.Add(line_side, 0, wx.ALL | wx.EXPAND, 5)
         line_sizer_switches.Add(line_switches, 0, wx.ALL | wx.EXPAND, 5)
         line_sizer_monitors.Add(line_monitors, 0, wx.ALL | wx.EXPAND, 5)
         line_sizer_run_simulation.Add(line_run_simulation, 0, wx.ALL | wx.EXPAND, 5)
-        
+        line_sizer_zoom.Add(line_zoom, 0, wx.ALL | wx.EXPAND, 5)
+
         self.SetSizeHints(900, 600)
         self.SetSizer(main_sizer)
+        self.update_scrollbars()
 
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
@@ -789,21 +939,20 @@ class Gui(wx.Frame):
         if Id == wx.ID_FULLSCREEN:
             self.Show()
             self.ShowFullScreen(True)
-            pass
         if Id == wx.ID_ZOOM_100:
-            pass
+            self.canvas.set_zoom(1)
         if Id == wx.ID_ZOOM_FIT:
             pass
         if Id == wx.ID_ZOOM_IN:
-            pass
+            self.canvas.zoom_in()
         if Id == wx.ID_ZOOM_OUT:
-            pass
+            self.canvas.zoom_out()
         if Id == wx.ID_EXECUTE:
-            self.run_command(10)
-            pass
+            # Same functionality as load button
+            self.on_run_button(None)
         if Id == wx.ID_CONTINUE:
-            self.continue_command(10)
-            pass
+            # Same functionality as continue button
+            self.on_continue_button(None)
         if Id == wx.ID_HELP:
             self.help_command()
             pass
@@ -819,26 +968,11 @@ class Gui(wx.Frame):
         """Handle the event when the user clicks the run button."""
         cycles = self.simulation_cycles_spin.GetValue()
         self.run_command(cycles)
-        
-        #reset panning variables upon running from scratch
-        self.canvas.pan_x = 0
-        self.canvas.pan_y = 300
-        self.canvas.init_gl()
-        self.canvas.Refresh()
 
     def on_continue_button(self, event):
         """Handle the event when the user clicks the continue button."""
         cycles = self.simulation_cycles_spin.GetValue()
         self.continue_command(cycles)
-        
-        #pan so that end of signal profile at right edge of canvas 
-        canvas = self.canvas
-        x_at_end_of_signal = canvas.pan_x + canvas.zoom * (canvas.cycle_start_x + 
-            canvas.completed_cycles*canvas.cycle_width)
-        canvas.pan_x -= x_at_end_of_signal - canvas.GetClientSize().width +50
-        canvas.init_gl()
-        canvas.Refresh()
-
 
     def on_console(self, event):
         """Handle the event when the user enters a command in the console."""
@@ -862,7 +996,7 @@ class Gui(wx.Frame):
             self.raise_error(self.command_manager.INVALID_COMMAND, "Invalid command. Enter 'h' for help.")
 
         self.console.SetValue("")
-        
+
     def on_switches_select(self, event):
         """Handle the event when the user types text in switches text box."""
         self.switches_update_toggle()
@@ -922,6 +1056,30 @@ class Gui(wx.Frame):
         # otherwise ask the user what new file to open
         path = self.load_file_text_box.GetValue()
         self.open_file(path)
+
+    def on_scrollbar_ver(self, event):
+        """Handle the event when users scroll the vertical scrollbar"""
+        scroll_ver = self.canvas_scrollbar_ver.GetThumbPosition()
+        self.canvas.set_pan_y(scroll_ver)
+        pass
+
+    def on_scrollbar_hor(self, event):
+        """Handle the event when users scroll the horizontal scrollbar"""
+        scroll_hor = self.canvas_scrollbar_hor.GetThumbPosition()
+        self.canvas.set_pan_x(scroll_hor)
+
+    def on_zoom_minus_button(self, event):
+        """Handle the event when users press the zoom minus button"""
+        self.canvas.zoom_out()
+
+    def on_zoom_plus_button(self, event):
+        """Handle the event when users press the zoom plus button"""
+        self.canvas.zoom_in()
+
+    def on_zoom_scroll(self, event):
+        """Handle the event when users scroll the zoom slider"""
+        zoom_value = self.zoom_slider.GetValue()/self.zoom_resolution
+        self.canvas.set_zoom(zoom_value)
 
     def open_file(self, pathname):
         """Create a new network for another definition file"""
@@ -1034,8 +1192,18 @@ class Gui(wx.Frame):
 
     def update_scrollbars(self):
         """Handle a change in pan or zoom"""
-        self.canvas_scrollbar_hor.SetScrollbar(0, 16, 50, 15)
-        self.canvas_scrollbar_ver.SetScrollbar(0, 16, 50, 15)
+
+        # Update horizontal scrollbar
+        range_x = self.canvas.width
+        thumb_x = self.canvas.display_width
+        position_x = self.canvas.pan_x
+        self.canvas_scrollbar_hor.SetScrollbar(-position_x, thumb_x, range_x, thumb_x, True)
+
+        # Update vertical scrollbar
+        position_y = self.canvas.pan_y-300
+        range_y = self.canvas.height
+        thumb_y = self.canvas.display_height
+        self.canvas_scrollbar_ver.SetScrollbar(position_y, thumb_y, range_y, thumb_y, True)
 
     def update_cycles(self, cycles):
         """Update the number of completed cycles"""
