@@ -27,7 +27,7 @@ class Symbol:
     No public methods.
     """
 
-    def __init__(self,line_number, cursor_pos_at_start_of_line):
+    def __init__(self,line_number=None, cursor_pos_at_start_of_line=None):
         """Initialise symbol properties."""
         self.type = None
         
@@ -275,3 +275,5 @@ for a in range(3):
 scanner.display_error_location(1,0,3)
 scanner.display_error_location(1,0,8)
 scanner.display_error_location(1,0,11)
+print('@'+'\u032D')
+print('*')
