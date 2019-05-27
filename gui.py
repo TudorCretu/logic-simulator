@@ -85,15 +85,15 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.context = wxcanvas.GLContext(self)
 
         # Initialise variables for panning
+        size = self.GetClientSize()
+        self.display_width = size.width
+        self.display_height = size.height
         self.pan_x = 0
         self.pan_y = 300
         self.last_mouse_x = 0  # previous mouse x position
         self.last_mouse_y = 0  # previous mouse y position
         self.width = 100
         self.height = 100
-        size = self.GetClientSize()
-        self.display_width = size.width
-        self.display_height = size.height
 
         # Initialise variables for zooming
         self.zoom = 1
@@ -224,6 +224,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         """Handle the canvas resize event."""
         # Forces reconfiguration of the viewport, modelview and projection
         # matrices on the next paint event
+        self.cap_pan()
+        self.update_cycle_axis_layout()
         self.init = False
 
     def on_mouse(self, event):
@@ -268,14 +270,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                 self.init = False
                 self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
 
-        # Don't allow panning outside the drawn area
-        self.pan_x = max(-(self.width - self.display_width), self.pan_x)
-        self.pan_x = min(0, self.pan_x)
-        self.pan_y = min(300 + self.height - self.display_height, self.pan_y)
-        self.pan_y = max(300, self.pan_y)
+        self.cap_pan()
         self.update_cycle_axis_layout()
         self.gui.update_scrollbars()
-        self.Refresh()  # triggers the paint event
+        self.render()  # triggers the paint event
 
     def draw_monitors_names(self):
         """Handle monitor names drawing operations."""
@@ -437,7 +435,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.init = False
         self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
         self.update_cycle_axis_layout()
-        self.Refresh()
+        self.render()
 
     def zoom_out(self):
         """Zoom out by 25%"""
@@ -447,7 +445,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.init = False
         self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
         self.update_cycle_axis_layout()
-        self.Refresh()
+        self.render()
 
     def set_zoom(self, zoom):
         """Set zoom to a specific value"""
@@ -458,25 +456,35 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.init = False
         self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
         self.update_cycle_axis_layout()
-        self.Refresh()
+        self.render()
 
     def set_pan_x(self, scroll_x):
         """Set pan x to a specific value"""
 
         self.pan_x = -scroll_x
         self.init = False
-        self.Refresh()
+        self.render()
 
     def set_pan_y(self, scroll_y):
         """Set pan y to a specific value"""
-        self.pan_y = scroll_y + 300
+        self.pan_y = scroll_y + self.display_height - 50
         self.init = False
-        self.Refresh()
+        self.render()
+
+    def cap_pan(self):
+        """Cap pan to not wander outside drawn borders"""
+        # Don't allow panning outside the drawn area
+        self.pan_x = max(-(self.width - self.display_width), self.pan_x)
+        self.pan_x = min(0, self.pan_x)
+        print(self.display_height)
+        self.pan_y = min(self.height - 50, self.pan_y)
+        self.pan_y = max(self.display_height - 50, self.pan_y)
+
 
     def reset_pan(self):
         """Reset pan to start of displayed signals"""
         self.pan_x = 0
-        self.pan_y = 300
+        self.pan_y = self.display_height - 50
         self.init_gl()
         self.render()
 
@@ -485,6 +493,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         x_at_end_of_signal = self.pan_x + self.zoom * (self.cycle_start_x + self.completed_cycles * self.cycle_width)
         self.pan_x -= x_at_end_of_signal - self.GetClientSize().width + 50
+        if self.pan_x > 0:
+            self.pan_x = 0
         self.init_gl()
         self.render()
 
@@ -1205,7 +1215,7 @@ class Gui(wx.Frame):
         self.canvas_scrollbar_hor.SetScrollbar(-position_x, thumb_x, range_x, thumb_x, True)
 
         # Update vertical scrollbar
-        position_y = self.canvas.pan_y-300
+        position_y = self.canvas.pan_y-self.canvas.display_height+50
         range_y = self.canvas.height
         thumb_y = self.canvas.display_height
         self.canvas_scrollbar_ver.SetScrollbar(position_y, thumb_y, range_y, thumb_y, True)
