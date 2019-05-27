@@ -117,13 +117,18 @@ class Network:
         first_device = self.devices.get_device(first_device_id)
         second_device = self.devices.get_device(second_device_id)
 
-        if first_device is None or second_device is None:
+        if first_device is None:
             error_type = self.DEVICE_ABSENT
+            return error_type, first_device_id, None
+        elif second_device is None:
+            error_type = self.DEVICE_ABSENT
+            return error_type, second_device_id, None
 
         elif first_port_id in first_device.inputs:
             if first_device.inputs[first_port_id] is not None:
                 # Input is already in a connection
                 error_type = self.INPUT_CONNECTED
+                return error_type, first_device_id, first_port_id
             elif second_port_id in second_device.inputs:
                 # Both ports are inputs
                 error_type = self.INPUT_TO_INPUT
@@ -143,6 +148,7 @@ class Network:
                 if second_device.inputs[second_port_id] is not None:
                     # Input is already in a connection
                     error_type = self.INPUT_CONNECTED
+                    return error_type, second_device_id, second_port_id
                 else:
                     second_device.inputs[second_port_id] = (first_device_id,
                                                             first_port_id)
@@ -153,7 +159,7 @@ class Network:
         else:  # first_port_id not a valid input or output port
             error_type = self.PORT_ABSENT
 
-        return error_type
+        return error_type, None, None
 
     def check_network(self):
         """Return True if all inputs in the network are connected."""

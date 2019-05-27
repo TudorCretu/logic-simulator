@@ -62,6 +62,18 @@ class Parser:
         flag2 = self.parse_connections()
         flag3 = self.parse_monitors()
         success = (flag1 and flag2 and flag3)
+        if success is True:
+            flag4, device_id, port_id = self.network.check_network()
+            # oscillating network will be reported when running simulation, it is perhaps runtime error, so not handled here
+            if flag4 is False:
+                self.semerr_count += 1
+                self.error_count += 1
+                port_str = self.names.get_name_string(port_id)
+                device_str = self.names.get_name_string(device_id)
+                self.error_output.append(
+                    "InputPortNotConnectedError: Input port '%s' of device '%s' is not connected" % (
+                    port_str, device_str))
+            success = (success and flag4)
         self.print_msg(success)
         return success
 
@@ -76,9 +88,20 @@ class Parser:
             print("Parsed successfully! Valid definition file!")
         else:
             print("Totally %d errors detected: %d syntax errors and %d semantic errors"%(self.error_count, self.error_count-self.semerr_count,self.semerr_count))
-            for i in range(self.error_count):
-                print(self.error_output[i])
-                self.scanner.display_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
+            n = len(self.error_cursor)
+            if self.error_count > n: # notice the unconnected input error
+                for i in range(n):
+                    print(self.error_output[i])
+                    # self.out_for_gui.append(self.error_output[i])
+                    self.scanner.display_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
+                    # self.out_for_gui.append(sth)
+                print(self.error_output[n])
+            else:
+                for i in range(n):
+                    print(self.error_output[i])
+                    # self.out_for_gui.append(self.error_output[i])
+                    self.scanner.display_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
+                    # self.out_for_gui.append(sth)
 
     def parse_devices(self):
         """
@@ -138,14 +161,17 @@ class Parser:
                     return False
 
             if self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
-                # make device using the type and param
-                error_type = self.devices.make_device(identifier,type_id,param)
-                if error_type != self.devices.NO_ERROR:
-                    self.semerr_count += 1
-                    self.display_error_device(error_type)
-                    return False
+                if self.error_count == 0:
+                    # make device using the type and param
+                    error_type = self.devices.make_device(identifier,type_id,param)
+                    if error_type != self.devices.NO_ERROR:
+                        self.semerr_count += 1
+                        self.display_error_device(error_type,identifier,type_id)
+                        return False
+                    else:
+                        return True
                 else:
-                    return True
+                    return True # no syntax error
 
             elif self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
                 self.display_error(self.NO_SEMICOLON)
@@ -211,15 +237,20 @@ class Parser:
         sig2_device, sig2_port, syntax_err = self.signame()
         if syntax_err == 1:
             return False
-
-        # make connection between sig1 and sig2
-        error_type = self.network.make_connection(sig1_device, sig1_port, sig2_device, sig2_port)
-        if error_type != self.network.NO_ERROR:
-            self.semerr_count += 1
-            self.display_error_connection(error_type)
-            return False
+        if self.error_count == 0:
+            # make connection between sig1 and sig2
+            error_type, err_device, err_port = self.network.make_connection(sig1_device, sig1_port, sig2_device, sig2_port)
+            if error_type != self.network.NO_ERROR:
+                self.semerr_count += 1
+                if err_device is None:
+                    self.display_error_connection(error_type,sig1_device, sig1_port, sig2_device, sig2_port)
+                else:
+                    self.display_error_connection(error_type,err_device,err_port)
+                return False
+            else:
+                return True
         else:
-            return True
+            return True # no syntax error
 
     def parse_monitors(self):
         """
@@ -257,14 +288,16 @@ class Parser:
         current_device, current_port, syntax_err = self.signame()  # add_monitor
         if syntax_err == 1:
             return False
-
-        error_type = self.monitors.make_monitor(current_device, current_port)
-        if error_type != self.monitors.NO_ERROR:
-            self.semerr_count += 1
-            self.display_error_monitor(error_type)
-            return False
+        if self.error_count == 0:
+            error_type = self.monitors.make_monitor(current_device, current_port)
+            if error_type != self.monitors.NO_ERROR:
+                self.semerr_count += 1
+                self.display_error_monitor(error_type)
+                return False
+            else:
+                return True
         else:
-            return True
+            return True # no syntax error
 
     def signame(self, side=1): # get the name of the signal
         """
@@ -414,63 +447,90 @@ class Parser:
         self.errline_num.append(self.symbol.line_number)
         self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
 
-    def display_error_device(self,error_type):
+    def display_error_device(self,error_type,identifier_id=None,type_id=None):
         """
         Report and locate a semantic error "error_type" defined in the Devices() class.
         :param error_type: a integer indicating the type of semantic error.
         :return: no returned value.
         """
         self.error_count += 1
+        self.semerr_count += 1
+        device_id_str = self.names.get_name_string(identifier_id)
+        if type_id is not None:
+            device_type_str = self.names.get_name_string(type_id)
         if error_type == self.devices.INVALID_QUALIFIER:
-            self.error_output.append("SemanticError: InvalidParameterError")
+            self.error_output.append("InvalidParameterError: Parameter value of Device '%s' is not valid"%(device_id_str))
         elif error_type == self.devices.NO_QUALIFIER:
-            self.error_output.append("SemanticError: MissingParameterError")
+            self.error_output.append("MissingParameterError: Parameter value of Device '%s' is not specified"%(device_id_str))
         elif error_type == self.devices.QUALIFIER_PRESENT:
-            self.error_output.append("SemanticError: ExcessParametersError")
+            self.error_output.append("ExcessParametersError: Device '%s' has too many parameters specified"%(device_id_str))
         elif error_type == self.devices.BAD_DEVICE:
-            self.error_output.append("SemanticError: TypeNotFoundError")
+            self.error_output.append("TypeNotFoundError: Device's type '%s' does not match one of the following:\n'CLOCK','SWITCH','AND','NAND','OR','NOR','XOR','DTYPE'"%(device_type_str))
         elif error_type == self.devices.DEVICE_PRESENT:
-            self.error_output.append("SemanticError: RepeatedIdentifierError")
+            self.error_output.append("RepeatedIdentifierError: Device '%s' is already defined"%(device_id_str))
         else:
             self.error_output.append("Unknown error occurred")  # not likely to occur
         self.error_cursor.append(self.symbol.cursor_position)
         self.errline_num.append(self.symbol.line_number)
         self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
 
-    def display_error_connection(self,error_type):
+    def display_error_connection(self,error_type,sig1_device=None,sig1_port=None,sig2_device=None,sig2_port=None):
         """
         Report and locate a semantic error "error_type" defined in the Network() class.
         :param error_type: a integer indicating the type of semantic error.
         :return: no returned value.
         """
         self.error_count += 1
+        self.semerr_count += 1
+        if sig1_device is None:
+            device_str1 = ""
+        else:
+            device_str1 = self.names.get_name_string(sig1_device)
+        if sig1_port is None:
+            port_str1 = ""
+        else:
+            port_str1 = "."+self.names.get_name_string(sig1_port)
+        if sig2_device is None:
+            device_str2 = ""
+        else:
+            device_str2 = self.names.get_name_string(sig2_device)
+        if sig2_port is None:
+            port_str2 = ""
+        else:
+            port_str2 = "."+self.names.get_name_string(sig2_port)
         if error_type == self.network.INPUT_TO_INPUT:
-            self.error_output.append("SemanticError: IllegalConnectionError")
+            self.error_output.append("IllegalConnectionError: Signal '%s%s' and '%s%s' are both input signals"%(device_str1,port_str1,device_str2,port_str2))
         elif error_type == self.network.OUTPUT_TO_OUTPUT:
-            self.error_output.append("SemanticError: IllegalConnectionError")
+            self.error_output.append("IllegalConnectionError: Signal '%s%s' and '%s%s' are both output signals"%(device_str1,port_str1,device_str2,port_str2))
         elif error_type == self.network.INPUT_CONNECTED:
-            self.error_output.append("SemanticError: InputPortConnectionPresentError")
+            self.error_output.append("InputPortConnectionPresentError: Signal '%s%s' is already connected"%(device_str1,port_str1))
         elif error_type == self.network.PORT_ABSENT:
-            self.error_output.append("SemanticError: InvalidPortError")
+            self.error_output.append("InvalidPortError: Device '%s' does not have port '%s'"%(device_str1,port_str1))
         elif error_type == self.network.DEVICE_ABSENT:
-            self.error_output.append("SemanticError: DeviceAbsentError")
+            self.error_output.append("DeviceAbsentError:Device '%s' is not defined" %(device_str1))
         else:
             self.error_output.append("Unknown error occurred") # not likely to occur
         self.error_cursor.append(self.symbol.cursor_position)
         self.errline_num.append(self.symbol.line_number)
         self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
 
-    def display_error_monitor(self,error_type):
+    def display_error_monitor(self,error_type,device_id=None,port_id=None):
         """
         Report and locate a semantic error "error_type" defined in the Monitors() class.
         :param error_type: a integer indicating the type of semantic error.
         :return: no returned value.
         """
         self.error_count += 1
+        self.semerr_count += 1
+        device_str = self.names.get_name_string(device_id)
+        if port_id is not None:
+            port_str = "."+self.names.get_name_string(port_id)
         if error_type == self.monitors.NOT_OUTPUT:
-            self.error_output.append("SemanticError: MonitorOnInputSignalError")
+            self.error_output.append("MonitorNotOutputSignalError: Signal '%s%s' is not an output"%(device_str, port_str))
         elif error_type == self.monitors.MONITOR_PRESENT:
-            self.error_output.append("SemanticError: MonitorPresentError")
+            self.error_output.append("MonitorPresentError: Signal '%s%s' is already monitored"%(device_str, port_str))
+        elif error_type == self.network.DEVICE_ABSENT:
+            self.error_output.append("DeviceAbsentError:Device '%s' is not defined" %(device_str))
         else:
             self.error_output.append("Unknown error occurred") # not likely to occur
         self.error_cursor.append(self.symbol.cursor_position)
