@@ -58,7 +58,7 @@ def test_DEVICES_resued_name_error(capfd):
 
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert parser.error_output[0] == "SemanticError: DEVICE_PRESENT"
+    assert parser.error_output[0] == "SemanticError: RepeatedIdentifierError"
 
 
 def test_DEVICES_expected_comma_error(capfd):
@@ -110,7 +110,7 @@ def test_DEVICES_parameter_error(capfd):
 
     assert parser.parse_devices() is False
     out,err = capfd.readouterr()
-    assert parser.error_output[0] == "SemanticError: NO_QUALIFIER"
+    assert parser.error_output[0] == "SemanticError: MissingParameterError"
     # not handled
 
 def test_DEVICES_mutliple_errors():
@@ -156,6 +156,26 @@ def test_CONNECTIONS_expected_comma_error(capfd):
     out,err = capfd.readouterr()
     assert parser.error_output[0] == "SyntaxError: Expected a comma"
 
+def test_CONNECTIONS_expected_equals_error(capfd):
+    """Test if missing expected equals symbol is reported in DEVICE BLOCK"""
+    test_file_dir = "test_definition_files/test_connections"
+    file_path = test_file_dir + "/expected_equals_error.txt"
+    parser =create_parser(file_path)
+    parser.parse_devices()
+    assert parser.parse_connections() is False
+    out,err = capfd.readouterr()
+    assert parser.error_output[0] == "SyntaxError: Expected an equals sign"
+    
+def test_CONNECTIONS_expected_dot__or_comma_error(capfd):
+    """Test if missing expected equals symbol is reported in DEVICE BLOCK"""
+    test_file_dir = "test_definition_files/test_connections"
+    file_path = test_file_dir + "/missing_dot_error.txt"
+    parser =create_parser(file_path)
+    parser.parse_devices()
+    assert parser.parse_connections() is False
+    out,err = capfd.readouterr()
+    assert parser.error_output[0] == "SyntaxError: Expected a comma or a dot"
+    
 
 def test_CONNECTIONS_expected_semicolon_error(capfd):
     """Test if missing expected ; symbol is reported in CONNECTIONS BLOCK"""
@@ -168,6 +188,18 @@ def test_CONNECTIONS_expected_semicolon_error(capfd):
 
     out,err = capfd.readouterr()
     assert parser.error_output[0] == "SyntaxError: Expected a semicolon"
+    
+def test_CONNECTIONS_device_not_present_error(capfd):
+    """Test if missing expected ; symbol is reported in CONNECTIONS BLOCK"""
+    test_file_dir = "test_definition_files/test_connections"
+    file_path = test_file_dir + "/device_not_present_error.txt"
+    parser =create_parser(file_path)
+
+    parser.parse_devices()
+    assert parser.parse_connections() is False
+
+    out,err = capfd.readouterr()
+    assert parser.error_output[0] == "Specified device doesn't exist"
 
 def test_CONNECTIONS_mutliple_errors():
     test_file_dir = "test_definition_files/test_connections"
