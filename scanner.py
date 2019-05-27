@@ -23,7 +23,7 @@ class Symbol:
     No public methods.
     """
 
-    def __init__(self):
+    def __init__(self,line_number, cursor_pos_at_start_of_line):
         """Initialise symbol properties."""
         self.type = None
         
@@ -31,6 +31,9 @@ class Symbol:
         #For other types like NUMBER however, id is the actual value of the symbol 
         self.id = None 
         self.cursor_position = None
+        self.line_number = line_number
+        self.cursor_pos_at_start_of_line = cursor_pos_at_start_of_line
+        
 
 
 class Scanner:
@@ -57,6 +60,7 @@ class Scanner:
         """Open specified file and initialise reserved words and IDs."""
         try : # open file using path
             self.file = open(path)
+            print(self.file.tell(),'hurrah')
         except FileNotFoundError:
             print("File was not found.")
             sys.exit()
@@ -73,13 +77,13 @@ class Scanner:
         [self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITORS_ID] = self.names.lookup(self.keywords_list)
         self.current_character = self.file.read(1)
         self.line_number = 1
-        self.cursor_pos_at_start_of_line = 0
+        self.cursor_pos_at_start_of_line = 1
 
 
 
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
-        symbol = Symbol()
+        symbol = Symbol(self.line_number, self.cursor_pos_at_start_of_line)
         
         # skip past single and multi - line comments
         self.skip_comments() 
@@ -137,7 +141,7 @@ class Scanner:
         """Handle update of line number and cursor position at line beginning"""
         
         self.line_number +=1 
-        self.cursor_pos_at_start_of_line = self.file.tell()
+        self.cursor_pos_at_start_of_line = self.file.tell() + 1
 
     def advance(self):
         """Read ahead 1 character in the file"""
@@ -211,31 +215,34 @@ class Scanner:
             self.advance()
         return number 
     
-    def display_error_location(self,last_symbol_cursor_pos):
+    def display_error_location(self,line_number, cursor_pos_at_start_of_line, last_symbol_cursor_pos):
         """Displays the location of an error. Shows the file that
         contains it, the line number of the error and the specific
         point on that line where the error occurs"""
                 
         pos_of_err = last_symbol_cursor_pos
         # find the collumn number of the error location within the line
-        caret_coll_num = pos_of_err - self.cursor_pos_at_start_of_line -1
+        caret_coll_num = pos_of_err - cursor_pos_at_start_of_line 
         # move cursor to start of current line
-        self.file.seek(self.cursor_pos_at_start_of_line)
+        self.file.seek(cursor_pos_at_start_of_line-1)
         
         # add a caret to the point where the error begins on current line 
-        # display all error location information referreed to above        
+        # display all error location information referred to above        
         line = self.file.readline()
+        print(line)
         print('File :',self.file.name)
         print('Line',self.line_number,':', end =' ')
 
         print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
-       
+
         
         #Now reset cursor position in appropriate place to allow
         #searching for the next appropriate punctuation symbol
         #for error recovery
-        self.file.seek(last_symbol_cursor_pos)
+        
+        self.file.seek(last_symbol_cursor_pos - 1)
         self.advance()
+        
    
         pass
         
@@ -249,13 +256,19 @@ scanner = Scanner('test_definition_files/test_model_3.txt',names)
 symbol = None
 for a in range(3):
     symbol =scanner.get_symbol()
+    '''
     try:
         print(symbol.type,names.get_name_string(symbol.id))
     except:
         print(symbol.type,symbol.id)
-    print (symbol.cursor_position)
+    
+    scanner.display_error_location(symbol.cursor_position)
+    '''
+    #print (symbol.cursor_position,scanner.cursor_pos_at_start_of_line,scanner.line_number)
 
 
-scanner.display_error_location(symbol.cursor_position)
+#scanner.display_error_location(symbol.cursor_position)
 
-
+scanner.display_error_location(1)
+scanner.display_error_location(6)
+scanner.display_error_location(9)
