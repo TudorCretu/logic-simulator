@@ -497,6 +497,7 @@ class LoadCommand(Command):
             if not parser.parse_network():
                 return self.command_manager.INVALID_DEFINITION_FILE, None
 
+        # Set new instances
         self.command_manager.monitors = monitors
         self.command_manager.devices = devices
         self.command_manager.network = network
@@ -508,7 +509,14 @@ class LoadCommand(Command):
         self.gui.network = self.command_manager.network
         self.gui.names = self.command_manager.names
         self.gui.switches = self.gui.devices.find_devices(devices.SWITCH)
+        swithces_names = [names.get_name_string(switch_id) for switch_id in self.gui.switches]
+        self.gui.switches_select.Clear()
+        for switch_name in swithces_names:
+            self.gui.switches_select.Append(switch_name)
         self.gui.canvas.monitors = self.command_manager.monitors
+        self.gui.monitors_select.Clear()
+        for monitor_name in self.gui.monitors.get_signal_names()[0] + self.gui.monitors.get_signal_names()[1]:
+            self.gui.monitors_select.Append(monitor_name)
         self.gui.canvas.devices = self.command_manager.devices
         self.gui.canvas.update_cycle_axis_layout()
         self.gui.update_cycles(completed_cycles)
