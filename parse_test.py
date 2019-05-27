@@ -35,10 +35,25 @@ def test_read_symbol():
     """Test the Parser.read_symbol() function"""
     file_dir = "test_functions"
     path = file_dir + "/read_symbol.txt"
-    parser =create_parser(path)
+    parser = create_parser(path)
     parser.symbol = parser.read_symbol()
+    assert parser.symbol.type == parser.scanner.NUMBER
+    parser.symbol = parser.read_symbol()
+    assert parser.error_count == 1
     assert parser.symbol.type == parser.scanner.KEYWORD
-    assert parser.symbol.id == parser.scanner.DEVICES_ID
+
+def test_print_msg(capfd):
+    """Test the Parser.print_msg(success) function"""
+    file_dir = "test_functions"
+    path = file_dir + "/read_symbol.txt"
+    parser =create_parser(path)
+    parser.error_count = 2
+    parser.error_output = ["a","b"]
+    parser.error_cursor = [5,10] # the function in scanner currently disabled
+    parser.semerr_count = 1
+    parser.print_msg(False)
+    out, err = capfd.readouterr()
+    assert out == "Totally 2 errors detected: 1 syntax errors and 1 semantic errors\na\nb\n"
 
 def test_skip_erratic_part():
     """Test the Parser.skip_erratic_part() function"""
@@ -49,45 +64,41 @@ def test_skip_erratic_part():
     parser.skip_erratic_part()
     assert parser.symbol.type == parser.scanner.COMMA
 
-def test_display_error(capfd):
-    """Test the Parser.display_error() function"""
+def test_display_error():
+    """Test the Parser.display_error(error_type) function"""
     file_dir = "test_functions"
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
     parser.display_error(parser.NO_EQUALS)
-    out, err = capfd.readouterr()
-    assert out == "SyntaxError: Expected an equals sign\n"
+    assert parser.error_output[-1] == "SyntaxError: Expected an equals sign"
 
-def test_display_error_device(capfd):
-    """Test the Parser.display_error_device() function"""
+def test_display_error_device():
+    """Test the Parser.display_error_device(error_type) function"""
     file_dir = "test_functions"
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
     parser.display_error_device(parser.devices.BAD_DEVICE)
-    out, err = capfd.readouterr()
-    assert out == "SemanticError: BAD_DEVICE\n"
+    assert parser.error_output[-1] == "SemanticError: BAD_DEVICE"
 
-def test_display_error_connection(capfd):
-    """Test the Parser.display_error_connection() function"""
+def test_display_error_connection():
+    """Test the Parser.display_error_connection(error_type) function"""
     file_dir = "test_functions"
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
     parser.display_error_connection(parser.network.INPUT_TO_INPUT)
-    out, err = capfd.readouterr()
-    assert out == "SemanticError: INPUT_TO_INPUT\n"
+    assert parser.error_output[-1] == "SemanticError: INPUT_TO_INPUT"
 
-def test_display_error_monitor(capfd):
-    """Test the Parser.display_error_monitor() function"""
+def test_display_error_monitor():
+    """Test the Parser.display_error_monitor(error_type) function"""
     file_dir = "test_functions"
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
     parser.display_error_monitor(parser.monitors.NOT_OUTPUT)
-    out, err = capfd.readouterr()
-    assert out == "SemanticError: NOT_OUTPUT\n"
+    assert parser.error_output[-1] == "SemanticError: NOT_OUTPUT"
 
 def test_check_names():
     """Test the Parser.check_names() function"""
@@ -191,7 +202,7 @@ def test_add_connection():
     assert flag is True
 
     flag = parser.add_connection()
-    assert flag is True
+    assert flag is False
     # alternative for this add_connection():
     # device_id1, port_id1, syntax_err = parser.signame()
     # assert port_id1 is None

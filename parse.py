@@ -51,7 +51,9 @@ class Parser:
         self.symbol = Symbol()
         # self.cursor = 0 # this might be needed
         self.error_count = 0
-        self.exist_semerr = 0 # marking variable, once a semantic error detected, stop adding anything and detect syntax error only
+        self.semerr_count = 0 # marking variable, once a semantic error detected, stop adding anything and detect syntax error only
+        self.error_output = []
+        self.error_cursor = []
         self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NOT_NAME, self.NOT_NUMBER, self.NOT_SYMBOL] = self.names.unique_error_codes(7)
 
     def parse_network(self):
@@ -63,8 +65,24 @@ class Parser:
         flag2 = self.parse_connections()
         flag3 = self.parse_monitors()
         success = (flag1 and flag2 and flag3)
-        # success = True
+        self.print_msg(success)
         return success
+
+    def print_msg(self, success):
+        """
+        Display all the errors occurred during parsing.
+        If there is no error, show "Parsed successfully! Valid definition file"
+
+        :param success: a boolean variable, True if parsing is successful, False otherwise
+        :return: no returned value
+        """
+        if success is True:
+            print("Parsed successfully! Valid definition file!")
+        else:
+            print("Totally %d errors detected: %d syntax errors and %d semantic errors"%(self.error_count, self.error_count-self.semerr_count,self.semerr_count))
+            for i in range(self.error_count):
+                print(self.error_output[i])
+                self.scanner.display_error_location(self.error_cursor[i])
 
     def parse_devices(self):
         """
@@ -126,17 +144,15 @@ class Parser:
                     return False
 
             if self.symbol.type == self.scanner.COMMA or self.symbol.type == self.scanner.SEMICOLON:
-                if self.exist_semerr == 0:
-                    # make device using the type and param, have 1 param
-                    error_type = self.devices.make_device(identifier,type_id,param)
-                    if error_type != self.devices.NO_ERROR:
-                        self.exist_semerr = 1
-                        self.display_error_device(error_type)
-                        return False
-                    else:
-                        return True
+                # make device using the type and param
+                error_type = self.devices.make_device(identifier,type_id,param)
+                if error_type != self.devices.NO_ERROR:
+                    self.semerr_count += 1
+                    self.display_error_device(error_type)
+                    return False
                 else:
                     return True
+
             elif self.symbol.type == self.scanner.KEYWORD or self.symbol.type == self.scanner.EOF:
                 self.display_error(self.NO_SEMICOLON)
                 return False
@@ -201,25 +217,18 @@ class Parser:
         sig1_device, sig1_port, syntax_err = self.signame(0)
         if syntax_err == 1:
             return False
-        if self.symbol.type == self.scanner.EQUALS:
-            sig2_device, sig2_port, syntax_err = self.signame()
-            if syntax_err == 1:
-                return False
-            if self.exist_semerr == 0:
-                # make connection between sig1 and sig2
-                error_type = self.network.make_connection(sig1_device, sig1_port, sig2_device, sig2_port)
-                if error_type != self.network.NO_ERROR:
-                    self.exist_semerr = 1
-                    self.display_error_connection(error_type)
-                    return False
-                else:
-                    return True
-            else:
-                return True
-        else:
-            self.display_error(self.NO_EQUALS)  # no equal
-            self.skip_erratic_part()
+        sig2_device, sig2_port, syntax_err = self.signame()
+        if syntax_err == 1:
             return False
+
+        # make connection between sig1 and sig2
+        error_type = self.network.make_connection(sig1_device, sig1_port, sig2_device, sig2_port)
+        if error_type != self.network.NO_ERROR:
+            self.semerr_count += 1
+            self.display_error_connection(error_type)
+            return False
+        else:
+            return True
 
     def parse_monitors(self):
         """
@@ -259,14 +268,12 @@ class Parser:
         current_device, current_port, syntax_err = self.signame()  # add_monitor
         if syntax_err == 1:
             return False
-        if self.exist_semerr == 0:
-            error_type = self.monitors.make_monitor(current_device, current_port)
-            if error_type != self.monitors.NO_ERROR:
-                self.exist_semerr = 1
-                self.display_error_monitor(error_type)
-                return False
-            else:
-                return True
+
+        error_type = self.monitors.make_monitor(current_device, current_port)
+        if error_type != self.monitors.NO_ERROR:
+            self.semerr_count += 1
+            self.display_error_monitor(error_type)
+            return False
         else:
             return True
 
@@ -404,22 +411,22 @@ class Parser:
         """
         self.error_count += 1
         if error_type == self.NO_KEYWORD:
-            print("SyntaxError: Expected a keyword")
+            self.error_output.append("SyntaxError: Expected a keyword")
         elif error_type == self.NO_EQUALS:
-            print("SyntaxError: Expected an equals sign")
+            self.error_output.append("SyntaxError: Expected an equals sign")
         elif error_type == self.NO_SEMICOLON:
-            print("SyntaxError: Expected a semicolon")
+            self.error_output.append("SyntaxError: Expected a semicolon")
         elif error_type == self.NO_COMMA:
-            print("SyntaxError: Expected a comma")
+            self.error_output.append("SyntaxError: Expected a comma")
         elif error_type == self.NOT_NAME:
-            print("SyntaxError: Expected a name")
+            self.error_output.append("SyntaxError: Expected a name")
         elif error_type == self.NOT_NUMBER:
-            print("SyntaxError: Expected a number")
+            self.error_output.append("SyntaxError: Expected a number")
         elif error_type == self.NOT_SYMBOL:
-            print("SyntaxError: Expected a legal symbol")
+            self.error_output.append("SyntaxError: Expected a legal symbol")
         else:
-            print("Unknown error occurred") # not likely to occur
-        self.scanner.display_error_location(self.symbol.cursor_position)
+            self.error_output.append("Unknown error occurred") # not likely to occur
+        self.error_cursor.append(self.symbol.cursor_position)
 
     def display_error_device(self,error_type):
         """
@@ -430,18 +437,18 @@ class Parser:
         """
         self.error_count += 1
         if error_type == self.devices.INVALID_QUALIFIER:
-            print("SemanticError: INVALID_QUALIFIER")
+            self.error_output.append("SemanticError: INVALID_QUALIFIER")
         elif error_type == self.devices.NO_QUALIFIER:
-            print("SemanticError: NO_QUALIFIER")
+            self.error_output.append("SemanticError: NO_QUALIFIER")
         elif error_type == self.devices.QUALIFIER_PRESENT:
-            print("SemanticError: QUALIFIER_PRESENT")
+            self.error_output.append("SemanticError: QUALIFIER_PRESENT")
         elif error_type == self.devices.BAD_DEVICE:
-            print("SemanticError: BAD_DEVICE")
+            self.error_output.append("SemanticError: BAD_DEVICE")
         elif error_type == self.devices.DEVICE_PRESENT:
-            print("SemanticError: DEVICE_PRESENT")
+            self.error_output.append("SemanticError: DEVICE_PRESENT")
         else:
-            print("Unknown error occurred")  # not likely to occur
-        self.scanner.display_error_location(self.symbol.cursor_position)
+            self.error_output.append("Unknown error occurred")  # not likely to occur
+        self.error_cursor.append(self.symbol.cursor_position)
 
     def display_error_connection(self,error_type):
         """
@@ -452,18 +459,18 @@ class Parser:
         """
         self.error_count += 1
         if error_type == self.network.INPUT_TO_INPUT:
-            print("SemanticError: INPUT_TO_INPUT")
+            self.error_output.append("SemanticError: INPUT_TO_INPUT")
         elif error_type == self.network.OUTPUT_TO_OUTPUT:
-            print("SemanticError: OUTPUT_TO_OUTPUT")
+            self.error_output.append("SemanticError: OUTPUT_TO_OUTPUT")
         elif error_type == self.network.INPUT_CONNECTED:
-            print("SemanticError: INPUT_CONNECTED")
+            self.error_output.append("SemanticError: INPUT_CONNECTED")
         elif error_type == self.network.PORT_ABSENT:
-            print("SemanticError: PORT_ABSENT")
+            self.error_output.append("SemanticError: PORT_ABSENT")
         elif error_type == self.network.DEVICE_ABSENT:
-            print("SemanticError: DEVICE_ABSENT")
+            self.error_output.append("SemanticError: DEVICE_ABSENT")
         else:
-            print("Unknown error occurred") # not likely to occur
-        self.scanner.display_error_location(self.symbol.cursor_position)
+            self.error_output.append("Unknown error occurred") # not likely to occur
+        self.error_cursor.append(self.symbol.cursor_position)
 
     def display_error_monitor(self,error_type):
         """
@@ -474,12 +481,12 @@ class Parser:
         """
         self.error_count += 1
         if error_type == self.monitors.NOT_OUTPUT:
-            print("SemanticError: NOT_OUTPUT")
+            self.error_output.append("SemanticError: NOT_OUTPUT")
         elif error_type == self.monitors.MONITOR_PRESENT:
-            print("SemanticError: MONITOR_PRESENT")
+            self.error_output.append("SemanticError: MONITOR_PRESENT")
         else:
-            print("Unknown error occurred") # not likely to occur
-        self.scanner.display_error_location(self.symbol.cursor_position)
+            self.error_output.append("Unknown error occurred") # not likely to occur
+        self.error_cursor.append(self.symbol.cursor_position)
 
     def skip_erratic_part(self): # so-called recovery
         """
@@ -504,9 +511,11 @@ class Parser:
         """
         # self.cursor = self.symbol.cursor_position
         current_symbol = self.scanner.get_symbol()
+        # print(current_symbol.type is None)
         while current_symbol.type is None:
             self.display_error(self.NOT_SYMBOL)
             current_symbol = self.scanner.get_symbol()
+            print(current_symbol.type)
         return current_symbol
 
 
@@ -514,13 +523,15 @@ class Parser:
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
 
 # # Folder to keep test definition files
-# test_file_dir = "test_definition_files/test_connections"
+# test_file_dir = "test_functions"
 # names = Names()
 # devices = Devices(names)
 # network = Network(names, devices)
 # monitors = Monitors(names, devices, network)
-# file_path = test_file_dir + "/expected_comma_error.txt"
+# file_path = test_file_dir + "/read_symbol.txt"
 # scanner = Scanner(file_path, names)
 # parser = Parser(names, devices, network, monitors, scanner)
-# _ = parser.parse_devices()
-# flag = parser.parse_connections()
+# a = parser.read_symbol()
+# a = parser.read_symbol()
+# # print(parser.error_cursor[0]) # the cursor is None, msg captured right
+# a = parser.read_symbol()
