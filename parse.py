@@ -51,7 +51,7 @@ class Parser:
         self.symbol = Symbol()
         # self.cursor = 0 # this might be needed
         self.error_count = 0
-        self.semerr_count = 0 # marking variable, once a semantic error detected, stop adding anything and detect syntax error only
+        self.semerr_count = 0 # count semantic errors detected
         self.error_output = []
         self.error_cursor = []
         self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NOT_NAME, self.NOT_NUMBER, self.NOT_SYMBOL] = self.names.unique_error_codes(7)
@@ -510,13 +510,14 @@ class Parser:
         :return: current_symbol, the next valid symbol to be considered by the parser.
         """
         # self.cursor = self.symbol.cursor_position
-        current_symbol = self.scanner.get_symbol()
-        # print(current_symbol.type is None)
-        while current_symbol.type is None:
+        self.symbol = self.scanner.get_symbol()
+        # print(self.symbol.cursor_position)
+        while self.symbol.type is None:
             self.display_error(self.NOT_SYMBOL)
-            current_symbol = self.scanner.get_symbol()
-            print(current_symbol.type)
-        return current_symbol
+            self.symbol = self.scanner.get_symbol()
+            # print(self.symbol.cursor_position)
+            # print(current_symbol.type)
+        return self.symbol
 
 
 
@@ -533,5 +534,6 @@ class Parser:
 # parser = Parser(names, devices, network, monitors, scanner)
 # a = parser.read_symbol()
 # a = parser.read_symbol()
+# print(parser.error_cursor)
 # # print(parser.error_cursor[0]) # the cursor is None, msg captured right
-# a = parser.read_symbol()
+# parser.print_msg(False)
