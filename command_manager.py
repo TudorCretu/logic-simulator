@@ -507,6 +507,7 @@ class LoadCommand(Command):
         self.gui.devices = self.command_manager.devices
         self.gui.network = self.command_manager.network
         self.gui.names = self.command_manager.names
+        self.gui.switches = self.gui.devices.find_devices(devices.SWITCH)
         self.gui.canvas.monitors = self.command_manager.monitors
         self.gui.canvas.devices = self.command_manager.devices
         self.gui.canvas.update_cycle_axis_layout()
