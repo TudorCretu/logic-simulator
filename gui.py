@@ -513,7 +513,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.display_width = size.width
         self.display_height = size.height
         self.gui.update_scrollbars()
-        self.render()
+        try:
+            self.render()
+        except wx._core.wxAssertionError:
+            pass
 
     def text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18):
         """Calculate the length in pts of a displayed text.
@@ -753,12 +756,20 @@ class Gui(wx.Frame):
 
         #   Zoom
         zoom_button_size = wx.Size(25, 25)
-        self.zoom_minus_button = wx.Button(self, wx.ID_ANY, "-", size=zoom_button_size)
         self.zoom_resolution = 100
         self.zoom_slider = wx.Slider(self, wx.ID_ANY, value=1*self.zoom_resolution, minValue=self.zoom_resolution*self.canvas.zoom_min,
                                      maxValue=self.zoom_resolution*self.canvas.zoom_max, style=wx.SL_LABELS | wx.SL_TICKS, name="Zoom")
         self.zoom_slider.SetTickFreq(250)
-        self.zoom_plus_button = wx.Button(self, wx.ID_ANY, "+", size=zoom_button_size)
+        if wx.Platform == '__WXGTK__':  # If available, use zoom bitmaps
+            plus = wx.ArtProvider.GetBitmap("gtk-zoom-in", wx.ART_MENU)
+            self.zoom_plus_button = wx.BitmapButton(self, wx.ID_ANY, plus, size=zoom_button_size)
+            minus = wx.ArtProvider.GetBitmap("gtk-zoom-out", wx.ART_MENU)
+            self.zoom_minus_button = wx.BitmapButton(self, wx.ID_ANY, minus, size=zoom_button_size)
+
+        else:  # otherwise, just use +/- string
+            self.zoom_plus_button = wx.Button(self, wx.ID_ANY, "+", size=zoom_button_size)
+            self.zoom_minus_button = wx.Button(self, wx.ID_ANY, "-", size=zoom_button_size)
+
 
         #  Static Strings
         console_title = wx.StaticText(self, wx.ID_ANY, "Console")
