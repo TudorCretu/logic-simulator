@@ -243,9 +243,9 @@ class Scanner:
 
 
 names = Names()
- 
+
 scanner = Scanner('test_definition_files/test_model_3.txt',names)
- 
+
 symbol = None
 for a in range(4):
     symbol =scanner.get_symbol()
