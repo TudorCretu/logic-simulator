@@ -491,7 +491,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def update_cycle_axis_layout(self):
         """Handle changes in monitors"""
         self.monitors_number = len(self.monitors.monitors_dictionary)
-        self.cycle_start_x = 25 + self.text_width("0") * self.monitors.get_margin()
+        margin = self.monitors.get_margin()
+        if margin is None:
+            longest_monitor = len("Cycles")
+        else:
+            longest_monitor = max(len("Cycles"), margin)
+        self.cycle_start_x = 25 + self.text_width("0") * longest_monitor
         self.width = (self.cycle_start_x + self.completed_cycles*self.cycle_width + 30) * self.zoom
         self.height = ((self.monitors_number+1) * self.monitor_height + 30) * self.zoom
         size = self.GetClientSize()
