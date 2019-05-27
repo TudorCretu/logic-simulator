@@ -152,7 +152,9 @@ class Scanner:
         self.file.readline() # progress to the end of line           
         self.advance() # progress to first character on new line
         self.update_line_data() 
-        
+        self.cursor_pos_at_start_of_line = self.cursor_pos_at_start_of_line - 1 
+        # single line comments need to subtract 1 from cursror position due to
+        # effects of /n 
     
     def skip_mult_line_cmt(self):
         """Skip to end of multiline comment or end of file"""
@@ -225,6 +227,7 @@ class Scanner:
         line = self.file.readline()
         print('File :',self.file.name)
         print('Line',self.line_number,':', end =' ')
+
         print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
        
         
@@ -233,6 +236,8 @@ class Scanner:
         #for error recovery
         self.file.seek(last_symbol_cursor_pos)
         self.advance()
+   
+        pass
         
 
 
@@ -242,7 +247,7 @@ names = Names()
 scanner = Scanner('test_definition_files/test_model_3.txt',names)
  
 symbol = None
-for a in range(1):
+for a in range(4):
     symbol =scanner.get_symbol()
     try:
         print(symbol.type,names.get_name_string(symbol.id))
