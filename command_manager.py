@@ -1,6 +1,6 @@
 """Execute commands and stores system states.
 
-Used in the Logic Simulator project to enable save/load undo/redo operations in the gui.
+Used in the Logic Simulator project to execute commands, enable save/load and undo/redo operations in the gui.
 
 Classes
 -------
@@ -11,6 +11,14 @@ CommandManager - makes and stores all the devices in the logic network.
 import abc
 import copy
 import pickle
+
+from names import Names
+from devices import Devices
+from network import Network
+from monitors import Monitors
+from scanner import Scanner
+from parse import Parser
+
 
 class Command(metaclass=abc.ABCMeta):
     """Abstract / Interface base class for commands."""
@@ -31,11 +39,17 @@ class HelpCommand(Command):
     """Help command implementation."""
 
     def __init__(self):
+        """Initialise attributes"""
         self.command_manager = None
         self.gui = None
         pass
 
     def execute(self, command_manager):
+        """Execute help command
+
+        Return NO_ERROR, None if successful.
+        """
+
         self.command_manager = command_manager
         self.gui = command_manager.gui
 
@@ -51,25 +65,39 @@ class HelpCommand(Command):
         return self.command_manager.NO_ERROR, None
 
     def undo(self):
+        """Attempt to undo help command. Pass the undo call to the next command
+
+        Return error_code, error_message
+        """
+
         # Nothing to undo, undo the next command
         return self.command_manager.undo_command()
 
     def redo(self):
+        """Attempt to redo help command. Pass the redo call to the next command
+
+        Return error_code, error_message
+        """
+
         # Nothing to redo, redo the next command
         return self.command_manager.redo_command()
 
 
 class SwitchCommand(Command):
-    """Help command implementation."""
+    """Set switch command implementation."""
 
-    def __init__(self, *args):
+    def __init__(self, switch_name, value):
+        # Initializes switch name to be switched to value
         self.command_manager = None
         self.gui = None
-        self.switch_name = args[0]
-        self.value = args[1]
+        self.switch_name = switch_name
+        self.value = value
 
     def execute(self, command_manager):
-        """Set the state of a switch"""
+        """Execute set switch command
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager = command_manager
         self.gui = command_manager.gui
 
@@ -90,13 +118,22 @@ class SwitchCommand(Command):
         return command_manager.NO_ERROR, None
 
     def undo(self):
-        """Reverse the value set to a switch"""
+        """Undo set switch command
+
+        Return NO_ERROR, None if successful.
+        """
+
+        # Reverse the value set to a switch
         self.value = 1 - self.value
         error_code, error_message = self.execute(self.command_manager)
         return error_code, error_message
 
     def redo(self):
-        """Set again the value to a switch"""
+        """Redo set switch command
+
+        Return NO_ERROR, None if successful.
+        """
+
         # redo can be called only after undo is called, so change value back to the original
         self.value = 1 - self.value
         error_code, error_message = self.execute(self.command_manager)
@@ -104,9 +141,10 @@ class SwitchCommand(Command):
 
 
 class MonitorCommand(Command):
-    """Help command implementation."""
+    """Monitor command implementation."""
 
     def __init__(self, signal_name):
+        """Initialise signal_name to monitor"""
         self.command_manager = None
         self.gui = None
         self.initial_monitors_state = None
@@ -114,6 +152,10 @@ class MonitorCommand(Command):
         self.signal_name = signal_name
 
     def execute(self, command_manager):
+        """Executes monitor command
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager = command_manager
         self.gui = command_manager.gui
         self.initial_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
@@ -140,21 +182,31 @@ class MonitorCommand(Command):
         return command_manager.NO_ERROR, None
 
     def undo(self):
+        """Undo monitor command
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
         self.gui.canvas.update_cycle_axis_layout()
         self.gui.monitors_update_toggle()
         return self.command_manager.NO_ERROR, None
 
     def redo(self):
+        """Redo monitor command
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
         self.gui.canvas.update_cycle_axis_layout()
         self.gui.monitors_update_toggle()
         return self.command_manager.NO_ERROR, None
 
+
 class ZapCommand(Command):
-    """Help command implementation."""
+    """Zap command implementation."""
 
     def __init__(self, signal_name):
+        """Initialise signal_name to zap"""
         self.command_manager = None
         self.gui = None
         self.initial_monitors_state = None
@@ -163,6 +215,10 @@ class ZapCommand(Command):
         pass
 
     def execute(self, command_manager):
+        """Executes zap command
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager = command_manager
         self.gui = command_manager.gui
         self.initial_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
@@ -187,12 +243,20 @@ class ZapCommand(Command):
         return command_manager.NO_ERROR, None
 
     def undo(self):
+        """Undo zap command
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
         self.gui.canvas.update_cycle_axis_layout()
         self.gui.monitors_update_toggle()
         return self.command_manager.NO_ERROR, None
 
     def redo(self):
+        """Redo zap command
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
         self.gui.canvas.update_cycle_axis_layout()
         self.gui.monitors_update_toggle()
@@ -200,9 +264,10 @@ class ZapCommand(Command):
 
 
 class RunCommand(Command):
-    """Help command implementation."""
+    """Run command implementation."""
 
     def __init__(self, cycles):
+        """Initialise number of cycles."""
         self.command_manager = None
         self.gui = None
         self.cycles = cycles
@@ -213,7 +278,12 @@ class RunCommand(Command):
         self.final_devices_state = None
 
     def execute(self, command_manager):
-        """Run simulation from start for a number of cycles"""
+        """Execute run command
+
+        Return NO_ERROR, None if successful.
+        """
+
+        # Run simulation from start for a number of cycles
         self.command_manager = command_manager
         self.gui = command_manager.gui
         self.initial_cycles = self.gui.completed_cycles
@@ -230,24 +300,34 @@ class RunCommand(Command):
                 if self.command_manager.network.execute_network():
                     self.command_manager.monitors.record_signals()
                 else:
-                    return self.command_manager.OSCILLATING_NETWORK, "Cannot run network. The network doesn't have a stable state."
+                    return self.command_manager.OSCILLATING_NETWORK, \
+                           "Cannot run network. The network doesn't have a stable state."
             self.gui.update_cycles(self.cycles)
             self.gui.log_text("Run simulation for " + str(self.cycles) + " cycles")
 
         except ValueError:
-            return self.command_manager.INVALID_ARGUMENT, "Cannot run network. The number of cycles is not a positive integer."
+            return self.command_manager.INVALID_ARGUMENT, \
+                   "Cannot run network. The number of cycles is not a positive integer."
         self.final_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
         self.final_devices_state = copy.deepcopy(command_manager.devices.devices_list)
 
         return self.command_manager.NO_ERROR, None
 
     def undo(self):
+        """Undo run command
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
         self.command_manager.devices.devices_list = self.initial_devices_state
         self.gui.update_cycles(self.initial_cycles)
         return self.command_manager.NO_ERROR, None
 
     def redo(self):
+        """Redo run command
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
         self.command_manager.devices.devices_list = self.final_devices_state
         self.gui.update_cycles(self.cycles)
@@ -255,15 +335,20 @@ class RunCommand(Command):
 
 
 class ContinueCommand(Command):
-    """Help command implementation."""
+    """Continue command implementation."""
 
     def __init__(self, cycles):
+        """Initialise number of cycles."""
         self.command_manager = None
         self.gui = None
         self.cycles = cycles
         self.initial_monitors_state = None
 
     def execute(self, command_manager):
+        """Continue simulation for a number of cycles
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager = command_manager
         self.gui = command_manager.gui
         self.initial_monitors_state = copy.deepcopy(command_manager.monitors.monitors_dictionary)
@@ -290,105 +375,171 @@ class ContinueCommand(Command):
         return self.command_manager.NO_ERROR, None
 
     def undo(self):
+        """Undo continue command
+
+        Return NO_ERROR, None if successful.
+        """
+
         # Resets monitors to the state before continuing and also updates the cycles counters
         self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
         self.gui.update_cycles(self.gui.completed_cycles - self.cycles)
         return self.command_manager.NO_ERROR, None
 
     def redo(self):
+        """Redo continue command
+
+        Return NO_ERROR, None if successful.
+        """
+
         # This command is deterministic, so no need to keep final states too. Can just execute it again.
         error_code, error_message = self.execute(self.command_manager)
         return error_code, error_message
 
 
 class SaveCommand(Command):
-    """Help command implementation."""
+    """Save command implementation."""
 
     def __init__(self, path):
+        """Initialise path of the save destination."""
         self.command_manager = None
         self.gui = None
         self.path = path
 
     def execute(self, command_manager):
+        """Execute save command
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager = command_manager
         self.gui = command_manager.gui
         with open(self.path, 'wb') as fp:
-            data = [self.command_manager.monitors, self.command_manager.devices, self.command_manager.network, self.command_manager.names, self.command_manager.gui.completed_cycles]
+            data = [self.command_manager.monitors, self.command_manager.devices, self.command_manager.network,
+                    self.command_manager.names, self.command_manager.gui.completed_cycles]
             pickle.dump(data, fp)
 
         self.gui.log_text("Save file " + self.path)
         return self.command_manager.NO_ERROR, None
 
     def undo(self):
+        """Attempt to undo save command. Pass the undo call to the next command
+
+        Return error_code, error_message
+        """
+
         # Nothing to undo, undo the next command
         return self.command_manager.undo_command()
 
     def redo(self):
+        """Attempt to redo save command. Pass the redo call to the next command
+
+        Return error_code, error_message
+        """
+
         # Nothing to redo, redo the next command
         return self.command_manager.redo_command()
 
 
 class LoadCommand(Command):
-    """Help command implementation."""
+    """Load command implementation."""
 
     def __init__(self, path):
+        """Initialise path of the load file."""
         self.command_manager = None
         self.gui = None
         self.path = path
 
     def execute(self, command_manager):
+        """Execute load command
+
+        Return NO_ERROR, None if successful.
+        """
         self.command_manager = command_manager
         self.gui = command_manager.gui
-        with open(self.path, 'rb') as fp:
-            monitors, devices, network, names, completed_cycles = pickle.load(fp)
-            self.command_manager.monitors = monitors
-            self.command_manager.devices = devices
-            self.command_manager.network = network
-            self.command_manager.names = names
-            self.command_manager.undo_stack.clear()
-            self.command_manager.redo_stack.clear()
-            self.gui.monitors = self.command_manager.monitors
-            self.gui.devices = self.command_manager.devices
-            self.gui.network = self.command_manager.network
-            self.gui.names = self.command_manager.names
-            self.gui.canvas.monitors = self.command_manager.monitors
-            self.gui.canvas.update_cycle_axis_layout()
-            self.gui.update_cycles(completed_cycles)
-            self.gui.switches_select.SetValue("")
-            self.gui.switches_update_toggle()
-            self.gui.monitors_select.SetValue("")
-            self.gui.monitors_update_toggle()
-            self.gui.log_text("Load file " + self.path)
+        if self.path.split('.')[-1] == "defb":  # File is an already built network
+            with open(self.path, 'rb') as fp:
+                try:
+                    monitors, devices, network, names, completed_cycles = pickle.load(fp)
+                except pickle.UnpicklingError:
+                    return self.command_manager.INVALID_DEFINITION_FILE, None
+
+        else:  # File is a definition file
+            names = Names()
+            devices = Devices(names)
+            network = Network(names, devices)
+            monitors = Monitors(names, devices, network)
+            scanner = Scanner(self.path, names)
+            parser = Parser(names, devices, network, monitors, scanner)
+            completed_cycles = 0
+            if not parser.parse_network():
+                return self.command_manager.INVALID_DEFINITION_FILE, None
+
+        self.command_manager.monitors = monitors
+        self.command_manager.devices = devices
+        self.command_manager.network = network
+        self.command_manager.names = names
+        self.command_manager.undo_stack.clear()
+        self.command_manager.redo_stack.clear()
+        self.gui.monitors = self.command_manager.monitors
+        self.gui.devices = self.command_manager.devices
+        self.gui.network = self.command_manager.network
+        self.gui.names = self.command_manager.names
+        self.gui.canvas.monitors = self.command_manager.monitors
+        self.gui.canvas.devices = self.command_manager.devices
+        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.update_cycles(completed_cycles)
+        self.gui.switches_select.SetValue("")
+        self.gui.switches_update_toggle()
+        self.gui.monitors_select.SetValue("")
+        self.gui.monitors_update_toggle()
+        self.gui.log_text("Load file " + self.path)
+        self.gui.path = self.path
+        self.gui.load_file_text_box.SetValue(self.path)
         return self.command_manager.NO_ERROR, None
 
     def undo(self):
+        """Attempt to undo load command. Pass the undo call to the next command
+
+        Return error_code, error_message
+        """
+
         # Nothing to undo, undo the next command
         return self.command_manager.undo_command()
 
     def redo(self):
+        """Attempt to redo load command. Pass the redo call to the next command
+
+        Return error_code, error_message
+        """
+
         # Nothing to redo, redo the next command
         return self.command_manager.redo_command()
 
 
 class CommandManager:
-    """Make and store devices.
+    """Manages commands and executes them.
 
-    This class contains many functions for making devices and ports.
-    It stores all the devices in a list.
+    This class contains functions required for executing commands received from gui,
+    and handle undo/redo operations.
 
     Parameters
     ----------
-    names: instance of the names.Names() class.
+    gui - instance of the gui.Gui() class.
+    names - instance of the names.Names() class.
+    devices - instance of the devices.Devices() class.
+    network: instance of the network.Network() class.
+    monitors - instance of the monitors.Monitors() class.
 
     Public methods
     --------------
-    get_device(self, device_id): Returns the Device object corresponding
-                                 to the device ID.
+    execute_command(self, command): Executes command and return error_code and error_message.
 
+    undo_command(self): Undo command and return error_code and error_message.
+
+    redo_command(self): Redo command and return error_code and error_message.
     """
 
     def __init__(self, gui, names, devices, network, monitors):
-        """Initialise devices list and constants."""
+        """Initialise commands errors and undo/redo stacks."""
 
         # Instances of classes
         self.gui = gui
@@ -396,15 +547,25 @@ class CommandManager:
         self.devices = devices
         self.network = network
         self.monitors = monitors
+
+        # Stacks for undo/redo commands
         self.undo_stack = []
         self.redo_stack = []
 
         # Errors
         [self.NO_ERROR, self.INVALID_COMMAND, self.INVALID_ARGUMENT, self.SIGNAL_NOT_MONITORED,
          self.OSCILLATING_NETWORK, self.CANNOT_OPEN_FILE, self.NOTHING_TO_UNDO, self.NOTHING_TO_REDO,
-         self.SIMULATION_NOT_STARTED, self.UNKNOWN_ERROR] = names.unique_error_codes(10)
+         self.SIMULATION_NOT_STARTED, self.NO_FILE, self.INVALID_DEFINITION_FILE,
+         self.UNKNOWN_ERROR] = names.unique_error_codes(12)
 
     def execute_command(self, command):
+        """Execute command given as argument
+
+        Return error_code, error_message
+        """
+        if self.gui.path is None and not isinstance(command, LoadCommand):
+            self.gui.raise_error(self.NO_FILE)
+            return self.NO_FILE, None
         error_code, error_message = command.execute(self)
         if error_code == self.NO_ERROR:
             self.redo_stack.clear()
@@ -415,6 +576,10 @@ class CommandManager:
         return error_code, error_message
 
     def undo_command(self):
+        """Undo last command from undo stack
+
+        Return error_code, error_message
+        """
         if len(self.undo_stack) > 0:
             command = self.undo_stack.pop()
             self.redo_stack.append(command)
@@ -425,6 +590,10 @@ class CommandManager:
             return self.NOTHING_TO_UNDO, None
 
     def redo_command(self):
+        """Undo last command from redo stack
+
+        Return error_code, error_message
+        """
         if len(self.redo_stack) > 0:
             command = self.redo_stack.pop()
             self.undo_stack.append(command)

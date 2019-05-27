@@ -1,7 +1,1 @@
-36
-!
-Symbol*
-hellofirst*
-* comment here *
-# single line comment
-it should hello first DEVICES # comment here too
+36 symbols

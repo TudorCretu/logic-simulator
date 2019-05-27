@@ -35,10 +35,12 @@ def test_read_symbol():
     """Test the Parser.read_symbol() function"""
     file_dir = "test_functions"
     path = file_dir + "/read_symbol.txt"
-    parser =create_parser(path)
+    parser = create_parser(path)
     parser.symbol = parser.read_symbol()
+    assert parser.symbol.type == parser.scanner.NUMBER
+    parser.symbol = parser.read_symbol()
+    assert parser.error_count == 1
     assert parser.symbol.type == parser.scanner.KEYWORD
-    assert parser.symbol.id == parser.scanner.DEVICES_ID
 
 def test_print_msg(capfd):
     """Test the Parser.print_msg(success) function"""
