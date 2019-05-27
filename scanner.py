@@ -16,7 +16,11 @@ class Symbol:
 
     Parameters
     ----------
-    No parameters.
+    line_number -  this stores the line number of the symbol's location
+    
+    cursor_pos_at_start_of_line - this stores the cursor postition at the
+                                  beginning of the line that contains the
+                                  symbol
 
     Public methods
     --------------
@@ -60,7 +64,6 @@ class Scanner:
         """Open specified file and initialise reserved words and IDs."""
         try : # open file using path
             self.file = open(path)
-            print(self.file.tell(),'hurrah')
         except FileNotFoundError:
             print("File was not found.")
             sys.exit()
@@ -69,7 +72,7 @@ class Scanner:
         #list of keywords as well as ID values for keywords
         #Set current_character attribute to first character of file
         #Set line number counter to 1
-        #Set position of 1st character on current line to 0.
+        #Set position of 1st character on current line to 1.
         self.names = names 
         self.symbol_type_list = [self.DOT, self.BACKSLASH, self.COMMA, self.SEMICOLON,
             self.EQUALS, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(9)
@@ -77,7 +80,7 @@ class Scanner:
         [self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITORS_ID] = self.names.lookup(self.keywords_list)
         self.current_character = self.file.read(1)
         self.line_number = 1
-        self.cursor_pos_at_start_of_line = 1
+        self.cursor_pos_at_start_of_line = 0
 
 
 
@@ -89,7 +92,7 @@ class Scanner:
         self.skip_comments() 
         
         # get cursor position at start of symbol
-        symbol.cursor_position = self.file.tell()
+        symbol.cursor_position = self.file.tell() - 1
         print(symbol.cursor_position,":test if cursor pos(left) None ")
         # Check for various symbol types
         if self.current_character.isalpha(): # name
@@ -141,7 +144,7 @@ class Scanner:
         """Handle update of line number and cursor position at line beginning"""
         
         self.line_number +=1 
-        self.cursor_pos_at_start_of_line = self.file.tell() + 1
+        self.cursor_pos_at_start_of_line = self.file.tell() 
 
     def advance(self):
         """Read ahead 1 character in the file"""
@@ -224,7 +227,7 @@ class Scanner:
         # find the collumn number of the error location within the line
         caret_coll_num = pos_of_err - cursor_pos_at_start_of_line 
         # move cursor to start of current line
-        self.file.seek(cursor_pos_at_start_of_line-1)
+        self.file.seek(cursor_pos_at_start_of_line)
         
         # add a caret to the point where the error begins on current line 
         # display all error location information referred to above        
@@ -240,7 +243,7 @@ class Scanner:
         #searching for the next appropriate punctuation symbol
         #for error recovery
         
-        self.file.seek(last_symbol_cursor_pos - 1)
+        self.file.seek(last_symbol_cursor_pos)
         self.advance()
         
    
@@ -264,11 +267,11 @@ for a in range(3):
     
     scanner.display_error_location(symbol.cursor_position)
     '''
-    #print (symbol.cursor_position,scanner.cursor_pos_at_start_of_line,scanner.line_number)
+    print (symbol.cursor_position,scanner.cursor_pos_at_start_of_line,scanner.line_number)
 
 
 #scanner.display_error_location(symbol.cursor_position)
 
-scanner.display_error_location(1)
-scanner.display_error_location(6)
-scanner.display_error_location(9)
+scanner.display_error_location(1,0,3)
+scanner.display_error_location(1,0,8)
+scanner.display_error_location(1,0,11)
