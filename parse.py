@@ -54,6 +54,8 @@ class Parser:
         self.semerr_count = 0 # count semantic errors detected
         self.error_output = []
         self.error_cursor = []
+        self.errline_num = []
+        self.errline_pos = []
         self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NOT_NAME, self.NOT_NUMBER, self.NOT_SYMBOL] = self.names.unique_error_codes(7)
 
     def parse_network(self):
@@ -82,7 +84,7 @@ class Parser:
             print("Totally %d errors detected: %d syntax errors and %d semantic errors"%(self.error_count, self.error_count-self.semerr_count,self.semerr_count))
             for i in range(self.error_count):
                 print(self.error_output[i])
-                self.scanner.display_error_location(self.error_cursor[i])
+                self.scanner.display_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
 
     def parse_devices(self):
         """
@@ -427,6 +429,8 @@ class Parser:
         else:
             self.error_output.append("Unknown error occurred") # not likely to occur
         self.error_cursor.append(self.symbol.cursor_position)
+        self.errline_num.append(self.symbol.line_number)
+        self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
 
     def display_error_device(self,error_type):
         """
@@ -449,6 +453,8 @@ class Parser:
         else:
             self.error_output.append("Unknown error occurred")  # not likely to occur
         self.error_cursor.append(self.symbol.cursor_position)
+        self.errline_num.append(self.symbol.line_number)
+        self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
 
     def display_error_connection(self,error_type):
         """
@@ -471,6 +477,8 @@ class Parser:
         else:
             self.error_output.append("Unknown error occurred") # not likely to occur
         self.error_cursor.append(self.symbol.cursor_position)
+        self.errline_num.append(self.symbol.line_number)
+        self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
 
     def display_error_monitor(self,error_type):
         """
@@ -523,17 +531,17 @@ class Parser:
 
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
 
-# # Folder to keep test definition files
-# test_file_dir = "test_functions"
-# names = Names()
-# devices = Devices(names)
-# network = Network(names, devices)
-# monitors = Monitors(names, devices, network)
-# file_path = test_file_dir + "/read_symbol.txt"
-# scanner = Scanner(file_path, names)
-# parser = Parser(names, devices, network, monitors, scanner)
-# a = parser.read_symbol()
-# a = parser.read_symbol()
-# print(parser.error_cursor)
-# # print(parser.error_cursor[0]) # the cursor is None, msg captured right
-# parser.print_msg(False)
+# Folder to keep test definition files
+test_file_dir = "test_functions"
+names = Names()
+devices = Devices(names)
+network = Network(names, devices)
+monitors = Monitors(names, devices, network)
+file_path = test_file_dir + "/read_symbol.txt"
+scanner = Scanner(file_path, names)
+parser = Parser(names, devices, network, monitors, scanner)
+a = parser.read_symbol()
+a = parser.read_symbol()
+print(parser.error_cursor)
+# print(parser.error_cursor[0]) # the cursor is None, msg captured right
+parser.print_msg(False)
