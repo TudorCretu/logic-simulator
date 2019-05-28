@@ -48,6 +48,7 @@ class Parser:
         self.error_count = 0
         self.semerr_count = 0 # count semantic errors detected
         self.error_output = []
+        self.error_to_gui = [] # for error display in GUI
         self.error_cursor = []
         self.errline_num = []
         self.errline_pos = []
@@ -86,21 +87,26 @@ class Parser:
         """
         if success is True:
             print("Parsed successfully! Valid definition file!")
+            self.error_to_gui.append("Parsed successfully! Valid definition file!")
         else:
             print("Totally %d errors detected: %d syntax errors and %d semantic errors"%(self.error_count, self.error_count-self.semerr_count,self.semerr_count))
+            self.error_to_gui.append("Totally %d errors detected: %d syntax errors and %d semantic errors"%(self.error_count, self.error_count-self.semerr_count,self.semerr_count))
             n = len(self.error_cursor)
             if self.error_count > n: # notice the unconnected input error
                 for i in range(n):
                     print(self.error_output[i])
+                    self.error_to_gui.append(self.error_output[i])
                     # self.out_for_gui.append(self.error_output[i])
-                    self.scanner.display_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
+                    self.error_to_gui.append(self.scanner.display_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i]))
                     # self.out_for_gui.append(sth)
                 print(self.error_output[n])
+                self.error_to_gui.append(self.error_output[i])
             else:
                 for i in range(n):
                     print(self.error_output[i])
+                    self.error_to_gui.append(self.error_output[i])
                     # self.out_for_gui.append(self.error_output[i])
-                    self.scanner.display_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
+                    self.error_to_gui.append(self.scanner.display_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i]))
                     # self.out_for_gui.append(sth)
 
     def parse_devices(self):
