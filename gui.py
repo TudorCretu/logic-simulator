@@ -938,6 +938,8 @@ class Gui(wx.Frame):
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
         Id = event.GetId()
+        if Id == wx.ID_NEW:
+            self.path = None
         if Id == wx.ID_EXIT:
             self.quit_command()
         if Id == wx.ID_ABOUT:
