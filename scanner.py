@@ -237,9 +237,10 @@ class Scanner:
         # add a caret to the point where the error begins on current line 
         # display all error location information referred to above        
         line = self.file.readline()
-        
-       
-        Line_rdt ='Line ' + str(line_number) + ': ' + line[:-1] + '\n'
+        if (line[-1]=='\n'):
+            line = line[:-1]
+
+        Line_rdt ='Line ' + str(line_number) + ': ' + line + '\n'
         
         output = Line_rdt + (caret_coll_num +len(str(line_number))+7) *' '+ '^' + ' '*(len(line)-1-caret_coll_num)
         print(output)

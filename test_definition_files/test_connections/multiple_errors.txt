@@ -8,7 +8,7 @@ CK1 = CLOCK/2,
 XOR1 = XOR;
 
 CONNECTIONS
-XOR1.I3 = D1.DATA , # port absent error here
+  XOR1.I3 = D1.DATA , # port absent error here
 4SW1 = XOR1.I1 , # expected name error here
                    
 

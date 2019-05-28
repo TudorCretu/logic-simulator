@@ -31,7 +31,6 @@ def names():
     """Return a new instance of the Devices class."""
     return Names()
 
-
 def assert_symbol(symbol, expected_type, expected_id):
     assert symbol.type == expected_type
     assert symbol.id == expected_id
@@ -240,7 +239,39 @@ def test_unclosed_ML_comment_warning(names,capfd):
     out, err = capfd.readouterr()
     assert out == ("** WARNING : UNCLOSED MULTILINE COMMENT PRESENT: "
                    "IT IS RECOMMENDED THAT YOU CLOSE IT WITH A '*'\n")
+    
+def test_symbol_line_number(names):
+    """Test if symbols are labelled with the correct line"""
+    # 2 symbols are placed on each line
+    string_io = StringIO("1 1" + os.linesep
+                         + "2 2" + os.linesep 
+                         + "3 3" + os.linesep 
+                         + "4 4")
+    scanner = Scanner(string_io, names)
+    
+    # test that there are 2 symbols on each of lines 1st ,2nd, 3rd, 4th lines 
+    for i in range (4):
+        symbol = scanner.get_symbol()
+        assert symbol.line_number == int(i/2 + 1)
+    
+def test_show_error_location(names):
+    """Test if error correct location display information is returned by 
+    the function: show_error_location"""
+    # Input a sequence of known symbols
+    string_io = StringIO("Error called at the 3rd symbol in string")
+    scanner = Scanner(string_io, names)
 
+    symbol = scanner.get_symbol()
+    symbol = scanner.get_symbol()
+    symbol = scanner.get_symbol() # get to the 3rd symbol in string
+    
+    # test simulating parser having detected an error at the 3rd symbol
+    output = scanner.show_error_location(
+            symbol.line_number,symbol.cursor_pos_at_start_of_line,
+            symbol.cursor_position)
+    # checking readout information agrees with what we would expect
+    assert output == ("Line 1: Error called at the 3rd symbol in string\n"
+                      "                     ^                          ")
 
 def test_comment_between_sections(names):
     """Test if comments are ignored correctly."""
