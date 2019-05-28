@@ -215,7 +215,7 @@ class Scanner:
             self.advance()
         return number 
     
-    def display_error_location(self,line_number, cursor_pos_at_start_of_line,
+    def show_error_location(self,line_number, cursor_pos_at_start_of_line,
                                last_symbol_cursor_pos):
         """Returns information about the location of an error. Shows the file 
         that contains it, the line number of the error and the specific
@@ -237,7 +237,7 @@ class Scanner:
         
         output2 = 'Line ' + str(line_number) + ' : ' + line_with_caret
 
-        print (output1+output2)
+        print (output1+output2) # must be removed later
         return output1 + output2
 
 #

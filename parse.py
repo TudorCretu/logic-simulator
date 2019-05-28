@@ -93,14 +93,14 @@ class Parser:
                 for i in range(n):
                     print(self.error_output[i])
                     # self.out_for_gui.append(self.error_output[i])
-                    self.scanner.display_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
+                    self.scanner.show_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
                     # self.out_for_gui.append(sth)
                 print(self.error_output[n])
             else:
                 for i in range(n):
                     print(self.error_output[i])
                     # self.out_for_gui.append(self.error_output[i])
-                    self.scanner.display_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
+                    self.scanner.show_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
                     # self.out_for_gui.append(sth)
 
     def parse_devices(self):

@@ -395,9 +395,39 @@ def test_MONITORS_expected_semicolon_error(capfd):
     out, err = capfd.readouterr()
     assert parser.error_output[0] == "SyntaxError: Expected a semicolon"
     
-                              
-
-
-def test_MONITORS_mutliple_errors():
+def test_MONITORS_monitor_exists(capfd):
+    """Test if missing expected ; symbol is reported in MONITORS BLOCK"""
     test_file_dir = "test_definition_files/test_monitors"
-    pass
+    file_path = test_file_dir + "/monitor_exists.txt"
+    parser = create_parser(file_path)
+
+    parser.parse_devices()
+    parser.parse_connections()
+
+    assert parser.parse_monitors() is False
+    out, err = capfd.readouterr()
+    assert parser.error_output[0] == "Semantic error: monitor already exists"
+                             
+def test_MONITORS_device_absent():
+    test_file_dir = "test_definition_files/test_monitors"
+    file_path = test_file_dir + "/device_absent.txt"
+    parser = create_parser(file_path)
+
+    parser.parse_devices()
+    parser.parse_connections()
+
+    assert parser.parse_monitors() is False
+    out, err = capfd.readouterr()
+    assert parser.error_output[0] == "SemanticError: Device not present"
+
+def test_MONITORS_not_output():
+    test_file_dir = "test_definition_files/test_monitors"
+    file_path = test_file_dir + "/not_output.txt"
+    parser = create_parser(file_path)
+
+    parser.parse_devices()
+    parser.parse_connections()
+
+    assert parser.parse_monitors() is False
+    out, err = capfd.readouterr()
+    assert parser.error_output[0] == "SemanticError: port not an output"

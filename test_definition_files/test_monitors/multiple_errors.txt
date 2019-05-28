@@ -21,4 +21,6 @@ SW4 = D1.CLEAR # missing semicolon here
 
 MONITORS
 D1.Q ,
-D1.QBAR ;
+D1.Q , # monitor already present
+D1.QBAR # missing comma
+SW1 # missing semicolon
