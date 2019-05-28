@@ -241,7 +241,7 @@ class Parser:
             # make connection between sig1 and sig2
             error_type, err_device, err_port = self.network.make_connection(sig1_device, sig1_port, sig2_device, sig2_port)
             if error_type != self.network.NO_ERROR:
-                self.semerr_count += 1
+                print(err_device)
                 if err_device is None:
                     self.display_error_connection(error_type,sig1_device, sig1_port, sig2_device, sig2_port)
                 else:
@@ -569,6 +569,7 @@ class Parser:
 
 
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
+'''
 # # Folder to keep test definition files
 test_file_dir = "test_definition_files/test_connections"
 names = Names()
@@ -583,4 +584,5 @@ parser = Parser(names, devices, network, monitors, scanner)
 #print(parser.error_cursor)
 # print(parser.error_cursor[0]) # the cursor is None, msg captured right
 parser.parse_network()
+'''
 
