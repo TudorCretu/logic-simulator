@@ -166,7 +166,13 @@ class Scanner:
         
         # keep skipping characters until the end of the M-L comment (*)
         # or the end of the file is reached
-        while self.current_character !='*' and self.current_character !='':
+        while self.current_character !='*':
+            
+            if (self.current_character == ''):
+                print("** WARNING : UNCLOSED MULTILINE COMMENT PRESENT: "
+                      "IT IS RECOMMENDED THAT YOU CLOSE IT WITH A '*'")
+                return 
+                   
             self.advance()
             
         self.advance() # move on to the next character

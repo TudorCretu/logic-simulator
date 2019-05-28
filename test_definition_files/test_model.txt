@@ -1,6 +1,6 @@
 
 
-!Symbol
+
 DEVICES
 CK1 = CLOCK/2,      # Clock Period 2
 CK2 = CLOCK/1,      # Clock Period 1

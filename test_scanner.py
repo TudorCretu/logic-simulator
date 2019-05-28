@@ -196,7 +196,7 @@ def test_final_whitespace(names):
     assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
-def test_comment(names):
+def test_single_line_comment(names):
     """Test if comments are ignored correctly."""
     string_io = StringIO("Some / symbol # some comment 1234 / " + os.linesep
                          + "Some / other / symbols # some other comments / ; ")
@@ -210,6 +210,36 @@ def test_comment(names):
     assert_symbol(scanner.get_symbol(), scanner.BACKSLASH, None)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbols"))
     assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+    
+def test_multiline_comment(names):
+    """Test if multiline comments are ignored correctly."""
+    string_io = StringIO("Multiline comment was *" + os.linesep
+                         + "Multiline comment content" + os.linesep 
+                         + "More Multiline comment content *" + os.linesep 
+                         + "correctly removed")
+    scanner = Scanner(string_io, names)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("Multiline"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("comment"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("was"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("correctly"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("removed"))
+
+def test_unclosed_ML_comment_warning(names,capfd):
+    """Test if multiline comments are ignored correctly."""
+    string_io = StringIO("Unclosed multiline comment follows *" + os.linesep
+                         + "Multiline comment content" + os.linesep 
+                         + "More Multiline comment content " + os.linesep 
+                         + "More multiline comment content")
+    scanner = Scanner(string_io, names)
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("Unclosed"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("multiline"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("comment"))
+    assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("follows"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)  
+    
+    out, err = capfd.readouterr()
+    assert out == ("** WARNING : UNCLOSED MULTILINE COMMENT PRESENT: "
+                   "IT IS RECOMMENDED THAT YOU CLOSE IT WITH A '*'\n")
 
 
 def test_comment_between_sections(names):
