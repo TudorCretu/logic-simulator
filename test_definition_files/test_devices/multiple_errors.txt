@@ -1,4 +1,4 @@
-@DEVICES
+DEVICES
 2SW1 = SWITCH/1, # expected a name symbol
 SW2 = SWITCH/1,
 SW2 = SWITCH/1, # repeated name symbol
