@@ -48,9 +48,10 @@ class Parser:
         self.error_count = 0
         self.semerr_count = 0 # count semantic errors detected
         self.error_output = []
-        self.error_cursor = []
-        self.errline_num = []
-        self.errline_pos = []
+        self.errloc = []
+        # self.error_cursor = []
+        # self.errline_num = []
+        # self.errline_pos = []
         self.error_type_list = [self.NO_KEYWORD_DEVICES, self.NO_KEYWORD_CONNECTIONS, self.NO_KEYWORD_MONITORS, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NOT_NAME, self.NOT_NUMBER, self.NOT_SYMBOL] = self.names.unique_error_codes(9)
 
     def parse_network(self):
@@ -81,6 +82,7 @@ class Parser:
         """
         Display all the errors occurred during parsing.
         If there is no error, show "Parsed successfully! Valid definition file"
+
         :param success: a boolean variable, True if parsing is successful, False otherwise
         :return: no returned value
         """
@@ -88,24 +90,27 @@ class Parser:
             print("Parsed successfully! Valid definition file!")
         else:
             print("Totally %d errors detected: %d syntax errors and %d semantic errors"%(self.error_count, self.error_count-self.semerr_count,self.semerr_count))
-            n = len(self.error_cursor)
+            n = len(self.errloc)
             if self.error_count > n: # notice the unconnected input error
                 for i in range(n):
                     print(self.error_output[i])
+                    print(self.errloc[i])
                     # self.out_for_gui.append(self.error_output[i])
-                    self.scanner.show_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
+                    # self.scanner.show_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
                     # self.out_for_gui.append(sth)
                 print(self.error_output[n])
             else:
                 for i in range(n):
                     print(self.error_output[i])
+                    print(self.errloc[i])
                     # self.out_for_gui.append(self.error_output[i])
-                    self.scanner.show_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
+                    # self.scanner.show_error_location(self.errline_num[i], self.errline_pos[i],self.error_cursor[i])
                     # self.out_for_gui.append(sth)
 
     def parse_devices(self):
         """
         Parse the section starting with the keyword DEVICES.
+
         :return: flag, a boolean variable indicating if the DEVICES section is error-free.
                     If this section is error-free then return True, else return False
         """
@@ -134,6 +139,7 @@ class Parser:
         Read in each syntax in DEVICE section, try to detect syntax errors before adding a device
         and raise possible semantic error when adding the device.
         If there is no error, then a new device is added according to the syntax.
+
         :return: a bool value indicating if a device can be added according to the current syntax.
                     If it can be added return True, else return False.
         """
@@ -189,6 +195,7 @@ class Parser:
     def get_parameter(self):
         """
         Get the parameter value right after the backslash for syntax in DEVICE section.
+
         :return: If there is a number after the backslash then return this number, else return None
         """
         self.symbol = self.read_symbol() # read in a param
@@ -201,6 +208,7 @@ class Parser:
     def parse_connections(self):
         """
         Parse the section starting with the keyword CONNECTIONS.
+
         :return: flag, a boolean variable indicating if the CONNECTIONS section is error-free.
                     If this section is error-free then return True, else return False
         """
@@ -228,6 +236,7 @@ class Parser:
         Read in each syntax in CONNECTIONS section, try to detect syntax errors before adding a connection
         and raise possible semantic error when adding the connection.
         If there is no error, then a new connection is added according to the syntax.
+
         :return: a bool value indicating if a connection can be added according to the current syntax.
                     If it can be added return True, else return False.
         """
@@ -255,6 +264,7 @@ class Parser:
     def parse_monitors(self):
         """
         Parse the section starting with the keyword MONITORS.
+
         :return: flag, a boolean variable indicating if the MONITORS section is error-free.
                     If this section is error-free then return True, else return False
         """
@@ -282,6 +292,7 @@ class Parser:
         Read in each syntax in MONITORS section, try to detect syntax errors before adding a monitor
         and raise possible semantic error when adding the monitor.
         If there is no error, then a new monitor is added according to the syntax.
+
         :return: a bool value indicating if a monitor can be added according to the current syntax.
                     If it can be added return True, else return False.
         """
@@ -292,7 +303,7 @@ class Parser:
             error_type = self.monitors.make_monitor(current_device, current_port)
             if error_type != self.monitors.NO_ERROR:
                 self.semerr_count += 1
-                self.display_error_monitor(error_type)
+                self.display_error_monitor(error_type,current_device, current_port)
                 return False
             else:
                 return True
@@ -302,6 +313,7 @@ class Parser:
     def signame(self, side=1): # get the name of the signal
         """
         Get the signal names for syntax in CONNECTIONS and MONITORS section.
+
         :param side: 0 if the signal is on the left hand side, 1 if on the right hand side.
                     Considering the MONITORS section, the default value of side is 1.
         :return: device_id (the id of current device)
@@ -369,7 +381,8 @@ class Parser:
     def check_names(self): # with skip_erratic_part(), self.symbol becomes the next ',' or ';' or KEYWORD or EOF
         """
         Check if current self.symbol is a valid NAME according to the EBNF grammar.
-        If it is not a NAME, then raise syntax error and skip current syntax.
+        If it is not a NAME, then raise syntax error and skip current syntax for recovery.
+
         :return: a bool value indicating if self.symbol is a NAME symbol.
                     If it is a NAME, return True, otherwise return False.
         """
@@ -383,7 +396,8 @@ class Parser:
     def check_number(self): # similar to check_names
         """
         Check if current self.symbol is a valid NUMBER according to the EBNF grammar.
-        If it is not a NUMBER, then raise syntax error and skip current syntax.
+        If it is not a NUMBER, then raise syntax error and skip current syntax for recovery.
+
         :return: a bool value indicating if self.symbol is a NUMBER symbol.
                     If it is a NUMBER, return True, otherwise return False.
         """
@@ -397,6 +411,8 @@ class Parser:
     def check_side(self, side):
         """
         Check syntax errors after getting a syntactically valid signal.
+        Syntax requirements are different for LHS (followed by '=') and RHS (followed by ',')
+
         :param side: 0 if the signal is on the left hand side, 1 if on the right hand side.
         :return: a bool value indicating if there is a syntax error after current signal.
                     If there is, return False, otherwise return True.
@@ -423,6 +439,7 @@ class Parser:
     def display_error(self, error_type):
         """
         Report and locate a syntax error "error_type" defined in the Parser() class.
+
         :param error_type: a integer indicating the type of syntax error.
         :return: no returned value.
         """
@@ -447,14 +464,19 @@ class Parser:
             self.error_output.append("SyntaxError: Expected a legal symbol")
         else:
             self.error_output.append("Unknown error occurred") # not likely to occur
-        self.error_cursor.append(self.symbol.cursor_position)
-        self.errline_num.append(self.symbol.line_number)
-        self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
+        # self.error_cursor.append(self.symbol.cursor_position)
+        # self.errline_num.append(self.symbol.line_number)
+        # self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
+        self.errloc.append(
+            self.scanner.show_error_location(self.symbol.line_number, self.symbol.cursor_pos_at_start_of_line,
+                                             self.symbol.cursor_position))
 
     def display_error_device(self,error_type,identifier_id=None,type_id=None):
         """
         Report and locate a semantic error "error_type" defined in the Devices() class.
+
         :param error_type: a integer indicating the type of semantic error.
+                identifier_id, type_id: the symbol ids for identifier and device type in current syntax
         :return: no returned value.
         """
         self.error_count += 1
@@ -474,14 +496,20 @@ class Parser:
             self.error_output.append("RepeatedIdentifierError: Device '%s' is already defined"%(device_id_str))
         else:
             self.error_output.append("Unknown error occurred")  # not likely to occur
-        self.error_cursor.append(self.symbol.cursor_position)
-        self.errline_num.append(self.symbol.line_number)
-        self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
+        # self.error_cursor.append(self.symbol.cursor_position)
+        # self.errline_num.append(self.symbol.line_number)
+        # self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
+        self.errloc.append(
+                self.scanner.show_error_location(self.symbol.line_number, self.symbol.cursor_pos_at_start_of_line,
+                                                 self.symbol.cursor_position))
 
     def display_error_connection(self,error_type,sig1_device=None,sig1_port=None,sig2_device=None,sig2_port=None):
         """
         Report and locate a semantic error "error_type" defined in the Network() class.
+
         :param error_type: a integer indicating the type of semantic error.
+                sig1_device,sig1_port: the symbol ids for device and port of the first signal in current syntax.
+                sig2_device,sig2_port: the symbol ids for device and port of the second signal in current syntax
         :return: no returned value.
         """
         self.error_count += 1
@@ -514,14 +542,19 @@ class Parser:
             self.error_output.append("DeviceAbsentError:Device '%s' is not defined" %(device_str1))
         else:
             self.error_output.append("Unknown error occurred") # not likely to occur
-        self.error_cursor.append(self.symbol.cursor_position)
-        self.errline_num.append(self.symbol.line_number)
-        self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
+        # self.error_cursor.append(self.symbol.cursor_position)
+        # self.errline_num.append(self.symbol.line_number)
+        # self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
+        self.errloc.append(
+            self.scanner.show_error_location(self.symbol.line_number, self.symbol.cursor_pos_at_start_of_line,
+                                             self.symbol.cursor_position))
 
     def display_error_monitor(self,error_type,device_id=None,port_id=None):
         """
         Report and locate a semantic error "error_type" defined in the Monitors() class.
+
         :param error_type: a integer indicating the type of semantic error.
+                device_id, port_id: the symbol ids for device and port of the signal in current syntax
         :return: no returned value.
         """
         self.error_count += 1
@@ -537,16 +570,21 @@ class Parser:
             self.error_output.append("DeviceAbsentError:Device '%s' is not defined" %(device_str))
         else:
             self.error_output.append("Unknown error occurred") # not likely to occur
-        self.error_cursor.append(self.symbol.cursor_position)
-        self.errline_num.append(self.symbol.line_number)
-        self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
+        # self.error_cursor.append(self.symbol.cursor_position)
+        # self.errline_num.append(self.symbol.line_number)
+        # self.errline_pos.append(self.symbol.cursor_pos_at_start_of_line)
+        self.errloc.append(
+            self.scanner.show_error_location(self.symbol.line_number, self.symbol.cursor_pos_at_start_of_line,
+                                             self.symbol.cursor_position))
 
     def skip_erratic_part(self): # so-called recovery
         """
         This function is used for error recovery, it skips everything in the file before finding the next punctuation.
         These types of symbols defined in Scanner() are punctuations: COMMA, SEMICOLON, KEYWORD, EOF
         If a syntax error is detected, this function maybe called. Otherwise it is not called
-        If a semantic error is detected, the parser stops adding anything, and it will only focus on syntax errors.
+        If a semantic error is detected, we are already at an punctuation thus no skip
+        Notice once an error is detected, we no longer call "make_" functions therefore semantic errors are not reported then
+
         :return: no returned value.
         """
         while self.symbol.type != self.scanner.COMMA: # go to the next comma within the section
@@ -558,6 +596,7 @@ class Parser:
         """
         Read in the next symbol to be considered by the parser.
         If the scanner gets an invalid symbol, report syntax error and move on to get the next symbol.
+
         :return: current_symbol, the next valid symbol to be considered by the parser.
         """
         # self.cursor = self.symbol.cursor_position
@@ -575,18 +614,16 @@ class Parser:
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
 
 # # Folder to keep test definition files
-test_file_dir = "test_definition_files/test_connections"
-names = Names()
-devices = Devices(names)
-network = Network(names, devices)
-monitors = Monitors(names, devices, network)
-file_path = test_file_dir + "/invalid_port_error.txt"
-scanner = Scanner(file_path, names)
-parser = Parser(names, devices, network, monitors, scanner)
-#a = parser.read_symbol()
-#a = parser.read_symbol()
-#print(parser.error_cursor)
-# print(parser.error_cursor[0]) # the cursor is None, msg captured right
-parser.parse_network()
-
-
+# test_file_dir = "test_definition_files/test_connections"
+# names = Names()
+# devices = Devices(names)
+# network = Network(names, devices)
+# monitors = Monitors(names, devices, network)
+# file_path = test_file_dir + "/invalid_port_error.txt"
+# scanner = Scanner(file_path, names)
+# parser = Parser(names, devices, network, monitors, scanner)
+# #a = parser.read_symbol()
+# #a = parser.read_symbol()
+# #print(parser.error_cursor)
+# # print(parser.error_cursor[0]) # the cursor is None, msg captured right
+# parser.parse_network()
