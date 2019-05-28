@@ -246,8 +246,9 @@ class Scanner:
         # obtain the full line of the error       
         line = self.file.readline()
         # remove any trailing '\n' characters from the line
-        if (line[-1]=='\n'):
-            line = line[:-1]
+        if (len(line) != 0):
+            if (line[len(line)-1]=='\n'):
+                line = line[:-1]
         
         # obtain the first line of the error location information output
         out1 = 'Line ' + str(line_number) + ': ' + line + '\n'
@@ -261,6 +262,7 @@ class Scanner:
         
         # return the overall error location information
         output = out1 + out2
+        print(output)
         return output
 
 #
