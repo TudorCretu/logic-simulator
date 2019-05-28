@@ -231,7 +231,7 @@ class Scanner:
         # add a caret to the point where the error begins on current line 
         # display all error location information referred to above        
         line = self.file.readline()
-        print(line)
+
         print('File :',self.file.name)
         print('Line',line_number,':', end =' ')
 
