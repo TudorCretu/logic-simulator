@@ -436,6 +436,8 @@ class SaveCommand(Command):
         """
         self.command_manager = command_manager
         self.gui = command_manager.gui
+        if self.path.split('.')[-1] != "defb":
+            self.path += ".defb"
         with open(self.path, 'wb') as fp:
             data = [self.command_manager.monitors, self.command_manager.devices, self.command_manager.network,
                     self.command_manager.names, self.command_manager.gui.completed_cycles]
@@ -528,7 +530,7 @@ class LoadCommand(Command):
         self.gui.monitors_update_toggle()
         self.gui.log_text("Load file " + self.path)
         self.gui.path = self.path
-        self.gui.load_file_text_box.SetValue(self.path)
+        self.gui.load_file_text_box.SetValue(self.path.split('/')[-1])
         return self.command_manager.NO_ERROR, None
 
     def undo(self):

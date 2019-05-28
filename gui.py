@@ -49,7 +49,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1), thickness=1.0): Handle line drawing operations.
 
-    render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color=(0, 0, 1)): Handle transparent rectangle drawing operations.
+    render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color=(0, 0, 1)): Handle transparent
+                                                                                        rectangle drawing operations.
 
     render_text(self, text, x_pos, y_pos): Handles text drawing operations.
 
@@ -213,11 +214,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             # Configure the viewport, modelview and projection matrices
             self.init_gl()
             self.init = True
-
-        size = self.GetClientSize()
-        text = "".join(["Canvas redrawn on paint event, size is ",
-                        str(size.width), ", ", str(size.height)])
-        print(text)
         self.render()
 
     def on_size(self, event):
@@ -233,14 +229,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         if event.ButtonDown():
             self.last_mouse_x = event.GetX()
             self.last_mouse_y = event.GetY()
-            text = "".join(["Mouse button pressed at: ", str(event.GetX()),
-                            ", ", str(event.GetY())])
-        if event.ButtonUp():
-            text = "".join(["Mouse button released at: ", str(event.GetX()),
-                            ", ", str(event.GetY())])
-        if event.Leaving():
-            text = "".join(["Mouse left canvas at: ", str(event.GetX()),
-                            ", ", str(event.GetY())])
+
         if event.Dragging():
             self.pan_x += event.GetX() - self.last_mouse_x
             self.pan_y -= event.GetY() - self.last_mouse_y
@@ -403,10 +392,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color=(0, 0, 1)):
         """Handle transparent rectangle drawing operations."""
         GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA) # enables transparency
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)  # enables transparency
         GL.glEnable(GL.GL_BLEND)
-        GL.glColor4f(*color, 0.75) # slightly transparent with alpha 0.75
-        GL.glBegin(GL.GL_TRIANGLES) # a rectangle made of 2 triangles
+        GL.glColor4f(*color, 0.75)  # slightly transparent with alpha 0.75
+        GL.glBegin(GL.GL_TRIANGLES)  # a rectangle made of 2 triangles
         GL.glVertex2f(x_bottom_left, y_top_right)
         GL.glVertex2f(x_bottom_left, y_bottom_left)
         GL.glVertex2f(x_top_right, y_top_right)
@@ -479,7 +468,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         print(self.display_height)
         self.pan_y = min(self.height - 50, self.pan_y)
         self.pan_y = max(self.display_height - 50, self.pan_y)
-
 
     def reset_pan(self):
         """Reset pan to start of displayed signals"""
@@ -659,8 +647,8 @@ class Gui(wx.Frame):
         viewMenu.Append(wx.ID_FULLSCREEN, "&Fullscreen")
         viewMenu.Append(wx.ID_ZOOM_100, "&Actual Size")
         viewMenu.Append(wx.ID_ZOOM_FIT, "Zoom to &Fit")
-        viewMenu.Append(wx.ID_ZOOM_IN, "Zoom &In")
-        viewMenu.Append(wx.ID_ZOOM_OUT, "Zoom &Out")
+        viewMenu.Append(wx.ID_ZOOM_IN, "Zoom &In\tCTRL++")
+        viewMenu.Append(wx.ID_ZOOM_OUT, "Zoom &Out\tCTRL+-")
         menuBar.Append(viewMenu, "&View")
 
         runMenu = wx.Menu()
@@ -722,7 +710,7 @@ class Gui(wx.Frame):
         self.load_file_button = wx.Button(self, wx.ID_ANY, "Load file")
         self.load_file_text_box = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
         if path is not None:
-            self.load_file_text_box.SetValue(path)
+            self.load_file_text_box.SetValue(path.split('/')[-1])
 
         #  Activity log sizer
         self.activity_log_title = wx.StaticText(self, wx.ID_ANY, "Activity log")
@@ -950,7 +938,7 @@ class Gui(wx.Frame):
         if Id == wx.ID_EXIT:
             self.quit_command()
         if Id == wx.ID_ABOUT:
-            wx.MessageBox("Logic Simulator\nCreated by Mojisola Agboola\n2017",
+            wx.MessageBox("Logic Simulator\nCreated by Team 05\n2019",
                           "About Logsim", wx.ICON_INFORMATION | wx.OK)
         if Id == wx.ID_OPEN:
             # Same functionality as load button
@@ -989,10 +977,9 @@ class Gui(wx.Frame):
             # Same functionality as continue button
             self.on_continue_button(None)
         if Id == wx.ID_HELP:
-            self.help_command()
-            pass
+            self.display_help()
         if Id == wx.ID_HELP_COMMANDS:
-            pass
+            self.help_command()
 
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
@@ -1141,7 +1128,6 @@ class Gui(wx.Frame):
             # save the current contents in the file
             pathname = fileDialog.GetPath()
             try:
-                print("Saving")
                 error_code, error_message = self.command_manager.execute_command(SaveCommand(pathname))
                 if error_code == self.command_manager.NO_ERROR:
                     self.is_saved = True
@@ -1154,9 +1140,13 @@ class Gui(wx.Frame):
 
     def log_text(self, text):
         """Handle the logging in activity_log of an event"""
-        text = "".join([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: "), text])
+        text = "".join([datetime.datetime.now().strftime("%H:%M:%S: "), text])
         self.activity_log_text.AppendText(text+'\n')
         self.is_saved = False
+
+    def display_help(self):
+        with open("logsim_help.txt", 'r') as help_fp:
+            wx.MessageBox(help_fp.read(), "Help", wx.ICON_INFORMATION | wx.OK)
 
     def help_command(self):
         """Print a list of valid commands."""
@@ -1169,6 +1159,7 @@ class Gui(wx.Frame):
             "h             - help (this command)\n" + \
             "q            - quit the program"
         self.log_text(text)
+        wx.MessageBox(text, "Help on Commands", wx.ICON_INFORMATION | wx.OK)
 
     def switches_update_toggle(self):
         """Handle a change in switches."""
@@ -1235,7 +1226,7 @@ class Gui(wx.Frame):
         self.canvas_scrollbar_hor.SetScrollbar(-position_x, thumb_x, range_x, thumb_x, True)
 
         # Update vertical scrollbar
-        position_y = self.canvas.pan_y-self.canvas.display_height+50
+        position_y = self.canvas.pan_y - self.canvas.display_height + 50
         range_y = self.canvas.height
         thumb_y = self.canvas.display_height
         self.canvas_scrollbar_ver.SetScrollbar(position_y, thumb_y, range_y, thumb_y, True)
@@ -1273,8 +1264,7 @@ class Gui(wx.Frame):
             if answer == wx.CANCEL:
                 return
             elif answer == wx.YES:
-                path = None
-                self.command_manager.execute_command(SaveCommand(path))
+                self.save_file()
         self.Close(True)
 
     def raise_error(self, error, message=None):
