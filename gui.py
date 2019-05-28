@@ -939,7 +939,14 @@ class Gui(wx.Frame):
         """Handle the event when the user selects a menu item."""
         Id = event.GetId()
         if Id == wx.ID_NEW:
-            self.path = None
+            names = Names()
+            devices = Devices(names)
+            network = Network(names, devices)
+            monitors = Monitors(names, devices, network)
+            app = wx.App()
+            gui = Gui("Logic Simulator", None, names, devices, network, monitors)
+            gui.Show(True)
+            app.MainLoop()
         if Id == wx.ID_EXIT:
             self.quit_command()
         if Id == wx.ID_ABOUT:
