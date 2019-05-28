@@ -233,10 +233,11 @@ class Scanner:
         line_with_caret = (line[0:caret_coll_num] + (line[caret_coll_num] +
                            '\u032D') + line[caret_coll_num+1:])
 
-        output1 = 'File :' + self.file.name + '/n'      
+        output1 = 'File :' + self.file.name + '\n'      
         
         output2 = 'Line ' + str(line_number) + ' : ' + line_with_caret
 
+        print (output1+output2)
         return output1 + output2
 
 #
