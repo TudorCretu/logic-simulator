@@ -230,15 +230,15 @@ class Scanner:
         # add a caret to the point where the error begins on current line 
         # display all error location information referred to above        
         line = self.file.readline()
-        line_with_caret = (line[0:caret_coll_num] + (line[caret_coll_num] +
-                           '\u032D') + line[caret_coll_num+1:])
+        line_with_caret = (line[0:caret_coll_num] + (line[caret_coll_num] 
+                           + '\u032D') + line[caret_coll_num+1:])
 
-        output1 = 'File :' + self.file.name + '\n'      
+        #output1 = 'File : ' + self.file.name + '\n'      
         
-        output2 = 'Line ' + str(line_number) + ' : ' + line_with_caret
+        output = 'Line ' + str(line_number) + ' : ' + line_with_caret
 
-        print (output1+output2) # must be removed later
-        return output1 + output2
+        print (output) # must be removed later
+        return output #+ output2
 
 #
 #
