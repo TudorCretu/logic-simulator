@@ -163,7 +163,7 @@ class Scanner:
         self.file.readline() # progress to the end of line
         self.update_line_data()            
         self.advance() # progress to first character on new line
-        self.update_line_data()
+
     
     def skip_mult_line_cmt(self):
         """Skip to end of multiline comment or end of file"""
