@@ -89,8 +89,8 @@ class Parser:
             print("Parsed successfully! Valid definition file!")
             self.error_to_gui.append("Parsed successfully! Valid definition file!")
         else:
-            print("File '%s' has %d errors: %d syntax errors and %d semantic errors"%(self.scanner.file.name, self.error_count, self.error_count-self.semerr_count,self.semerr_count))
-            self.error_to_gui.append("File '%s' has %d errors: %d syntax errors and %d semantic errors"%(self.scanner.file.name, self.error_count, self.error_count-self.semerr_count,self.semerr_count))
+            print("File '%s' contains %d error(s): %d syntax error(s) and %d semantic error(s)"%(self.scanner.file.name, self.error_count, self.error_count-self.semerr_count,self.semerr_count))
+            self.error_to_gui.append("File '%s' contains %d error(s): %d syntax error(s) and %d semantic error(s)"%(self.scanner.file.name, self.error_count, self.error_count-self.semerr_count,self.semerr_count))
             n = len(self.error_cursor)
             if self.error_count > n: # notice the unconnected input error
                 for i in range(n):
