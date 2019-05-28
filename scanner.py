@@ -83,7 +83,6 @@ class Scanner:
         self.cursor_pos_at_start_of_line = 0
 
 
-
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         
@@ -136,7 +135,6 @@ class Scanner:
             
             self.advance()
             
-
         return symbol 
     
     def update_line_data(self):
@@ -217,9 +215,10 @@ class Scanner:
             self.advance()
         return number 
     
-    def display_error_location(self,line_number, cursor_pos_at_start_of_line, last_symbol_cursor_pos):
-        """Displays the location of an error. Shows the file that
-        contains it, the line number of the error and the specific
+    def display_error_location(self,line_number, cursor_pos_at_start_of_line,
+                               last_symbol_cursor_pos):
+        """Returns information about the location of an error. Shows the file 
+        that contains it, the line number of the error and the specific
         point on that line where the error occurs"""
                 
         pos_of_err = last_symbol_cursor_pos
@@ -231,23 +230,14 @@ class Scanner:
         # add a caret to the point where the error begins on current line 
         # display all error location information referred to above        
         line = self.file.readline()
+        line_with_caret = (line[0:caret_coll_num] + (line[caret_coll_num] +
+                           '\u032D') + line[caret_coll_num+1:])
 
-        print('File :',self.file.name)
-        print('Line',line_number,':', end =' ')
+        output1 = 'File :' + self.file.name + '/n'      
+        
+        output2 = 'Line ' + str(line_number) + ' : ' + line_with_caret
 
-        print(line[0:caret_coll_num] + (line[caret_coll_num] +'\u032D') + line[caret_coll_num+1:] )
-
-        
-        #Now reset cursor position in appropriate place to allow
-        #searching for the next appropriate punctuation symbol
-        #for error recovery
-        
-        #self.file.seek(last_symbol_cursor_pos)
-        #self.advance()
-        
-   
-        pass
-        
+        return output1 + output2
 
 #
 #
