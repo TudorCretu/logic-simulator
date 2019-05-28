@@ -280,7 +280,7 @@ def test_CONNECTIONS_2sig(capfd):
     assert parser.parse_connections() is False
 
     out, err = capfd.readouterr()
-    assert parser.error_output[0] == "InputPortConnectionPresentError: Connection between signals 'SW2' and 'XOR1.I1' already exists"
+    assert parser.error_output[0] == "InputPortConnectionPresentError: Signal 'XOR1.I1' is already connected"
 
 
 def test_CONNECTIONS_input_input_error(capfd):
@@ -405,8 +405,8 @@ def test_MONITORS_monitor_exists(capfd):
     parser.parse_connections()
 
     assert parser.parse_monitors() is False
-    out, err = capfd.readouterr()
-    assert parser.error_output[0] == "Semantic error: monitor already exists"
+   
+    assert parser.error_output[0] == "MonitorPresentError: Signal 'D1.Q' is already monitored"
                              
 def test_MONITORS_device_absent():
     test_file_dir = "test_definition_files/test_monitors"
@@ -417,8 +417,8 @@ def test_MONITORS_device_absent():
     parser.parse_connections()
 
     assert parser.parse_monitors() is False
-    out, err = capfd.readouterr()
-    assert parser.error_output[0] == "SemanticError: Device not present"
+   
+    assert parser.error_output[0] == "DeviceAbsentError:Device 'D3' is not defined"
 
 def test_MONITORS_not_output():
     test_file_dir = "test_definition_files/test_monitors"
@@ -429,5 +429,5 @@ def test_MONITORS_not_output():
     parser.parse_connections()
 
     assert parser.parse_monitors() is False
-    out, err = capfd.readouterr()
-    assert parser.error_output[0] == "SemanticError: port not an output"
+   
+    assert parser.error_output[0] == "MonitorNotOutputSignalError: Signal 'D1.CLEAR' is not an output"

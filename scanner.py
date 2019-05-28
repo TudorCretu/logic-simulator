@@ -242,26 +242,21 @@ class Scanner:
 
 #
 #
-# names = Names()
-#
-# scanner = Scanner('test_functions/read_symbol.txt',names)
-#
-# symbol = None
-# for a in range(3):
-#     symbol =scanner.get_symbol()
-#     '''
-#     try:
-#         print(symbol.type,names.get_name_string(symbol.id))
-#     except:
-#         print(symbol.type,symbol.id)
-#
-#     scanner.display_error_location(symbol.cursor_position)
-#     '''
-#     print (symbol.cursor_position,symbol.cursor_pos_at_start_of_line,symbol.line_number)
-#
-#     scanner.display_error_location(symbol.line_number,symbol.cursor_pos_at_start_of_line,symbol.cursor_position)
-
-
+names = Names()
+scanner = Scanner('test_functions/read_symbol.txt',names)
+symbol = None
+for a in range(3):
+    symbol =scanner.get_symbol()
+    '''
+    try:
+        print(symbol.type,names.get_name_string(symbol.id))
+    except:
+        print(symbol.type,symbol.id)
+    scanner.display_error_location(symbol.cursor_position)
+    '''
+    print (symbol.cursor_position,symbol.cursor_pos_at_start_of_line,symbol.line_number)
+    scanner.show_error_location(symbol.line_number,symbol.cursor_pos_at_start_of_line,symbol.cursor_position)
+    
 #scanner.display_error_location(symbol.cursor_position)
 
 #scanner.display_error_location(1,0,0)
