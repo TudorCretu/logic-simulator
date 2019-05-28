@@ -125,7 +125,7 @@ class Parser:
             else:
                 return False  # just end parsing this section
         else:
-            self.display_error(self.NO_KEYWORD)  # no keyword
+            self.display_error(self.NO_KEYWORD_DEVICES)  # no keyword
             return False  # just raise error and exit
         # print(self.names)
 
@@ -220,7 +220,7 @@ class Parser:
             else:
                 return False
         else:
-            self.display_error(self.NO_KEYWORD)
+            self.display_error(self.NO_KEYWORD_CONNECTIONS)
             return False # just raise error and exit
 
     def add_connection(self):
@@ -274,7 +274,7 @@ class Parser:
             else:
                 return False
         else:
-            self.display_error(self.NO_KEYWORD)
+            self.display_error(self.NO_KEYWORD_MONITORS)
             return False # just raise error and exit
 
     def add_monitor(self):
