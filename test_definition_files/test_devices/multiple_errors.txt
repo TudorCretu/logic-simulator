@@ -1,4 +1,4 @@
-DEVICES
+@DEVICES
 2SW1 = SWITCH/1, # expected a name symbol
 SW2 = SWITCH/1,
 SW2 = SWITCH/1, # repeated name symbol
@@ -7,3 +7,5 @@ D1 = DTYPE # expected comma error
 CK1 = CLOCK/2,
 XOR1 = XOR # missing semicolon error
 MONITORS
+
+

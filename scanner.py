@@ -223,21 +223,27 @@ class Scanner:
                 
         pos_of_err = last_symbol_cursor_pos
         # find the collumn number of the error location within the line
-        caret_coll_num = pos_of_err - cursor_pos_at_start_of_line 
+        caret_coll_num = pos_of_err - cursor_pos_at_start_of_line
+ 
         # move cursor to start of current line
         self.file.seek(cursor_pos_at_start_of_line)
-        
+
         # add a caret to the point where the error begins on current line 
         # display all error location information referred to above        
         line = self.file.readline()
-        line_with_caret = (line[0:caret_coll_num] + (line[caret_coll_num] 
-                           + '\u032D') + line[caret_coll_num+1:])
+        
+       
+        Line_rdt ='Line ' + str(line_number) + ': ' + line[:-1] + '\n'
+        
+        output = Line_rdt + (caret_coll_num +len(str(line_number))+7) *' '+ '^' + ' '*(len(line)-1-caret_coll_num)
+        print(output)
+
 
         #output1 = 'File : ' + self.file.name + '\n'      
         
-        output = 'Line ' + str(line_number) + ' : ' + line_with_caret
+        #output = 'Line ' + str(line_number) + ' : ' + line_with_caret
 
-        print (output) # must be removed later
+        #print (output) # must be removed later
         return output #+ output2
 
 #
