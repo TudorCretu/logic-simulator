@@ -1,0 +1,21 @@
+Supported devices:
+
+AND (AND gate): requires a /parameter indicating how many inputs it has.
+		This parameter is an integer from 1 to 16.
+		Its output is AND. Its inputs can be I1, I2, ... , I16.
+NAND (NAND gate): requires a /parameter indicating how many inputs it has.
+		This parameter is an integer from 1 to 16.
+		Its output is NAND. Its inputs can be I1, I2, ... , I16.
+OR (OR gate): requires a /parameter indicating how many inputs it has.
+		This parameter is an integer from 1 to 16.
+		Its output is OR. Its inputs can be I1, I2, ... , I16.
+NOR (NOR gate): requires a /parameter indicating how many inputs it has.
+		This parameter is an integer from 1 to 16.
+		Its output is NOR. Its inputs can be I1, I2, ... , I16.
+
+SWITCH (switch): requires a /parameter indicating its initial state (0 or 1).
+CLOCK (clock): requires a /parameter indicating number of simulation cycles in half a clock period.
+
+XOR (XOR gate): Its output is XOR. It has 2 inputs I1 and I2.
+DTYPE (D-type flip-flop): Its outputs are Q and Q_BAR. Its inputs are CLK, SET, CLEAR, DATA.
+
