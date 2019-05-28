@@ -48,9 +48,9 @@ class Parser:
         self.error_count = 0
         self.semerr_count = 0 # count semantic errors detected
         self.error_output = []
-        # self.error_cursor = []
-        # self.errline_num = []
-        # self.errline_pos = []
+        self.error_cursor = []
+        self.errline_num = []
+        self.errline_pos = []
         self.error_type_list = [self.NO_KEYWORD_DEVICES, self.NO_KEYWORD_CONNECTIONS, self.NO_KEYWORD_MONITORS, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NOT_NAME, self.NOT_NUMBER, self.NOT_SYMBOL] = self.names.unique_error_codes(9)
 
     def parse_network(self):
