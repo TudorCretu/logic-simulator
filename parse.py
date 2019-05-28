@@ -51,7 +51,7 @@ class Parser:
         self.error_cursor = []
         self.errline_num = []
         self.errline_pos = []
-        self.error_type_list = [self.NO_KEYWORD, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NOT_NAME, self.NOT_NUMBER, self.NOT_SYMBOL] = self.names.unique_error_codes(7)
+        self.error_type_list = [self.NO_KEYWORD_DEVICES, self.NO_KEYWORD_CONNECTIONS, self.NO_KEYWORD_MONITORS, self.NO_EQUALS, self.NO_SEMICOLON, self.NO_COMMA, self.NOT_NAME, self.NOT_NUMBER, self.NOT_SYMBOL] = self.names.unique_error_codes(9)
 
     def parse_network(self):
         """Parse the circuit definition file."""
@@ -427,8 +427,12 @@ class Parser:
         :return: no returned value.
         """
         self.error_count += 1
-        if error_type == self.NO_KEYWORD:
-            self.error_output.append("SyntaxError: Expected a keyword")
+        if error_type == self.NO_KEYWORD_DEVICES:
+            self.error_output.append("SyntaxError: Expected a keyword 'DEVICES'")
+        elif error_type == self.NO_KEYWORD_CONNECTIONS:
+            self.error_output.append("SyntaxError: Expected a keyword 'CONNECTIONS'")
+        elif error_type == self.NO_KEYWORD_MONITORS:
+            self.error_output.append("SyntaxError: Expected a keyword 'MONITORS'")
         elif error_type == self.NO_EQUALS:
             self.error_output.append("SyntaxError: Expected an equals sign")
         elif error_type == self.NO_SEMICOLON:
