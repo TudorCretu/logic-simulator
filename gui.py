@@ -1311,7 +1311,7 @@ class Gui(wx.Frame):
             wx.MessageBox("No network avilable. Load a valid definition file.", "No network available",
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.INVALID_DEFINITION_FILE:
-            wx.MessageBox("The file loaded contains errors", "Invalid definition file",
+            wx.MessageBox(message, "Invalid definition file",
                           wx.ICON_ERROR | wx.OK)
         else:
             wx.MessageBox(message, "Unknown Error", wx.ICON_ERROR | wx.OK)
