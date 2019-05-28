@@ -156,10 +156,11 @@ class Network:
                     error_type = self.NO_ERROR
             else:
                 error_type = self.PORT_ABSENT
+                return error_type, second_device_id, second_port_id
 
         else:  # first_port_id not a valid input or output port
             error_type = self.PORT_ABSENT
-            return error_type, second_device_id, second_port_id
+            return error_type, first_device_id, first_port_id
 
         return error_type, None, None
 
