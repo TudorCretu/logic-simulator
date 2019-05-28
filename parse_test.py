@@ -1,11 +1,11 @@
 """
 Test the parser module.
 
-Testing of the parser mainly consists of 2 parts: basic functionality testing and more complicated case testing.
+Testing of the parser mainly consists of 2 parts: basic functionality testing and more complicated meaningful case testing.
 
 Basic functionality testing in this file is finished by Dongcheng Jiang (dj346), the person who implemented parse.py as well.
 
-The other file test_parse.py which contains case testing is made by Shakthivel Ravichandran (sr795).
+The other file test_parse.py which uses other meaningful case for testing is made by Shakthivel Ravichandran (sr795).
 
 """
 
@@ -95,7 +95,7 @@ def test_display_error_monitor():
     symbol1 = parser.read_symbol()
     symbol2 = parser.read_symbol()
     parser.display_error_monitor(parser.monitors.NOT_OUTPUT, symbol1.id, symbol2.id)
-    assert parser.error_output[-1] == "MonitorOnInputSignalError: Monitored signal 'AND1.AND2' is an input signal"
+    assert parser.error_output[-1] == "MonitorNotOutputSignalError: Signal 'AND1.AND2' is not an output"
 
 def test_check_names():
     """Test the Parser.check_names() function"""
@@ -135,18 +135,18 @@ def test_signame():
     path = file_dir + "/signame.txt"
     parser = create_parser(path)
     _ = parser.parse_devices()
-    device_id, port_id, err = parser.signame()
+    device_id, port_id, err = parser.signame() # err indicates existance of syntax error
     assert device_id is not None
     assert port_id is not None
     assert err == 0
     device_id, port_id, err = parser.signame()
-    assert device_id is None
+    assert parser.devices.get_device(device_id) is None
     assert port_id is None
-    assert err == 2
+    assert err == 0 # semantic error
     device_id, port_id, err = parser.signame()
     assert device_id is None
     assert port_id is None
-    assert err == 1
+    assert err == 1 # syntax error
 
 def test_get_parameter():
     """Test the Parser.get_parameter() function"""
@@ -200,7 +200,8 @@ def test_add_connection():
     assert flag is True
 
     flag = parser.add_connection()
-    assert flag is False
+    assert flag is True
+    # this semantic error is not the first error, so it is neglected
     # alternative for this add_connection():
     # device_id1, port_id1, syntax_err = parser.signame()
     # assert port_id1 is None
@@ -242,7 +243,7 @@ def test_add_monitor():
     flag = parser.add_monitor()
     assert flag is True
     flag = parser.add_monitor()
-    assert flag is False
+    assert flag is True # semantic error ignored as required, there are already syntax errors
 
 def test_parse_monitors():
     """Test the Parser.parse_monitors() function"""
