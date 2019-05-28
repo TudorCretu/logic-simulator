@@ -579,7 +579,7 @@ class Parser:
 
 
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
-
+'''
 # # Folder to keep test definition files
 test_file_dir = "test_definition_files"
 names = Names()
@@ -594,3 +594,4 @@ parser = Parser(names, devices, network, monitors, scanner)
 #print(parser.error_cursor)
 # print(parser.error_cursor[0]) # the cursor is None, msg captured right
 parser.parse_network()
+'''
