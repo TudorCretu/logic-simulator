@@ -292,7 +292,7 @@ class Parser:
             error_type = self.monitors.make_monitor(current_device, current_port)
             if error_type != self.monitors.NO_ERROR:
                 self.semerr_count += 1
-                self.display_error_monitor(error_type)
+                self.display_error_monitor(error_type,current_device, current_port)
                 return False
             else:
                 return True
