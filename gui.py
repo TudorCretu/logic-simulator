@@ -645,7 +645,6 @@ class Gui(wx.Frame):
         wx.ID_FULLSCREEN = wx.NewId()
         viewMenu.Append(wx.ID_FULLSCREEN, "&Fullscreen")
         viewMenu.Append(wx.ID_ZOOM_100, "&Actual Size")
-        viewMenu.Append(wx.ID_ZOOM_FIT, "Zoom to &Fit")
         viewMenu.Append(wx.ID_ZOOM_IN, "Zoom &In\tCTRL++")
         viewMenu.Append(wx.ID_ZOOM_OUT, "Zoom &Out\tCTRL+-")
         menuBar.Append(viewMenu, "&View")
@@ -908,9 +907,9 @@ class Gui(wx.Frame):
             zoom_title_sizer.Add(zoom_bmp, 0, wx.Left | wx.TOP, 10)
         zoom_title_sizer.Add(line_sizer_zoom, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
 
-        zoom_sizer.Add(self.zoom_minus_button, 0, wx.LEFT | wx.TOP, 8)
+        zoom_sizer.Add(self.zoom_minus_button, 0, wx.LEFT | wx.TOP, 20)
         zoom_sizer.Add(self.zoom_slider, 1, wx.EXPAND, 0)
-        zoom_sizer.Add(self.zoom_plus_button, 0, wx.RIGHT | wx.TOP, 8)
+        zoom_sizer.Add(self.zoom_plus_button, 0, wx.RIGHT | wx.TOP, 20)
 
         line_sizer_side.Add(line_side, 0, wx.ALL | wx.EXPAND, 5)
         line_sizer_switches.Add(line_switches, 0, wx.ALL | wx.EXPAND, 5)
