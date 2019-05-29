@@ -1,0 +1,3 @@
+DEVICES
+SW1 = SWITCH/1 # missing comma here
+SW2 = SWITCH/1;

@@ -1,0 +1,3 @@
+DEVICES
+SW1 = SWITCH, # missing parameter here
+SW2 = SWITCH/1;
