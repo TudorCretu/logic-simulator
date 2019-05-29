@@ -75,7 +75,7 @@ class Scanner:
         # Set line number counter to 1
         # Set position of 1st character on current line to 0.
         self.names = names 
-        self.symbol_type_list = [self.DOT, self.BACKSLASH, self.COMMA
+        self.symbol_type_list = [self.DOT, self.FORWARDS_SLASH, self.COMMA
                                  ,self.SEMICOLON, self.EQUALS, self.KEYWORD
                                  , self.NUMBER, self.NAME, self.EOF] = range(9)
         self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITORS"]
@@ -121,7 +121,7 @@ class Scanner:
             self.advance()
 
         elif self.current_character == "/":
-            symbol.type = self.BACKSLASH
+            symbol.type = self.FORWARDS_SLASH
             self.advance()
 
         elif self.current_character == ",":
