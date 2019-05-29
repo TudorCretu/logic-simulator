@@ -16,9 +16,9 @@ def create_parser(file_path):
     """Return a new instance of the Devices class."""
     names = Names()
     devices = Devices(names)
-    network = Network(names, devices)
-    monitors = Monitors(names, devices, network)
-    scanner = Scanner(file_path, names)
+    network = Network(names,devices)
+    monitors = Monitors(names,devices,network)
+    scanner = Scanner(file_path,names)
     parser = Parser(names, devices, network, monitors, scanner)
     return parser
 
@@ -43,7 +43,7 @@ def test_DEVICES_missing_devices_keyword():
     assert parser.parse_devices() is False
 
     assert parser.error_output[0] == ("SyntaxError: Expected a keyword "
-                                     "'DEVICES'")
+                                      "'DEVICES'")
 
 
 def test_DEVICES_type_not_found_error():
@@ -57,6 +57,17 @@ def test_DEVICES_type_not_found_error():
                                       "'SWITCHEY' does not match one of the "
                                       "following:\n'CLOCK','SWITCH','AND',"
                                       "'NAND','OR','NOR','XOR','DTYPE'")
+
+
+def test_DEVICES_illegal_symbol_error():
+    """Test if illegal symbol in DEVICES BLOCK is correctly reported"""
+    test_file_dir = "test_definition_files/test_devices"
+    file_path = test_file_dir + "/illegal_symbol_error.txt"
+    parser = create_parser(file_path)
+    #assert parser.parse_devices() is False
+    parser.parse_devices()
+    assert parser.error_output[0] == "SyntaxError: Expected a legal symbol"
+
 
 
 def test_DEVICES_expected_name_error():
@@ -198,6 +209,16 @@ def test_DEVICES_missing_connections_keyword_error():
     assert parser.error_output[0] == ("SyntaxError: Expected a keyword "
                                       "'CONNECTIONS'")
 
+def test_CONNECTIONS_illegal_symbol_error():
+    """Test if illegal symbol in CONNECTIONS BLOCK is correctly reported"""
+    test_file_dir = "test_definition_files/test_connections"
+    file_path = test_file_dir + "/illegal_symbol_error.txt"
+    parser = create_parser(file_path)
+    #assert parser.parse_devices() is False
+    parser.parse_devices()
+    parser.parse_connections()
+    assert parser.error_output[0] == "SyntaxError: Expected a legal symbol"
+    
 def test_CONNECTIONS_expected_name_error():
     """Test if missing name symbol is reported in CONNECTIONS BLOCK"""
     test_file_dir = "test_definition_files/test_connections"
@@ -358,6 +379,18 @@ def test_MONITORS_missing_monitors_keyword_error():
     assert parser.parse_monitors() is False
     assert parser.error_output[0] == "SyntaxError: Expected a name"
 
+def test_MONITORS_illegal_symbol_error():
+    """Test if illegal symbol in MONITORS BLOCK is correctly reported"""
+    test_file_dir = "test_definition_files/test_monitors"
+    file_path = test_file_dir + "/illegal_symbol_error.txt"
+    parser = create_parser(file_path)
+    #assert parser.parse_devices() is False
+    parser.parse_devices()
+    parser.parse_connections()
+    parser.parse_devices()
+    parser.parse_monitors()
+    assert parser.error_output[0] == "SyntaxError: Expected a legal symbol"
+    
 def test_MONITORS_expected_name_error():
     """Test if missing expected name symbol is reported in MONITORS BLOCK"""
 
