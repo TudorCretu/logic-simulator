@@ -471,7 +471,7 @@ class Parser:
         if error_type == self.devices.INVALID_QUALIFIER:
             self.error_output.append("InvalidParameterError: Parameter value of Device '%s' is not valid"%(device_id_str))
         elif error_type == self.devices.NO_QUALIFIER:
-            self.error_output.append("MissingParameterError: Parameter value of Device '%s' is not specified"%(device_id_str))
+            self.error_output.append("MissingParameterError: Parameter of Device '%s' is not specified"%(device_id_str))
         elif error_type == self.devices.QUALIFIER_PRESENT:
             self.error_output.append("ExcessParametersError: Device '%s' has too many parameters specified"%(device_id_str))
         elif error_type == self.devices.BAD_DEVICE:
@@ -579,7 +579,7 @@ class Parser:
 
 
 #--------------------------------------local testing allowed-----------------------------------------------------------------------
-'''
+
 # # Folder to keep test definition files
 test_file_dir = "test_definition_files"
 names = Names()
@@ -594,4 +594,3 @@ parser = Parser(names, devices, network, monitors, scanner)
 #print(parser.error_cursor)
 # print(parser.error_cursor[0]) # the cursor is None, msg captured right
 parser.parse_network()
-'''
