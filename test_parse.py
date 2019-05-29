@@ -22,7 +22,7 @@ def create_parser(file_path):
     parser = Parser(names, devices, network, monitors, scanner)
     return parser
 
-# -----------------------------DEVICE Block tests-----------------------------
+# -------------------------DEVICE Block tests-------------------------
 
 
 def test_parse_devices_success():
@@ -67,7 +67,6 @@ def test_DEVICES_illegal_symbol_error():
     # assert parser.parse_devices() is False
     parser.parse_devices()
     assert parser.error_output[0] == "SyntaxError: Expected a legal symbol"
-
 
 
 def test_DEVICES_expected_name_error():
@@ -134,7 +133,7 @@ def test_DEVICES_expected_semicolon_error():
     assert parser.parse_devices() is False
 
     assert parser.error_output[0] == "SyntaxError: Expected a semicolon"
-    
+
 
 def test_DEVICES_dot_illegal_error():
     """Test if illegal '.' in DEVICES BLOCK is reported correctly"""
@@ -196,7 +195,7 @@ def test_DEVICES_mutliple_errors():
     assert parser.error_output[2] == "SyntaxError: Expected a semicolon"
 
 
-# ---------------------------CONNECTION Block tests---------------------------
+# -----------------------CONNECTION Block tests-----------------------
 def test_parse_connections_success():
     """Test if parse_conections() returns true correctly"""
     test_file_dir = "test_definition_files/test_connections"
@@ -217,7 +216,6 @@ def test_CONNECTIONS_missing_connections_keyword_error():
     parser.parse_devices()
     assert parser.parse_connections() is False
 
-
     assert parser.error_output[0] == ("SyntaxError: Expected a keyword "
                                       "'CONNECTIONS'")
 
@@ -232,12 +230,13 @@ def test_CONNECTIONS_illegal_symbol_error():
     parser.parse_connections()
     assert parser.error_output[0] == "SyntaxError: Expected a legal symbol"
 
+
 def test_CONNECTIONS_illegal_slash_error():
     """Test if illegal '/' in CONNECTIONS BLOCK is correctly reported"""
     test_file_dir = "test_definition_files/test_connections"
     file_path = test_file_dir + "/illegal_slash.txt"
     parser = create_parser(file_path)
-    
+
     parser.parse_devices()
     assert parser.parse_connections() is False
     assert parser.error_output[0] == "SyntaxError: '/' is illegal for signals"
@@ -286,7 +285,6 @@ def test_CONNECTIONS_expected_semicolon_error():
 
     parser.parse_devices()
     assert parser.parse_connections() is False
-
 
     assert parser.error_output[0] == "SyntaxError: Expected a semicolon"
 
@@ -410,11 +408,12 @@ def test_MONITORS_illegal_symbol_error():
     test_file_dir = "test_definition_files/test_monitors"
     file_path = test_file_dir + "/illegal_symbol_error.txt"
     parser = create_parser(file_path)
-    
+
     parser.parse_devices()
     parser.parse_connections()
     parser.parse_monitors()
     assert parser.error_output[0] == "SyntaxError: Expected a legal symbol"
+
 
 def test_MONITORS_illegal_slash_error():
     """Test if illegal '/' in MONITORS BLOCK is correctly reported"""
@@ -538,8 +537,8 @@ def test_MONITORS_mutliple_errors():
     assert parser.error_output[1] == "SyntaxError: Expected a name"
     assert parser.error_output[2] == "SyntaxError: Expected a comma"
     assert parser.error_output[3] == "SyntaxError: Expected a semicolon"
-    
-                              
+
+
 # ------------------------------FULL FILE tests------------------------------
 
 def test_parse_network_success():
