@@ -1,11 +1,14 @@
 """
-Test the parser module.
+Test the parser module's functions.
 
-Testing of the parser mainly consists of 2 parts: basic functionality testing and more complicated meaningful case testing.
+Testing of the parser mainly consists of 2 parts:
+    basic functionality testing and more complicated case testing.
 
-Basic functionality testing in this file is finished by Dongcheng Jiang (dj346), the person who implemented parse.py as well.
+Basic functionality testing in this file is finished by
+    Dongcheng Jiang (dj346), the person who also implemented parse.py.
 
-The other file test_parse.py which uses other meaningful case for testing is made by Shakthivel Ravichandran (sr795).
+The other file test_parse.py for case testing
+    is made by Shakthivel Ravichandran (sr795).
 
 """
 
