@@ -1,21 +1,35 @@
-Supported devices:
+Supported type names and port names of devices:
 
 AND (AND gate): requires a /parameter indicating how many inputs it has.
 		This parameter is an integer from 1 to 16.
-		Its output is AND. Its inputs can be I1, I2, ... , I16.
+	For an AND gate GATE:
+		Its output is 'GATE'. Its inputs can be GATE.I1, GATE.I2, ...
+
 NAND (NAND gate): requires a /parameter indicating how many inputs it has.
 		This parameter is an integer from 1 to 16.
-		Its output is NAND. Its inputs can be I1, I2, ... , I16.
+	For a NAND gate GATE:
+		Its output is GATE. Its inputs can be GATE.I1, GATE.I2, ...
+
 OR (OR gate): requires a /parameter indicating how many inputs it has.
 		This parameter is an integer from 1 to 16.
-		Its output is OR. Its inputs can be I1, I2, ... , I16.
+	For an OR gate 'GATE':
+		Its output is GATE. Its inputs can be GATE.I1, GATE.I2, ...
+
 NOR (NOR gate): requires a /parameter indicating how many inputs it has.
 		This parameter is an integer from 1 to 16.
-		Its output is NOR. Its inputs can be I1, I2, ... , I16.
+	For a NOR gate GATE:
+		Its output is GATE. Its inputs can be GATE.I1, GATE.I2, ...
 
 SWITCH (switch): requires a /parameter indicating its initial state (0 or 1).
+
 CLOCK (clock): requires a /parameter indicating number of simulation cycles in half a clock period.
 
-XOR (XOR gate): Its output is XOR. It has 2 inputs I1 and I2.
-DTYPE (D-type flip-flop): Its outputs are Q and Q_BAR. Its inputs are CLK, SET, CLEAR, DATA.
+XOR (XOR gate): It does not need any parameter.
+	For a XOR gate GATE:
+		Its output is GATE. Its 2 inputs are GATE.I1, GATE.I2, ...
+
+DTYPE (D-type flip-flop): It does not need any parameter.
+	For a D-flip-flop DFF:
+		Its 2 outputs are DFF.Q and DFF.Q_BAR.
+		Its 3 inputs are DFF.CLK, DFF.SET, DFF.CLEAR, DFF.DATA.
 
