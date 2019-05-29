@@ -160,7 +160,7 @@ class Parser:
             self.symbol = self.read_symbol() # now self.symbol maybe ','or '/' or ';'
 
             param = None
-            if self.symbol.type == self.scanner.BACKSLASH:
+            if self.symbol.type == self.scanner.FORWARDS_SLASH:
                 param = self.get_parameter()
                 if param is None:
                     # self.display_error(self.NOT_NUMBER) handled by check in get_param
@@ -194,8 +194,8 @@ class Parser:
 
     def get_parameter(self):
         """
-        Get the parameter value right after the backslash for syntax in DEVICE section.
-        :return: If there is a number after the backslash then return this number, else return None
+        Get the parameter value right after the forwards slash for syntax in DEVICE section.
+        :return: If there is a number after the forwards slash then return this number, else return None
         """
         self.symbol = self.read_symbol() # read in a param
         if self.check_number() is False:
