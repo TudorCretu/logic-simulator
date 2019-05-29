@@ -345,7 +345,7 @@ def test_CONNECTIONS_mutliple_errors():
 
     parser.parse_devices()
     assert parser.parse_connections() is False
-
+    assert parser.error_count == 4                              
     assert parser.error_output[0] == ("InvalidPortError: Device 'XOR1' does "
                                       "not have port '.I3'")
     assert parser.error_output[1] == "SyntaxError: Expected a name"
@@ -476,3 +476,22 @@ def test_MONITORS_not_output():
 
     assert parser.error_output[0] == ("MonitorNotOutputSignalError: Signal "
                                       "'D1.CLEAR' is not an output")
+
+def test_MONITORS_mutliple_errors():
+    """Test that a sequence of known errors are reported indicating proper
+    recovery occurs within MONITORS block"""
+    test_file_dir = "test_definition_files/test_monitors"
+    file_path = test_file_dir + "/multiple_errors.txt"
+    parser = create_parser(file_path)
+
+    parser.parse_devices()
+    parser.parse_connections()
+    assert parser.parse_monitors() is False
+    assert parser.error_count == 4                              
+    assert parser.error_output[0] == ("MonitorPresentError: Signal 'D1.Q' is "
+                                      "already monitored")
+    assert parser.error_output[1] == "SyntaxError: Expected a name"
+    assert parser.error_output[2] == "SyntaxError: Expected a comma"
+    assert parser.error_output[3] == "SyntaxError: Expected a semicolon"
+    
+# ------------------------------FULL FILE tests------------------------------

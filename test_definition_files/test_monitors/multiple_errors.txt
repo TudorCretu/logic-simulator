@@ -8,19 +8,17 @@ CK1 = CLOCK/2,
 XOR1 = XOR;
 
 CONNECTIONS
-4SW1 = XOR1.I1 , * expected name error here
-                   should also cause further
-                   errors like *
-
-
-SW2 = XOR1.I2 ,  
+SW1 = XOR1.I1 ,
+SW2 = XOR1.I2 ,
 XOR1 = D1.DATA ,
 CK1 = D1.CLK ,
 SW3 = D1.SET ,
-SW4 = D1.CLEAR # missing semicolon here 
+SW4 = D1.CLEAR ;
 
 MONITORS
 D1.Q ,
-D1.Q , # monitor already present
-D1.QBAR # missing comma
-SW1 # missing semicolon
+D1.Q , 
+1NAME.I1, # expected name error here
+D1.QBAR # missing comma here
+SW1,
+SW2 # missing semicolon here
