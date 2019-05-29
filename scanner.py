@@ -282,8 +282,10 @@ class Scanner:
 #         print(symbol.type,symbol.id)
 #     scanner.display_error_location(symbol.cursor_position)
 #
-#     print (symbol.cursor_position,symbol.cursor_pos_at_start_of_line,symbol.line_number)
-#     scanner.show_error_location(symbol.line_number,symbol.cursor_pos_at_start_of_line,symbol.cursor_position)
+#     print (symbol.cursor_position,symbol.cursor_pos_at_start_of_line,
+#     symbol.line_number)
+#     scanner.show_error_location(symbol.line_number,
+#     symbol.cursor_pos_at_start_of_line,symbol.cursor_position)
 #
 # # scanner.display_error_location(symbol.cursor_position)
 #
