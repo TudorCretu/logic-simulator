@@ -20,6 +20,7 @@ from network import Network
 from devices import Device, Devices
 from monitors import Monitors
 
+
 def create_parser(path):
     """Create a new parser for every test"""
     names = Names()
@@ -30,7 +31,9 @@ def create_parser(path):
     parser = Parser(names, devices, network, monitors, scanner)
     return parser
 
-# --------------------------------Basic Functionality tests----------------------------------------
+# ----------------Basic Functionality tests----------------
+
+
 def test_read_symbol():
     """Test the Parser.read_symbol() function"""
     file_dir = "test_functions"
@@ -42,14 +45,16 @@ def test_read_symbol():
     assert parser.error_count == 1
     assert parser.symbol.type == parser.scanner.KEYWORD
 
+
 def test_print_msg(capfd):
     """Test the Parser.print_msg(success) function"""
     file_dir = "test_functions"
     path = file_dir + "/read_symbol.txt"
-    parser =create_parser(path)
+    parser = create_parser(path)
     parser.print_msg(True)
     out, err = capfd.readouterr()
     assert out == "Parsed successfully! Valid definition file!\n"
+
 
 def test_skip_erratic_part():
     """Test the Parser.skip_erratic_part() function"""
@@ -60,6 +65,7 @@ def test_skip_erratic_part():
     parser.skip_erratic_part()
     assert parser.symbol.type == parser.scanner.COMMA
 
+
 def test_display_error():
     """Test the Parser.display_error(error_type) function"""
     file_dir = "test_functions"
@@ -69,14 +75,19 @@ def test_display_error():
     parser.display_error(parser.NO_EQUALS)
     assert parser.error_output[-1] == "SyntaxError: Expected an equals sign"
 
+
 def test_display_error_device():
     """Test the Parser.display_error_device(error_type) function"""
     file_dir = "test_functions"
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
-    parser.display_error_device(parser.devices.INVALID_QUALIFIER, parser.symbol.id)
-    assert parser.error_output[-1] == "InvalidParameterError: Parameter value of Device 'AND1' is not valid"
+    parser.display_error_device(parser.devices.INVALID_QUALIFIER,
+                                parser.symbol.id)
+    assert parser.error_output[-1] == "InvalidParameterError: " \
+        "Parameter value of Device " \
+        "'AND1' is not valid"
+
 
 def test_display_error_connection():
     """Test the Parser.display_error_connection(error_type) function"""
@@ -85,7 +96,10 @@ def test_display_error_connection():
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
     parser.display_error_connection(parser.network.INPUT_TO_INPUT)
-    assert parser.error_output[-1] == "IllegalConnectionError: Signal '' and '' are both input signals"
+    assert parser.error_output[-1] == "IllegalConnectionError: " \
+                                      "Signal '' and '' are " \
+                                      "both input signals"
+
 
 def test_display_error_monitor():
     """Test the Parser.display_error_monitor(error_type) function"""
@@ -94,8 +108,11 @@ def test_display_error_monitor():
     parser = create_parser(path)
     symbol1 = parser.read_symbol()
     symbol2 = parser.read_symbol()
-    parser.display_error_monitor(parser.monitors.NOT_OUTPUT, symbol1.id, symbol2.id)
-    assert parser.error_output[-1] == "MonitorNotOutputSignalError: Signal 'AND1.AND2' is not an output"
+    parser.display_error_monitor(parser.monitors.NOT_OUTPUT,
+                                 symbol1.id, symbol2.id)
+    assert parser.error_output[-1] == "MonitorNotOutputSignalError: " \
+                                      "Signal 'AND1.AND2' is not an output"
+
 
 def test_check_names():
     """Test the Parser.check_names() function"""
@@ -107,6 +124,7 @@ def test_check_names():
     parser.symbol = parser.read_symbol()
     assert parser.symbol.type != parser.scanner.NAME
 
+
 def test_check_numbers():
     """Test the Parser.check_numbers() function"""
     file_dir = "test_functions"
@@ -116,6 +134,7 @@ def test_check_numbers():
     assert parser.symbol.type == parser.scanner.NUMBER
     parser.symbol = parser.read_symbol()
     assert parser.symbol.type != parser.scanner.NUMBER
+
 
 def test_check_side():
     """Test the Parser.check_side() function"""
@@ -129,24 +148,27 @@ def test_check_side():
     parser.symbol = parser.read_symbol()
     assert parser.check_side(1) is True
 
+
 def test_signame():
     """Test the Parser.signame() function"""
     file_dir = "test_functions"
     path = file_dir + "/signame.txt"
     parser = create_parser(path)
     _ = parser.parse_devices()
-    device_id, port_id, err = parser.signame() # err indicates existance of syntax error
+    device_id, port_id, err = parser.signame()
+    # err indicates existance of syntax error
     assert device_id is not None
     assert port_id is not None
     assert err == 0
     device_id, port_id, err = parser.signame()
     assert parser.devices.get_device(device_id) is None
     assert port_id is None
-    assert err == 0 # semantic error
+    assert err == 0  # semantic error
     device_id, port_id, err = parser.signame()
     assert device_id is None
     assert port_id is None
-    assert err == 1 # syntax error
+    assert err == 1  # syntax error
+
 
 def test_get_parameter():
     """Test the Parser.get_parameter() function"""
@@ -157,6 +179,7 @@ def test_get_parameter():
     assert param == 80
     param = parser.get_parameter()
     assert param is None
+
 
 def test_add_device():
     """Test the Parser.add_device() function"""
@@ -174,6 +197,7 @@ def test_add_device():
     flag = parser.add_device()
     assert flag is False
 
+
 def test_parse_devices():
     """Test the Parser.parse_devices() function"""
     file_dir = "test_functions"
@@ -181,6 +205,7 @@ def test_parse_devices():
     parser = create_parser(path)
     flag = parser.parse_devices()
     assert flag is True
+
 
 def test_add_connection():
     """Test the Parser.add_connection() function"""
@@ -198,20 +223,11 @@ def test_add_connection():
     assert flag is True
     flag = parser.add_connection()
     assert flag is True
-
     flag = parser.add_connection()
-    assert flag is True
-    # this semantic error is not the first error, so it is neglected
-    # alternative for this add_connection():
-    # device_id1, port_id1, syntax_err = parser.signame()
-    # assert port_id1 is None
-    # device_id2, port_id2, syntax_err = parser.signame()
-    # assert port_id2 is None
-    # err = parser.network.make_connection(device_id1, port_id1, device_id2, port_id2)
-    # assert err == parser.network.DEVICE_ABSENT
-
+    assert flag is True  # semantic error neglected
     flag = parser.add_connection()
     assert flag is False
+
 
 def test_parse_connections():
     """Test the Parser.parse_connections() function"""
@@ -221,6 +237,7 @@ def test_parse_connections():
     _ = parser.parse_devices()
     flag = parser.parse_connections()
     assert flag is True
+
 
 def test_add_monitor():
     """Test the Parser.add_monitor() function"""
@@ -243,7 +260,8 @@ def test_add_monitor():
     flag = parser.add_monitor()
     assert flag is True
     flag = parser.add_monitor()
-    assert flag is True # semantic error ignored as required, there are already syntax errors
+    assert flag is True  # semantic error neglected
+
 
 def test_parse_monitors():
     """Test the Parser.parse_monitors() function"""
@@ -254,6 +272,7 @@ def test_parse_monitors():
     _ = parser.parse_connections()
     flag = parser.parse_monitors()
     assert flag is True
+
 
 def test_parse_network():
     """Test the Parser.parse_network() function"""

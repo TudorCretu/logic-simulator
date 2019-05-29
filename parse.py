@@ -56,8 +56,9 @@ class Parser:
         self.error_type_list = [
             self.NO_KEYWORD_DEVICES, self.NO_KEYWORD_CONNECTIONS,
             self.NO_KEYWORD_MONITORS, self.NO_EQUALS, self.NO_SEMICOLON,
+            self.DOT_INVALID, self.SLASH_INVALID,
             self.NO_COMMA, self.NOT_NAME, self.NOT_NUMBER,
-            self.NOT_SYMBOL] = self.names.unique_error_codes(9)
+            self.NOT_SYMBOL] = self.names.unique_error_codes(11)
 
     def parse_network(self):
         """Parse the circuit definition file."""
@@ -192,6 +193,11 @@ class Parser:
                 if param is None:
                     # self.NOT_NUMBER handled by check in get_param()
                     return False
+
+            if self.symbol.type == self.scanner.DOT:
+                self.display_error(self.DOT_INVALID)
+                self.skip_erratic_part()
+                return False
 
             if self.symbol.type == self.scanner.COMMA \
                     or self.symbol.type == self.scanner.SEMICOLON:
@@ -387,6 +393,11 @@ class Parser:
             else:
                 return None, None, 1
 
+        elif self.symbol.type == self.scanner.FORWARDS_SLASH:
+            self.display_error(self.SLASH_INVALID)
+            self.skip_erratic_part()
+            return None, None, 1
+
         elif self.symbol.type == self.scanner.COMMA \
                 or self.symbol.type == self.scanner.SEMICOLON:
             if side == 1:  # RHS
@@ -519,6 +530,10 @@ class Parser:
             self.error_output.append("SyntaxError: Expected a number")
         elif error_type == self.NOT_SYMBOL:
             self.error_output.append("SyntaxError: Expected a legal symbol")
+        elif error_type == self.DOT_INVALID:
+            self.error_output.append("SyntaxError: '.'is illegal in DEVICES")
+        elif error_type == self.SLASH_INVALID:
+            self.error_output.append("SyntaxError: '/'is illegal for signals")
         else:
             self.error_output.append("Unknown error occurred")
         self.error_cursor.append(self.symbol.cursor_position)
@@ -708,7 +723,6 @@ scanner = Scanner(file_path, names)
 parser = Parser(names, devices, network, monitors, scanner)
 #a = parser.read_symbol()
 #a = parser.read_symbol()
-#print(parser.error_cursor)
+# print(parser.error_cursor)
 # print(parser.error_cursor[0]) # the cursor is None, msg captured right
 parser.parse_network()
-
