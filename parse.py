@@ -531,9 +531,11 @@ class Parser:
         elif error_type == self.NOT_SYMBOL:
             self.error_output.append("SyntaxError: Expected a legal symbol")
         elif error_type == self.DOT_INVALID:
-            self.error_output.append("SyntaxError: '.'is illegal in DEVICES")
+            self.error_output.append(
+                "SyntaxError: '.' is illegal in DEVICES")
         elif error_type == self.SLASH_INVALID:
-            self.error_output.append("SyntaxError: '/'is illegal for signals")
+            self.error_output.append(
+                "SyntaxError: '/' is illegal for signals")
         else:
             self.error_output.append("Unknown error occurred")
         self.error_cursor.append(self.symbol.cursor_position)
