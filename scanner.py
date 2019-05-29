@@ -269,7 +269,7 @@ class Scanner:
 
 #
 #
-
+#
 # names = Names()
 # scanner = Scanner('test_functions/read_symbol.txt',names)
 # symbol = None
@@ -292,4 +292,4 @@ class Scanner:
 # # scanner.display_error_location(1,0,0)
 # # scanner.display_error_location(7,7,5)
 # # canner.display_error_location(7,10,10)
-#
+

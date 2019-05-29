@@ -28,7 +28,7 @@ def create_parser(file_path):
 def test_parse_devices_success():
     """Test if parse_devices() returns True correctly for a valid file"""
 
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/fully_correct.txt"
 
     parser = create_parser(file_path)
@@ -37,7 +37,7 @@ def test_parse_devices_success():
 
 def test_DEVICES_missing_devices_keyword():
     """Test reporting of missing 'DEVICES' keyword in DEVICES BLOCK"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/expected_devices_keyword_error.txt"
     parser = create_parser(file_path)
     assert parser.parse_devices() is False
@@ -48,7 +48,7 @@ def test_DEVICES_missing_devices_keyword():
 
 def test_DEVICES_type_not_found_error():
     """Test if parse_devices returns true correctly"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/type_not_found_error.txt"
     parser = create_parser(file_path)
     assert parser.parse_devices() is False
@@ -61,7 +61,7 @@ def test_DEVICES_type_not_found_error():
 
 def test_DEVICES_illegal_symbol_error():
     """Test if illegal symbol in DEVICES BLOCK is correctly reported"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/illegal_symbol_error.txt"
     parser = create_parser(file_path)
     # assert parser.parse_devices() is False
@@ -71,7 +71,7 @@ def test_DEVICES_illegal_symbol_error():
 
 def test_DEVICES_expected_name_error():
     """Test reporting of missing expected Name symbol in DEVICES block"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/expected_name_error.txt"
     parser = create_parser(file_path)
     assert parser.parse_devices() is False
@@ -81,7 +81,7 @@ def test_DEVICES_expected_name_error():
 
 def test_DEVICES_resued_name_error():
     """Test if reuse of device name is reported in DEVICE block"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/reused_name_error.txt"
     parser = create_parser(file_path)
 
@@ -93,7 +93,7 @@ def test_DEVICES_resued_name_error():
 
 def test_DEVICES_expected_comma_error():
     """Test if missing expected comma symbol is reported in DEVICES BLOCK"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/expected_comma_error.txt"
     parser = create_parser(file_path)
 
@@ -104,7 +104,7 @@ def test_DEVICES_expected_comma_error():
 
 def test_DEVICES_expected_equals_error():
     """Test if missing expected equals symbol is reported in DEVICES BLOCK"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/expected_equals_error.txt"
     parser = create_parser(file_path)
 
@@ -115,7 +115,7 @@ def test_DEVICES_expected_equals_error():
 
 def test_DEVICES_expected_number_error():
     """Test if a missing expected number symbol is reported in DEVICES BLOCK"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/expected_number_error.txt"
     parser = create_parser(file_path)
 
@@ -126,7 +126,7 @@ def test_DEVICES_expected_number_error():
 
 def test_DEVICES_expected_semicolon_error():
     """Test if missing semicolon symbol is reported in DEVICES BLOCK"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/expected_semicolon_error.txt"
     parser = create_parser(file_path)
 
@@ -137,7 +137,7 @@ def test_DEVICES_expected_semicolon_error():
 
 def test_DEVICES_dot_illegal_error():
     """Test if illegal '.' in DEVICES BLOCK is reported correctly"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/dot_illegal.txt"
     parser = create_parser(file_path)
 
@@ -148,7 +148,7 @@ def test_DEVICES_dot_illegal_error():
 
 def test_DEVICES_missing_parameter_error():
     """Test if lack of parameter labelling is reported in DEVICES BLOCK"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/missing_parameter_error.txt"
     parser = create_parser(file_path)
 
@@ -160,7 +160,7 @@ def test_DEVICES_missing_parameter_error():
 
 def test_DEVICES_invalid_parameter_error():
     """Test if invalid parameter is specified for a device in DEVICES block"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/invalid_parameter_error.txt"
     parser = create_parser(file_path)
 
@@ -172,7 +172,7 @@ def test_DEVICES_invalid_parameter_error():
 
 def test_DEVICES_excess_parameter_error():
     """Test if too many parameters are specified for a device"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/excess_parameter_error.txt"
     parser = create_parser(file_path)
 
@@ -184,7 +184,7 @@ def test_DEVICES_excess_parameter_error():
 def test_DEVICES_mutliple_errors():
     """Test that a sequence of known errors are reported indicating proper
     recovery occurs within DEVICE block"""
-    test_file_dir = "test_definition_files/test_devices"
+    test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/multiple_errors.txt"
     parser = create_parser(file_path)
 
@@ -198,7 +198,7 @@ def test_DEVICES_mutliple_errors():
 # -----------------------CONNECTION Block tests-----------------------
 def test_parse_connections_success():
     """Test if parse_conections() returns true correctly"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/fully_correct.txt"
     parser = create_parser(file_path)
 
@@ -209,7 +209,7 @@ def test_parse_connections_success():
 def test_CONNECTIONS_missing_connections_keyword_error():
     """Test if missing 'CONNECTIONS' keyword is reported correctly in
     CONNECTIONS BLOCK"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/expected_connections_keyword_error.txt"
     parser = create_parser(file_path)
 
@@ -222,7 +222,7 @@ def test_CONNECTIONS_missing_connections_keyword_error():
 
 def test_CONNECTIONS_illegal_symbol_error():
     """Test if illegal symbol in CONNECTIONS BLOCK is correctly reported"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/illegal_symbol_error.txt"
     parser = create_parser(file_path)
     # assert parser.parse_devices() is False
@@ -233,7 +233,7 @@ def test_CONNECTIONS_illegal_symbol_error():
 
 def test_CONNECTIONS_illegal_slash_error():
     """Test if illegal '/' in CONNECTIONS BLOCK is correctly reported"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/illegal_slash.txt"
     parser = create_parser(file_path)
 
@@ -244,7 +244,7 @@ def test_CONNECTIONS_illegal_slash_error():
 
 def test_CONNECTIONS_expected_name_error():
     """Test if missing name symbol is reported in CONNECTIONS BLOCK"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/expected_name_error.txt"
     parser = create_parser(file_path)
 
@@ -257,7 +257,7 @@ def test_CONNECTIONS_expected_name_error():
 def test_CONNECTIONS_expected_comma_error():
     """Test if missing expected comma symbol is reported in CONNECTIONS
     BLOCK"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/expected_comma_error.txt"
     parser = create_parser(file_path)
 
@@ -269,7 +269,7 @@ def test_CONNECTIONS_expected_comma_error():
 
 def test_CONNECTIONS_expected_equals_error():
     """Test if missing expected equals sign is reported in CONNECTIONS BLOCK"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/expected_equals_error.txt"
     parser = create_parser(file_path)
     parser.parse_devices()
@@ -279,7 +279,7 @@ def test_CONNECTIONS_expected_equals_error():
 
 def test_CONNECTIONS_expected_semicolon_error():
     """Test if missing expected ; symbol is reported in CONNECTIONS BLOCK"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/expected_semicolon_error.txt"
     parser = create_parser(file_path)
 
@@ -292,7 +292,7 @@ def test_CONNECTIONS_expected_semicolon_error():
 def test_CONNECTIONS_device_absent_error():
     """Test in CONNECTIONS BLOCK that reporting that specified device
     identifier has not been defined"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/device_absent_error.txt"
     parser = create_parser(file_path)
 
@@ -306,7 +306,7 @@ def test_CONNECTIONS_device_absent_error():
 def test_CONNECTIONS_invalid_port_error():
     """Test if invalid port for a specific device is reported in CONNECTIONS
     BLOCK"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/invalid_port_error.txt"
     parser = create_parser(file_path)
 
@@ -320,7 +320,7 @@ def test_CONNECTIONS_invalid_port_error():
 def test_CONNECTIONS_2sig():
     """Test if an already connected input port is reported in CONNECTIONS
     BLOCK"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/input_2signals.txt"
     parser = create_parser(file_path)
 
@@ -333,7 +333,7 @@ def test_CONNECTIONS_2sig():
 
 def test_CONNECTIONS_input_input_error():
     """Test reporting of 2 input ports being connected in CONNECTIONS BLOCK"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/input_input.txt"
     parser = create_parser(file_path)
 
@@ -347,7 +347,7 @@ def test_CONNECTIONS_input_input_error():
 
 def test_CONNECTIONS_output_output_error():
     """Test reporting of 2 output ports being connected in CONNECTIONS BLOCK"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/output_output.txt"
     parser = create_parser(file_path)
 
@@ -361,7 +361,7 @@ def test_CONNECTIONS_output_output_error():
 def test_CONNECTIONS_mutliple_errors():
     """Test that a sequence of known errors are reported indicating proper
     recovery occurs within CONNECTIONS block"""
-    test_file_dir = "test_definition_files/test_connections"
+    test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/multiple_errors.txt"
     parser = create_parser(file_path)
 
@@ -378,7 +378,7 @@ def test_CONNECTIONS_mutliple_errors():
 # ----------------------------MONITOR Block tests----------------------------
 def test_parse_monitors_success():
     """Test if parse_monitors() returns true correctly"""
-    test_file_dir = "test_definition_files/test_monitors"
+    test_file_dir = "pytest_test_files/parser/test_monitors"
     file_path = test_file_dir + "/fully_correct.txt"
     parser = create_parser(file_path)
 
@@ -392,7 +392,7 @@ def test_MONITORS_missing_monitors_keyword_error():
     """Test if missing expected keyword 'MONITORS' is reported in MONITORS
     BLOCK"""
 
-    test_file_dir = "test_definition_files/test_monitors"
+    test_file_dir = "pytest_test_files/parser/test_monitors"
     file_path = test_file_dir + "/expected_name_error.txt"
     parser = create_parser(file_path)
 
@@ -405,7 +405,7 @@ def test_MONITORS_missing_monitors_keyword_error():
 
 def test_MONITORS_illegal_symbol_error():
     """Test if illegal symbol in MONITORS BLOCK is correctly reported"""
-    test_file_dir = "test_definition_files/test_monitors"
+    test_file_dir = "pytest_test_files/parser/test_monitors"
     file_path = test_file_dir + "/illegal_symbol_error.txt"
     parser = create_parser(file_path)
 
@@ -418,7 +418,7 @@ def test_MONITORS_illegal_symbol_error():
 def test_MONITORS_illegal_slash_error():
     """Test if illegal '/' in MONITORS BLOCK is correctly reported"""
 
-    test_file_dir = "test_definition_files/test_monitors"
+    test_file_dir = "pytest_test_files/parser/test_monitors"
     file_path = test_file_dir + "/illegal_slash.txt"
     parser = create_parser(file_path)
 
@@ -432,7 +432,7 @@ def test_MONITORS_illegal_slash_error():
 def test_MONITORS_expected_name_error():
     """Test if missing expected name symbol is reported in MONITORS BLOCK"""
 
-    test_file_dir = "test_definition_files/test_monitors"
+    test_file_dir = "pytest_test_files/parser/test_monitors"
     file_path = test_file_dir + "/missing_monitors_keyword_error.txt"
     parser = create_parser(file_path)
 
@@ -447,7 +447,7 @@ def test_MONITORS_expected_name_error():
 def test_MONITORS_expected_comma_error():
     """Test if missing expected comma symbol is reported in MONITORS BLOCK"""
 
-    test_file_dir = "test_definition_files/test_monitors"
+    test_file_dir = "pytest_test_files/parser/test_monitors"
     file_path = test_file_dir + "/expected_comma_error.txt"
     parser = create_parser(file_path)
 
@@ -460,7 +460,7 @@ def test_MONITORS_expected_comma_error():
 
 def test_MONITORS_expected_semicolon_error():
     """Test if missing expected ; symbol is reported in MONITORS BLOCK"""
-    test_file_dir = "test_definition_files/test_monitors"
+    test_file_dir = "pytest_test_files/parser/test_monitors"
     file_path = test_file_dir + "/expected_semicolon_error.txt"
     parser = create_parser(file_path)
 
@@ -474,7 +474,7 @@ def test_MONITORS_expected_semicolon_error():
 def test_MONITORS_monitor_exists():
     """Test reporting of repeat monitoring of the same signal within
     MONITORS BLOCK"""
-    test_file_dir = "test_definition_files/test_monitors"
+    test_file_dir = "pytest_test_files/parser/test_monitors"
     file_path = test_file_dir + "/monitor_exists.txt"
     parser = create_parser(file_path)
 
@@ -490,7 +490,7 @@ def test_MONITORS_monitor_exists():
 def test_MONITORS_device_absent():
     """Test reporting of reference to undefined device identifier within
     MONITORS BLOCK"""
-    test_file_dir = "test_definition_files/test_monitors"
+    test_file_dir = "pytest_test_files/parser/test_monitors"
     file_path = test_file_dir + "/device_absent.txt"
     parser = create_parser(file_path)
 
@@ -506,7 +506,7 @@ def test_MONITORS_device_absent():
 def test_MONITORS_not_output():
     """Test reporting of monitoring a signal that is not a valid output signal
     within the MONITORS BLOCK"""
-    test_file_dir = "test_definition_files/test_monitors"
+    test_file_dir = "pytest_test_files/parser/test_monitors"
     file_path = test_file_dir + "/not_output.txt"
     parser = create_parser(file_path)
 
@@ -524,7 +524,7 @@ def test_MONITORS_mutliple_errors():
     Test that a sequence of known errors are reported indicating proper
     recovery occurs within MONITORS block
     """
-    test_file_dir = "test_definition_files/test_monitors"
+    test_file_dir = "pytest_test_files/parser/test_monitors"
     file_path = test_file_dir + "/multiple_errors.txt"
     parser = create_parser(file_path)
 
@@ -543,7 +543,7 @@ def test_MONITORS_mutliple_errors():
 
 def test_parse_network_success():
     """Test if parse_network() returns true correctly"""
-    test_file_dir = "test_definition_files"
+    test_file_dir = "pytest_test_files/parser"
     file_path = test_file_dir + "/fully_correct.txt"
     parser = create_parser(file_path)
 
@@ -552,7 +552,7 @@ def test_parse_network_success():
 
 def test_full_file_multiple_errors():
     """Test if parse_network() returns true correctly"""
-    test_file_dir = "test_definition_files"
+    test_file_dir = "pytest_test_files/parser"
     file_path = test_file_dir + "/multiple_errors.txt"
     parser = create_parser(file_path)
 
