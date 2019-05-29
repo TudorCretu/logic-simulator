@@ -465,7 +465,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         # Don't allow panning outside the drawn area
         self.pan_x = max(-(self.width - self.display_width), self.pan_x)
         self.pan_x = min(0, self.pan_x)
-        print(self.display_height)
         self.pan_y = min(self.height - 50, self.pan_y)
         self.pan_y = max(self.display_height - 50, self.pan_y)
 
@@ -998,24 +997,30 @@ class Gui(wx.Frame):
 
     def on_console(self, event):
         """Handle the event when the user enters a command in the console."""
-        command, *args = self.console.GetValue().split()
-
-        if command == "h":
-            self.command_manager.execute_command(HelpCommand())
-        elif command == "s" and len(args) == 2:
-            self.switch_command(*args)
-        elif command == "m" and len(args) == 1:
-            self.monitor_command(*args)
-        elif command == "z" and len(args) == 1:
-            self.zap_command(*args)
-        elif command == "r" and len(args) == 1:
-            self.run_command(*args)
-        elif command == "c" and len(args) == 1:
-            self.continue_command(*args)
-        elif command == "q":
-            self.quit_command()
-        else:
-            self.raise_error(self.command_manager.INVALID_COMMAND, "Invalid command. Enter 'h' for help.")
+        commands = self.console.GetValue().strip().split('\n')
+        for command_arg in commands:
+            command, *args = command_arg.split()
+            # try:
+            #     command, *args = command_arg.split()
+            # except ValueError:  # Command is
+            #     break
+            if command == "h":
+                self.command_manager.execute_command(HelpCommand())
+            elif command == "s" and len(args) == 2:
+                self.switch_command(*args)
+            elif command == "m" and len(args) == 1:
+                self.monitor_command(*args)
+            elif command == "z" and len(args) == 1:
+                self.zap_command(*args)
+            elif command == "r" and len(args) == 1:
+                self.run_command(*args)
+            elif command == "c" and len(args) == 1:
+                self.continue_command(*args)
+            elif command == "q":
+                self.quit_command()
+            else:
+                self.raise_error(self.command_manager.INVALID_COMMAND, "Command " + command_arg + " is invalid. Enter 'h' for help.")
+                break
 
         self.console.SetValue("")
 
@@ -1270,8 +1275,7 @@ class Gui(wx.Frame):
     def raise_error(self, error, message=None):
         """Handle user's errors in GUI"""
         if error == self.command_manager.INVALID_COMMAND:
-            wx.MessageBox("Invalid command. Enter 'h' for help.",
-                          "Invalid Command Error", wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(message, "Invalid Command Error", wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.INVALID_ARGUMENT:
             wx.MessageBox(message, "Invalid Argument Error", wx.ICON_ERROR | wx.OK)
         elif error == self.monitors.MONITOR_PRESENT:
