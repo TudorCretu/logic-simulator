@@ -105,7 +105,7 @@ def test_check_network(network_with_devices):
                                                      "I2"])
 
     # Inputs are unconnected, check_network() should return False
-    success, _ , _ = network.check_network()
+    success, _, _ = network.check_network()
     assert not success
 
     # Make connections
@@ -113,7 +113,7 @@ def test_check_network(network_with_devices):
     network.make_connection(SW2_ID, None, OR1_ID, I2)
 
     # Inputs are now connected, check_network() should return True
-    success, _ , _ = network.check_network()
+    success, _, _ = network.check_network()
     assert success
 
 
@@ -175,7 +175,8 @@ def test_make_connection_gives_error(network_with_devices,
     network.make_connection(SW1_ID, None, OR1_ID, I1)
 
     # left_expression is of the form: network.make_connection(...)
-    left_expression, _ , _ = eval("".join(["network.make_connection", function_args]))
+    left_expression, _, _ = \
+        eval("".join(["network.make_connection", function_args]))
     right_expression = eval(error)
     assert left_expression == right_expression
 
