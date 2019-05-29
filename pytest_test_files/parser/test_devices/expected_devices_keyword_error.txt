@@ -1,2 +1,0 @@
-# missing devices_keyword here 
-SW1 = SWITCH/1; 

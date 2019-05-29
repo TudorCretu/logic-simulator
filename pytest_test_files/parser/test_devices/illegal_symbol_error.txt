@@ -1,9 +1,0 @@
-@@DEVICES # illegal symbol here 
-
-SW1 = SWITCH/1,
-SW2 = SWITCH/1,
-SW3 = SWITCH/1,
-SW4 = SWITCH/0,
-D1 = DTYPE,
-CK1 = CLOCK/2,
-XOR1 = XOR;

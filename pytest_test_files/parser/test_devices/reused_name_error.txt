@@ -1,3 +1,0 @@
-DEVICES
-SW1 = SWITCH/1, 
-SW1 = SWITCH/1; # repeated name of device

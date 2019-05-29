@@ -1,3 +1,0 @@
-DEVICES
-XOR1 = XOR/50, # invalid parameter here
-SW2 = SWITCH/1;

@@ -13,7 +13,7 @@ from monitors import Monitors
 
 
 def create_parser(file_path):
-    """Return a new instance of the Devices class."""
+    """Return a parser object, given a file path parameter input"""
     names = Names()
     devices = Devices(names)
     network = Network(names, devices)
@@ -22,16 +22,26 @@ def create_parser(file_path):
     parser = Parser(names, devices, network, monitors, scanner)
     return parser
 
+# Below tests within DEVICES, MONITORS, CONNECTIONS BLOCKS are conducted
+# Additionally tests of entire circuit defintion files are conducted
+# Tests generally follow the same format :
+# 1. (Part or all of) circuit definition file  is fed to be parsed
+# 2. A known outcome is tested against
+# 
+# Note circuit defintion files can be viewed (their paths are shown here) 
+# directly. Comments have been added in these files to enable understanding
+# of the specific errors deliberately introduced and tested for 
+
 # -------------------------DEVICE Block tests-------------------------
 
 
 def test_parse_devices_success():
     """Test if parse_devices() returns True correctly for a valid file"""
-
     test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/fully_correct.txt"
 
     parser = create_parser(file_path)
+    # check that DEVICES block is successfully parsed for correct file input
     assert parser.parse_devices() is True
 
 
@@ -40,8 +50,11 @@ def test_DEVICES_missing_devices_keyword():
     test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/expected_devices_keyword_error.txt"
     parser = create_parser(file_path)
+    # check that parsing of DEVICES block fails for incorrect file input
+    
     assert parser.parse_devices() is False
-
+                               
+    # check that error is what we expect
     assert parser.error_output[0] == ("SyntaxError: Expected a keyword "
                                       "'DEVICES'")
 
@@ -51,6 +64,7 @@ def test_DEVICES_type_not_found_error():
     test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/type_not_found_error.txt"
     parser = create_parser(file_path)
+    
     assert parser.parse_devices() is False
 
     assert parser.error_output[0] == ("TypeNotFoundError: Device's type "
@@ -64,7 +78,7 @@ def test_DEVICES_illegal_symbol_error():
     test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/illegal_symbol_error.txt"
     parser = create_parser(file_path)
-    # assert parser.parse_devices() is False
+
     parser.parse_devices()
     assert parser.error_output[0] == "SyntaxError: Expected a legal symbol"
 
@@ -74,6 +88,7 @@ def test_DEVICES_expected_name_error():
     test_file_dir = "pytest_test_files/parser/test_devices"
     file_path = test_file_dir + "/expected_name_error.txt"
     parser = create_parser(file_path)
+
     assert parser.parse_devices() is False
 
     assert parser.error_output[0] == "SyntaxError: Expected a name"
@@ -189,7 +204,11 @@ def test_DEVICES_mutliple_errors():
     parser = create_parser(file_path)
 
     assert parser.parse_devices() is False
+                               
+    # check that the error counter works
     assert parser.error_count == 3
+    
+    # check that correct sequence of errors are produced
     assert parser.error_output[0] == "SyntaxError: Expected a name"
     assert parser.error_output[1] == "SyntaxError: Expected a comma"
     assert parser.error_output[2] == "SyntaxError: Expected a semicolon"
@@ -201,7 +220,9 @@ def test_parse_connections_success():
     test_file_dir = "pytest_test_files/parser/test_connections"
     file_path = test_file_dir + "/fully_correct.txt"
     parser = create_parser(file_path)
-
+    
+    # prior to testing parsing of CONNECTIONS block, DEVICES block must be
+    # parsed
     parser.parse_devices()
     assert parser.parse_connections() is True
 

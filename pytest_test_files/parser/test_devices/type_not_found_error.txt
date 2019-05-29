@@ -1,2 +1,0 @@
-DEVICES
-SW1 = SWITCHEY/1; # device type not found error here 
