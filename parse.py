@@ -691,7 +691,8 @@ class Parser:
                     or self.symbol.type == self.scanner.SEMICOLON \
                     or self.symbol.type == self.scanner.EOF:
                 return  # end of section or file, must terminate here
-            self.symbol = self.read_symbol()
+            # self.symbol = self.read_symbol()
+            self.symbol = self.scanner.get_symbol()
 
     def read_symbol(self):
         """
@@ -702,12 +703,16 @@ class Parser:
         """
         # self.cursor = self.symbol.cursor_position
         self.symbol = self.scanner.get_symbol()
-        # print(self.symbol.cursor_position)
-        while self.symbol.type is None:
+        if self.symbol.type is None:
             self.display_error(self.NOT_SYMBOL)
-            self.symbol = self.scanner.get_symbol()
-            # print(self.symbol.cursor_position)
-            # print(current_symbol.type)
+            self.skip_erratic_part()
+
+        # print(self.symbol.cursor_position)
+        # while self.symbol.type is None:
+        #     self.display_error(self.NOT_SYMBOL)
+        #     self.symbol = self.scanner.get_symbol()
+        #     # print(self.symbol.cursor_position)
+        #     # print(current_symbol.type)
         return self.symbol
 
 
