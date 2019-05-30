@@ -197,7 +197,7 @@ class Parser:
 
             if self.symbol.type == self.scanner.DOT:
                 self.display_error(self.DOT_INVALID)
-                self.skip_erratic_part()
+                self.skip_erratic_symbol()
                 return False
 
             if self.symbol.type == self.scanner.COMMA \
@@ -398,7 +398,7 @@ class Parser:
 
         elif self.symbol.type == self.scanner.FORWARDS_SLASH:
             self.display_error(self.SLASH_INVALID)
-            self.skip_erratic_part()
+            self.skip_erratic_symbol()
             return None, None, 1
 
         elif self.symbol.type == self.scanner.COMMA \
