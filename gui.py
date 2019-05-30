@@ -658,7 +658,7 @@ class Gui(wx.Frame):
         helpMenu = wx.Menu()
         helpMenu.Append(wx.ID_ABOUT, "&About")
         helpMenu.Append(wx.ID_HELP, "&Help")
-        helpMenu.Append(wx.ID_HELP_COMMANDS, "&Help commands")
+        helpMenu.Append(wx.ID_HELP_COMMANDS, "&Help Commands")
         menuBar.Append(helpMenu, "&Help")
         self.SetMenuBar(menuBar)
 
@@ -713,6 +713,8 @@ class Gui(wx.Frame):
         #  Activity log sizer
         self.activity_log_title = wx.StaticText(self, wx.ID_ANY, "Activity log")
         self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY | wx.ALIGN_TOP)
+        font = wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL)
+        self.activity_log_text.SetFont(font)
 
         #  Console sizer
         self.console = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
@@ -1162,7 +1164,6 @@ class Gui(wx.Frame):
             "z X         - zap the monitor on signal X\n" + \
             "h             - help (this command)\n" + \
             "q            - quit the program"
-        self.log_text(text)
         wx.MessageBox(text, "Help on Commands", wx.ICON_INFORMATION | wx.OK)
 
     def switches_update_toggle(self):
@@ -1304,7 +1305,7 @@ class Gui(wx.Frame):
             wx.MessageBox("No network avilable. Load a valid definition file.", "No network available",
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.INVALID_DEFINITION_FILE:
-            wx.MessageBox(message, "Invalid definition file",
+            wx.MessageBox("The loaded file contains errors. Check the activity log or the terminal.", "Invalid definition file",
                           wx.ICON_ERROR | wx.OK)
         else:
             wx.MessageBox(message, "Unknown Error", wx.ICON_ERROR | wx.OK)
