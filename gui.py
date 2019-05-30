@@ -1060,7 +1060,7 @@ class Gui(wx.Frame):
             elif answer == wx.YES:
                 self.save_file()
         # otherwise ask the user what new file to open
-        with wx.FileDialog(self, "Open another definition file", wildcard="Definiton files (*.def)|*.def|Network files (*.defb)|*.defb|All files (*)|*",
+        with wx.FileDialog(self, "Open another definition file", wildcard="Definiton file (*.def)|*.def|Network file (*.defb)|*.defb|Text file (*.txt)|*.txt|All files (*)|*",
                            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
