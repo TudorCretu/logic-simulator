@@ -1,14 +1,10 @@
 """Test the parser module."""
-
-import builtins
 import pytest
-import os
-
 from names import Names
-from scanner import Symbol, Scanner
+from scanner import Scanner
 from parse import Parser
 from network import Network
-from devices import Device, Devices
+from devices import Devices
 from monitors import Monitors
 
 

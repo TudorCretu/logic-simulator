@@ -8,7 +8,6 @@ Classes
 Scanner - reads definition file and translates characters into symbols.
 Symbol - encapsulates a symbol and stores its properties.
 """
-from names import Names  # remove this later
 import sys
 
 
