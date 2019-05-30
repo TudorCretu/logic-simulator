@@ -1,0 +1,43 @@
+* This is an asynchronous decade counter.
+It counts only from 0 to 9. It's similar to 4-bit ripple counter,
+but provides an example on how to use gates along DTYPES.
+For a visual representation, check asynchronous_decade_counter.png.
+*
+
+DEVICES
+SwSet = SWITCH/0,
+Ck = CLOCK/1,
+D1 = DTYPE,
+D2 = DTYPE,
+D3 = DTYPE,
+D4 = DTYPE,
+And = AND/3;
+
+CONNECTIONS
+SwSet = D1.SET,
+And = D1.CLEAR,
+SwSet = D2.SET,
+And = D2.CLEAR,
+SwSet = D3.SET,
+And = D3.CLEAR,
+SwSet = D4.SET,
+And = D4.CLEAR,
+Ck = D1.CLK,
+D1.QBAR = D2.CLK,
+D2.QBAR = D3.CLK,
+D3.QBAR = D4.CLK,
+D1.QBAR = D1.DATA,
+D2.QBAR = D2.DATA,
+D3.QBAR = D3.DATA,
+D4.QBAR = D4.DATA,
+D2.Q = And.I1,
+D4.Q = And.I2,
+Ck = And.I3;
+
+MONITORS
+Ck,
+D1.Q,
+D2.Q,
+D3.Q,
+D4.Q;
+
