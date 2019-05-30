@@ -1,0 +1,38 @@
+* This is an asynchronous 4-bit counter.
+For a visual representation, check asynchronous_4_bit_counter.png.
+*
+
+DEVICES
+SwSet = SWITCH/0,
+SwClear = SWITCH/0,
+Ck = CLOCK/1,
+D1 = DTYPE,
+D2 = DTYPE,
+D3 = DTYPE,
+D4 = DTYPE;
+
+CONNECTIONS
+SwSet = D1.SET,
+SwClear = D1.CLEAR,
+SwSet = D2.SET,
+SwClear = D2.CLEAR,
+SwSet = D3.SET,
+SwClear = D3.CLEAR,
+SwSet = D4.SET,
+SwClear = D4.CLEAR,
+Ck = D1.CLK,
+D1.QBAR = D2.CLK,
+D2.QBAR = D3.CLK,
+D3.QBAR = D4.CLK,
+D1.QBAR = D1.DATA,
+D2.QBAR = D2.DATA,
+D3.QBAR = D3.DATA,
+D4.QBAR = D4.DATA;
+
+MONITORS
+Ck,
+D1.Q,
+D2.Q,
+D3.Q,
+D4.Q;
+
