@@ -47,7 +47,6 @@ class Parser:
         self.symbol = Symbol()
         # self.cursor = 0 # this might be needed
         self.error_count = 0
-        self.semerr_count = 0  # count semantic errors detected
         self.error_output = []
         self.error_to_gui = []  # for error display in GUI
         self.error_cursor = []
@@ -72,7 +71,6 @@ class Parser:
             # oscillating network will be reported when running simulation
             # it is perhaps a runtime error, so not handled here
             if flag4 is False:
-                self.semerr_count += 1
                 self.error_count += 1
                 port_str = self.names.get_name_string(port_id)
                 device_str = self.names.get_name_string(device_id)
@@ -100,16 +98,10 @@ class Parser:
                 "Parsed successfully! Valid definition file!")
         else:
             print("File '%s' contains %d error(s): "
-                  "%d syntax error(s) and %d semantic error(s)\n"
-                  % (self.scanner.file.name.split('/')[-1], self.error_count,
-                     self.error_count - self.semerr_count, self.semerr_count))
+                  % (self.scanner.file.name.split('/')[-1], self.error_count))
             self.error_to_gui.append("File '%s' contains %d error(s):"
-                                     " %d syntax error(s) "
-                                     "and %d semantic error(s)\n"
                                      % (self.scanner.file.name.split('/')[-1],
-                                        self.error_count,
-                                        self.error_count - self.semerr_count,
-                                        self.semerr_count))
+                                        self.error_count))
             n = len(self.error_cursor)
             if self.error_count > n:  # notice the unconnected input error
                 for i in range(n):
@@ -121,7 +113,7 @@ class Parser:
                         self.errline_pos[i],
                         self.error_cursor[i]))
                 print(self.error_output[n])
-                self.error_to_gui.append(self.error_output[i])
+                self.error_to_gui.append(self.error_output[n])
             else:
                 for i in range(n):
                     print(self.error_output[i])
@@ -190,7 +182,10 @@ class Parser:
 
             param = None
             if self.symbol.type == self.scanner.FORWARDS_SLASH:
-                param = self.get_parameter()
+                gen = 0
+                # if type_id == self.devices.SIGGEN:
+                # gen = 1
+                param = self.get_parameter(gen)
                 if param is None:
                     # self.NOT_NUMBER handled by check in get_param()
                     return False
@@ -207,7 +202,6 @@ class Parser:
                     error_type = self.devices.make_device(
                         identifier, type_id, param)
                     if error_type != self.devices.NO_ERROR:
-                        self.semerr_count += 1
                         self.display_error_device(error_type,
                                                   identifier, type_id)
                         return False
@@ -230,7 +224,7 @@ class Parser:
             self.skip_erratic_part()
             return False
 
-    def get_parameter(self):
+    def get_parameter(self, str=0):
         """
         Get the parameter value right after the forwards slash.
         :return: If there is a number after the forwards slash,
@@ -239,7 +233,10 @@ class Parser:
         self.symbol = self.read_symbol()  # read in a param
         if self.check_number() is False:
             return None
-        param = int(self.symbol.id)  # get the parameter value
+        if str == 1:
+            param = self.symbol.id
+        else:
+            param = int(self.symbol.id)  # get the parameter value
         self.symbol = self.read_symbol()  # match the loop in add_devices
         return param
 
@@ -354,7 +351,6 @@ class Parser:
             error_type = self.monitors.make_monitor(
                 current_device, current_port)
             if error_type != self.monitors.NO_ERROR:
-                self.semerr_count += 1
                 self.display_error_monitor(
                     error_type, current_device, current_port)
                 return False
@@ -555,10 +551,11 @@ class Parser:
         :return: no returned value.
         """
         self.error_count += 1
-        self.semerr_count += 1
         device_id_str = self.names.get_name_string(identifier_id)
         if type_id is not None:
             device_type_str = self.names.get_name_string(type_id)
+        else:
+            device_type_str = ""
         if error_type == self.devices.INVALID_QUALIFIER:
             self.error_output.append(
                 "InvalidParameterError: Parameter value of "
@@ -603,7 +600,6 @@ class Parser:
         :return: no returned value.
         """
         self.error_count += 1
-        self.semerr_count += 1
         if sig1_device is None:
             device_str1 = ""
         else:
@@ -658,10 +654,11 @@ class Parser:
         :return: no returned value.
         """
         self.error_count += 1
-        self.semerr_count += 1
         device_str = self.names.get_name_string(device_id)
         if port_id is not None:
             port_str = "." + self.names.get_name_string(port_id)
+        else:
+            port_str = ""
         if error_type == self.monitors.NOT_OUTPUT:
             self.error_output.append(
                 "MonitorNotOutputSignalError: Signal '%s%s' is not an output"
@@ -724,7 +721,6 @@ class Parser:
         It skips everything before finding the next valid symbol.
         :return: no returned value.
         """
-        # go to the next comma within the section
         while self.symbol.type is None:
             self.symbol = self.scanner.get_symbol()
 
