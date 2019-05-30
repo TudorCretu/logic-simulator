@@ -498,7 +498,7 @@ class LoadCommand(Command):
             completed_cycles = 0
             if not parser.parse_network():
                 errors = parser.error_to_gui
-                error_message = "\n".join(errors)
+                error_message = errors[0]
                 self.gui.log_text(error_message)
                 return self.command_manager.INVALID_DEFINITION_FILE, error_message
 

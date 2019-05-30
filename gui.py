@@ -1272,7 +1272,7 @@ class Gui(wx.Frame):
                 self.save_file()
         self.Close(True)
 
-    def raise_error(self, error, message=None):
+    def raise_error(self, error, message="Unknown error. Send an email to group 05 for support."):
         """Handle user's errors in GUI"""
         if error == self.command_manager.INVALID_COMMAND:
             wx.MessageBox(message, "Invalid Command Error", wx.ICON_ERROR | wx.OK)
@@ -1305,7 +1305,7 @@ class Gui(wx.Frame):
             wx.MessageBox("No network avilable. Load a valid definition file.", "No network available",
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.INVALID_DEFINITION_FILE:
-            wx.MessageBox("The loaded file contains errors. Check the activity log or the terminal.", "Invalid definition file",
+            wx.MessageBox(message + "\nPlease check the activity log or the terminal.", "Invalid definition file",
                           wx.ICON_ERROR | wx.OK)
         else:
             wx.MessageBox(message, "Unknown Error", wx.ICON_ERROR | wx.OK)
