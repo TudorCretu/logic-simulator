@@ -708,8 +708,8 @@ class Parser:
         self.symbol = self.scanner.get_symbol()
         if self.symbol.type is None:
             self.display_error(self.NOT_SYMBOL)
-            self.skip_erratic_part()
-
+            # self.skip_erratic_part()
+            self.skip_erratic_symbol()
         # print(self.symbol.cursor_position)
         # while self.symbol.type is None:
         #     self.display_error(self.NOT_SYMBOL)
@@ -717,6 +717,16 @@ class Parser:
         #     # print(self.symbol.cursor_position)
         #     # print(current_symbol.type)
         return self.symbol
+
+    def skip_erratic_symbol(self):  # recovery
+        """
+        This function is used for error recovery for invalid symbol.
+        It skips everything before finding the next valid symbol.
+        :return: no returned value.
+        """
+        # go to the next comma within the section
+        while self.symbol.type is None:
+            self.symbol = self.scanner.get_symbol()
 
 
 # -------------------local testing #allowed------------------------
