@@ -54,13 +54,13 @@ class HelpCommand(Command):
         self.gui = command_manager.gui
 
         text = "User commands:\n" + \
-               "r N         - run the simulation for N cycles\n" + \
-               "c N         - continue the simulation for N cycles\n" + \
-               "s X N     - set switch X to N (0 or 1)\n" + \
-               "m X       - set a monitor on signal X\n" + \
-               "z X         - zap the monitor on signal X\n" + \
-               "h             - help (this command)\n" + \
-               "q            - quit the program"
+               "r N     - run the simulation for N cycles\n" + \
+               "c N     - continue the simulation for N cycles\n" + \
+               "s X N   - set switch X to N (0 or 1)\n" + \
+               "m X     - set a monitor on signal X\n" + \
+               "z X     - zap the monitor on signal X\n" + \
+               "h       - help (this command)\n" + \
+               "q       - quit the program"
         self.gui.log_text(text)
         return self.command_manager.NO_ERROR, None
 
@@ -499,6 +499,7 @@ class LoadCommand(Command):
             if not parser.parse_network():
                 errors = parser.error_to_gui
                 error_message = "\n".join(errors)
+                self.gui.log_text(error_message)
                 return self.command_manager.INVALID_DEFINITION_FILE, error_message
 
         # Set new instances
