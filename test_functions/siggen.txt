@@ -1,0 +1,14 @@
+DEVICES
+
+sig1 = SIGGEN/100110,
+sw = SWITCH/1,
+and = AND/2;
+
+CONNECTIONS
+
+sig1 = and.I1,
+sw = and.I2;
+
+MONITORS
+
+and;

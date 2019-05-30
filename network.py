@@ -339,6 +339,8 @@ class Network:
         else:
             return False
 
+    # def execute_siggen(self, device_id):
+
     def update_clocks(self):
         """If it is time to do so, set clock signals to RISING or FALLING."""
         clock_devices = self.devices.find_devices(self.devices.CLOCK)
@@ -354,12 +356,33 @@ class Network:
                     device.outputs[None] = self.devices.RISING
             device.clock_counter += 1
 
+    def update_siggens(self):
+        """Set signal generators' signal according to the specified state"""
+        siggen_devices = self.devices.find_devices(self.devices.SIGGEN)
+        for device_id in siggen_devices:
+            device = self.devices.get_device(device_id)
+            if device.cursor == len(device.signal):
+                device.cursor = 0
+            current_signal = device.signal[device.cursor]
+            if device.cursor == len(device.signal) - 1:
+                next_signal = device.signal[0]
+            else:
+                next_signal = device.signal[device.cursor + 1]
+            if current_signal == self.devices.HIGH \
+                    and next_signal == self.devices.LOW:
+                device.outputs[None] = self.devices.FALLING
+            elif current_signal == self.devices.LOW \
+                    and next_signal == self.devices.HIGH:
+                device.outputs[None] = self.devices.RISING
+            device.cursor += 1
+
     def execute_network(self):
         """Execute all the devices in the network for one simulation cycle.
 
         Return True if successful and the network does not oscillate.
         """
         clock_devices = self.devices.find_devices(self.devices.CLOCK)
+        siggen_devices = self.devices.find_devices(self.devices.SIGGEN)
         switch_devices = self.devices.find_devices(self.devices.SWITCH)
         d_type_devices = self.devices.find_devices(self.devices.D_TYPE)
         and_devices = self.devices.find_devices(self.devices.AND)
@@ -370,6 +393,7 @@ class Network:
 
         # This sets clock signals to RISING or FALLING, where necessary
         self.update_clocks()
+        self.update_siggens()
 
         # Number of iterations to wait for the signals to settle before
         # declaring the network unstable
@@ -389,6 +413,10 @@ class Network:
                 if not self.execute_d_type(device_id):
                     return False
             for device_id in clock_devices:  # complete clock executions
+                if not self.execute_clock(device_id):
+                    return False
+            for device_id in siggen_devices:  # complete siggen executions
+                # the same as did for clocks
                 if not self.execute_clock(device_id):
                     return False
             for device_id in and_devices:  # execute AND gate devices

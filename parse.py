@@ -183,8 +183,8 @@ class Parser:
             param = None
             if self.symbol.type == self.scanner.FORWARDS_SLASH:
                 gen = 0
-                # if type_id == self.devices.SIGGEN:
-                # gen = 1
+                if type_id == self.devices.SIGGEN:
+                    gen = 1
                 param = self.get_parameter(gen)
                 if param is None:
                     # self.NOT_NUMBER handled by check in get_param()
@@ -224,7 +224,7 @@ class Parser:
             self.skip_erratic_part()
             return False
 
-    def get_parameter(self, str=0):
+    def get_parameter(self, gen=0):
         """
         Get the parameter value right after the forwards slash.
         :return: If there is a number after the forwards slash,
@@ -233,7 +233,7 @@ class Parser:
         self.symbol = self.read_symbol()  # read in a param
         if self.check_number() is False:
             return None
-        if str == 1:
+        if gen == 1:
             param = self.symbol.id
         else:
             param = int(self.symbol.id)  # get the parameter value
@@ -706,7 +706,7 @@ class Parser:
         if self.symbol.type is None:
             self.display_error(self.NOT_SYMBOL)
             # self.skip_erratic_part()
-            self.skip_erratic_symbol()
+            self.skip_erratic_part()
         # print(self.symbol.cursor_position)
         # while self.symbol.type is None:
         #     self.display_error(self.NOT_SYMBOL)
@@ -715,26 +715,26 @@ class Parser:
         #     # print(current_symbol.type)
         return self.symbol
 
-    def skip_erratic_symbol(self):  # recovery
-        """
-        This function is used for error recovery for invalid symbol.
-        It skips everything before finding the next valid symbol.
-        :return: no returned value.
-        """
-        while self.symbol.type is None:
-            self.symbol = self.scanner.get_symbol()
+    # def skip_erratic_symbol(self):  # recovery
+    #     """
+    #     This function is used for error recovery for invalid symbol.
+    #     It skips everything before finding the next valid symbol.
+    #     :return: no returned value.
+    #     """
+    #     while self.symbol.type is None:
+    #         self.symbol = self.scanner.get_symbol()
 
 
 # -------------------local testing #allowed------------------------
 
 # # Folder to keep test definition files
 #
-# test_file_dir = "test_definition_files/test_devices"
+# test_file_dir = "test_functions"
 # names = Names()
 # devices = Devices(names)
 # network = Network(names, devices)
 # monitors = Monitors(names, devices, network)
-# file_path = test_file_dir + "/illegal_symbol_error.txt"
+# file_path = test_file_dir + "/siggen.txt"
 # scanner = Scanner(file_path, names)
 # parser = Parser(names, devices, network, monitors, scanner)
 # # a = parser.read_symbol()
