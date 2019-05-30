@@ -493,7 +493,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             longest_monitor = len("Cycles")
         else:
             longest_monitor = max(len("Cycles"), margin)
-        self.cycle_start_x = 25 + self.text_width("0") * longest_monitor
+        self.cycle_start_x = (25 + self.text_width("0") * longest_monitor) / self.zoom
         self.width = (self.cycle_start_x + self.completed_cycles*self.cycle_width + 30) * self.zoom
         self.height = ((self.monitors_number+1) * self.monitor_height + 30) * self.zoom
         size = self.GetClientSize()
