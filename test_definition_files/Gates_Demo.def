@@ -1,0 +1,74 @@
+* This definition files define 5 demonstrative circuits:
+1. AND and NAND gates, each with 2 inputs
+2. OR and NOR gates, each with 2 inputs
+3. XOR gate with 2 inputs
+4. NAND gate with 1 input that acts as a NOT gate
+5. AND gate with 8 inputs
+For a visual representation, check gates_demo.png.
+*
+
+DEVICES
+# AND/NAND gates demo
+SwAnd1 = SWITCH/1,
+SwAnd2 = SWITCH/1,
+And = AND/2,
+Nand = NAND/2,
+
+# OR/NOR gates demo
+SwOr1 = SWITCH/0,
+SwOr2 = SWITCH/0,
+Or = OR/2,
+Nor = NOR/2,
+
+# XOR gate demo
+SwXor1 = SWITCH/0,
+SwXor2 = SWITCH/1,
+Xor = XOR,
+
+# NOT gate demo
+SwNot = SWITCH/0,
+Not = NAND/1,
+
+# 8 input AND gate demo
+SwM1 = SWITCH/1,
+SwM2 = SWITCH/1,
+SwM3 = SWITCH/1,
+SwM4 = SWITCH/1,
+SwM5 = SWITCH/1,
+SwM6 = SWITCH/1,
+SwM7 = SWITCH/1,
+SwM8 = SWITCH/1,
+And8 = AND/8;
+
+CONNECTIONS
+# AND/NAND gates demo
+SwAnd1 = And.I1,
+SwAnd2 = And.I2,
+SwAnd1 = Nand.I1,
+SwAnd2 = Nand.I2,
+
+# OR/NOR gates demo
+SwOr1 = Or.I1,
+SwOr2 = Or.I2,
+SwOr1 = Nor.I1,
+SwOr2 = Nor.I2,
+
+# XOR gate demo
+SwXor1 = Xor.I1,
+SwXor2 = Xor.I2,
+
+# NOT gate demo
+SwNot = Not.I1,
+
+# 8 input AND gate demo
+SwM1 = And8.I1,
+SwM2 = And8.I2,
+SwM3 = And8.I3,
+SwM4 = And8.I4,
+SwM5 = And8.I5,
+SwM6 = And8.I6,
+SwM7 = And8.I7,
+SwM8 = And8.I8;
+
+MONITORS
+And, Nand, Or, Nor, Xor, Not, And8;

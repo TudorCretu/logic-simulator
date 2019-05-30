@@ -1,0 +1,20 @@
+* This is an usage example of a DTYPE.
+For a visual representation, check dtype-demo.png.
+*
+
+DEVICES
+SwSet = SWITCH/0,
+SwClear = SWITCH/0,
+SwData = SWITCH/0,
+Ck = CLOCK/1,
+Dtype = DTYPE;
+
+CONNECTIONS
+SwSet = Dtype.SET,
+SwClear = Dtype.CLEAR,
+SwData = Dtype.DATA,
+Ck = Dtype.CLK;
+
+MONITORS
+Dtype.Q,
+Dtype.QBAR;

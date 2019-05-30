@@ -1,0 +1,45 @@
+* This circuit checks whether a 4-bit number is prime.
+The 4 bit number is made of Bit1, Bit2, Bit3, and Bit4, 
+where Bit1 is the Least Significant Bit (LSB) and Bit4
+is the Most Significant Bit (MSB). 
+The value of IsPrime  indicates if the number is prime or not.
+For a visual representation, check 4_bit_prime_number_identifier.png.
+*
+
+DEVICES
+Bit1 = SWITCH/0,
+Bit2 = SWITCH/0,
+Bit3 = SWITCH/0,
+Bit4 = SWITCH/0,
+Not2 = NAND/1,
+Not3 = NAND/1,
+Not4 = NAND/1,
+And1 = AND/3,
+And2 = AND/3,
+And3 = AND/3,
+And4 = AND/3,
+IsPrime = OR/4;
+
+CONNECTIONS
+Bit2 = Not2.I1,
+Bit3 = Not3.I1,
+Bit4 = Not4.I1,
+Not3 = And1.I1,
+Not4 = And1.I2,
+Bit2 = And1.I3,
+Not4 = And2.I1,
+Bit3 = And2.I2,
+Bit1 = And2.I3,
+Not3 = And3.I1,
+Bit2 = And3.I2,
+Bit1 = And3.I3,
+Bit3 = And4.I1,
+Not2 = And4.I2,
+Bit1 = And4.I3,
+And1 = IsPrime.I1,
+And2 = IsPrime.I2,
+And3 = IsPrime.I3,
+And4 = IsPrime.I4;
+
+MONITORS
+IsPrime;
