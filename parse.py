@@ -156,6 +156,7 @@ class Parser:
                 return False  # just end parsing this section
         else:
             self.display_error(self.NO_KEYWORD_DEVICES)  # no keyword
+            self.skip_erratic_part()
             return False  # just raise error and exit
 
     def add_device(self):
@@ -269,6 +270,7 @@ class Parser:
                 return False
         else:
             self.display_error(self.NO_KEYWORD_CONNECTIONS)
+            self.skip_erratic_part()
             return False  # just raise error and exit
 
     def add_connection(self):
@@ -332,6 +334,7 @@ class Parser:
                 return False
         else:
             self.display_error(self.NO_KEYWORD_MONITORS)
+            self.skip_erratic_part()
             return False  # just raise error and exit
 
     def add_monitor(self):
