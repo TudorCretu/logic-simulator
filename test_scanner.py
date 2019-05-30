@@ -216,8 +216,8 @@ def test_single_line_comment(names):
 def test_multiline_comment(names):
     """Test if multiline comments are ignored correctly."""
     string_io = StringIO("Multiline comment was *" + os.linesep
-                         + "Multiline comment content" + os.linesep 
-                         + "More Multiline comment content *" + os.linesep 
+                         + "Multiline comment content" + os.linesep
+                         + "More Multiline comment content *" + os.linesep
                          + "correctly removed")
     scanner = Scanner(string_io, names)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("Multiline"))
@@ -225,21 +225,22 @@ def test_multiline_comment(names):
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("was"))
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("correctly"))
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("removed"))
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
 
 
 def test_unclosed_ML_comment_warning(names,capfd):
     """Test if multiline comments are ignored correctly."""
     string_io = StringIO("Unclosed multiline comment follows *" + os.linesep
-                         + "Multiline comment content" + os.linesep 
-                         + "More Multiline comment content " + os.linesep 
+                         + "Multiline comment content" + os.linesep
+                         + "More Multiline comment content " + os.linesep
                          + "More multiline comment content")
     scanner = Scanner(string_io, names)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("Unclosed"))
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("multiline"))
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("comment"))
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("follows"))
-    assert_symbol(scanner.get_symbol(), scanner.EOF, None)  
-    
+    assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+
     out, err = capfd.readouterr()
     assert out == ("** WARNING : UNCLOSED MULTILINE COMMENT PRESENT: "
                    "IT IS RECOMMENDED THAT YOU CLOSE IT WITH A '*'\n")
@@ -249,19 +250,19 @@ def test_symbol_line_number(names):
     """Test if symbols are labelled with the correct line"""
     # 2 symbols are placed on each line
     string_io = StringIO("1 1" + os.linesep
-                         + "2 2" + os.linesep 
-                         + "3 3" + os.linesep 
+                         + "2 2" + os.linesep
+                         + "3 3" + os.linesep
                          + "4 4")
     scanner = Scanner(string_io, names)
-    
-    # test that there are 2 symbols on each of lines 1st ,2nd, 3rd, 4th lines 
+
+    # test that there are 2 symbols on each of lines 1st ,2nd, 3rd, 4th lines
     for i in range (4):
         symbol = scanner.get_symbol()
         assert symbol.line_number == int(i/2 + 1)
 
 
 def test_show_error_location(names):
-    """Test if error correct location display information is returned by 
+    """Test if error correct location display information is returned by
     the function: show_error_location"""
     # Input a sequence of known symbols
     string_io = StringIO("Error called at the 3rd symbol in string")
@@ -270,7 +271,7 @@ def test_show_error_location(names):
     symbol = scanner.get_symbol()
     symbol = scanner.get_symbol()
     symbol = scanner.get_symbol() # get to the 3rd symbol in string
-    
+
     # test simulating parser having detected an error at the 3rd symbol
     output = scanner.show_error_location(
             symbol.line_number,symbol.cursor_pos_at_start_of_line,
