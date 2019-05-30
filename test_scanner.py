@@ -1,9 +1,10 @@
 """Test the scanner module."""
-import builtins
 
+import builtins
 import pytest
 import os
 from io import StringIO
+
 
 from names import Names
 from scanner import Scanner
@@ -30,6 +31,7 @@ test_file_dir = "test_definition_files"
 def names():
     """Return a new instance of the Devices class."""
     return Names()
+
 
 def assert_symbol(symbol, expected_type, expected_id):
     assert symbol.type == expected_type
@@ -209,7 +211,8 @@ def test_single_line_comment(names):
     assert_symbol(scanner.get_symbol(), scanner.FORWARDS_SLASH, None)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbols"))
     assert_symbol(scanner.get_symbol(), scanner.EOF, None)
-    
+
+
 def test_multiline_comment(names):
     """Test if multiline comments are ignored correctly."""
     string_io = StringIO("Multiline comment was *" + os.linesep
@@ -222,6 +225,7 @@ def test_multiline_comment(names):
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("was"))
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("correctly"))
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("removed"))
+
 
 def test_unclosed_ML_comment_warning(names,capfd):
     """Test if multiline comments are ignored correctly."""
@@ -239,7 +243,8 @@ def test_unclosed_ML_comment_warning(names,capfd):
     out, err = capfd.readouterr()
     assert out == ("** WARNING : UNCLOSED MULTILINE COMMENT PRESENT: "
                    "IT IS RECOMMENDED THAT YOU CLOSE IT WITH A '*'\n")
-    
+
+
 def test_symbol_line_number(names):
     """Test if symbols are labelled with the correct line"""
     # 2 symbols are placed on each line
@@ -253,7 +258,8 @@ def test_symbol_line_number(names):
     for i in range (4):
         symbol = scanner.get_symbol()
         assert symbol.line_number == int(i/2 + 1)
-    
+
+
 def test_show_error_location(names):
     """Test if error correct location display information is returned by 
     the function: show_error_location"""
@@ -287,6 +293,26 @@ def test_comment_between_sections(names):
     assert_symbol(scanner.get_symbol(), scanner.FORWARDS_SLASH, None)
     assert_symbol(scanner.get_symbol(), scanner.NAME, names.query("symbols"))
     assert_symbol(scanner.get_symbol(), scanner.EOF, None)
+
+
+def test_filepath_invalid(names, capfd):
+    """Test if an empty or nonexistent path is handled correctly"""
+
+    # Empty path
+    path = ""
+    with pytest.raises(SystemExit) as pytest_sys_exit:
+        scanner = Scanner(path, names)
+    out, err = capfd.readouterr()
+    assert out == "File was not found.\n"
+    assert pytest_sys_exit.type == SystemExit
+
+    # Nonexistent path
+    path = "nonexistent_file"
+    with pytest.raises(SystemExit) as pytest_sys_exit:
+        scanner = Scanner(path, names)
+    out, err = capfd.readouterr()
+    assert out == "File was not found.\n"
+    assert pytest_sys_exit.type == SystemExit
 
 
 def test_definition_file_1(names):
