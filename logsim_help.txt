@@ -24,6 +24,9 @@ SWITCH (switch): requires a /parameter indicating its initial state (0 or 1).
 
 CLOCK (clock): requires a /parameter indicating number of simulation cycles in half a clock period.
 
+SIGGEN (signal generator): requires a /parameter indicating the signal pattern it generates.
+		There can only be 0 and 1 in the parameter string.
+
 XOR (XOR gate): It does not need any parameter.
 	For a XOR gate GATE:
 		Its output is GATE. Its 2 inputs are GATE.I1, GATE.I2, ...
