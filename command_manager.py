@@ -167,7 +167,7 @@ class MonitorCommand(Command):
                 if ids is not None:
                     [device_id, output_id] = ids
                     self.command_manager.monitors.make_monitor(device_id, output_id, self.gui.completed_cycles)
-                    self.gui.canvas.update_cycle_axis_layout()
+                    self.gui.canvas.render()
                     self.gui.log_text("Set monitor on " + self.signal_name)
                     self.gui.monitors_update_toggle()
                     # update monitors set/zap toggle button
@@ -303,8 +303,9 @@ class RunCommand(Command):
                     return self.command_manager.OSCILLATING_NETWORK, \
                            "Cannot run network. The network doesn't have a stable state."
             self.gui.update_cycles(self.cycles)
-            self.gui.canvas.update_cycle_axis_layout()
             self.gui.canvas.reset_pan()
+            self.gui.canvas.cap_pan()
+            self.gui.canvas.update_cycle_axis_layout()
             self.gui.log_text("Run simulation for " + str(self.cycles) + " cycles")
 
         except ValueError:
