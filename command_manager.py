@@ -187,7 +187,7 @@ class MonitorCommand(Command):
         Return NO_ERROR, None if successful.
         """
         self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
-        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.render()
         self.gui.monitors_update_toggle()
         return self.command_manager.NO_ERROR, None
 
@@ -197,7 +197,7 @@ class MonitorCommand(Command):
         Return NO_ERROR, None if successful.
         """
         self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
-        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.render()
         self.gui.monitors_update_toggle()
         return self.command_manager.NO_ERROR, None
 
@@ -230,7 +230,7 @@ class ZapCommand(Command):
                 if ids is not None:
                     [device_id, output_id] = ids
                     self.command_manager.monitors.remove_monitor(device_id, output_id)
-                    self.gui.canvas.update_cycle_axis_layout()
+                    self.gui.canvas.render()
                     self.gui.log_text("Zap monitor on " + self.signal_name)
                     self.gui.monitors_update_toggle()
                 else:
@@ -248,7 +248,7 @@ class ZapCommand(Command):
         Return NO_ERROR, None if successful.
         """
         self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
-        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.render()
         self.gui.monitors_update_toggle()
         return self.command_manager.NO_ERROR, None
 
@@ -258,7 +258,7 @@ class ZapCommand(Command):
         Return NO_ERROR, None if successful.
         """
         self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
-        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.render()
         self.gui.monitors_update_toggle()
         return self.command_manager.NO_ERROR, None
 
@@ -304,8 +304,7 @@ class RunCommand(Command):
                            "Cannot run network. The network doesn't have a stable state."
             self.gui.update_cycles(self.cycles)
             self.gui.canvas.reset_pan()
-            self.gui.canvas.cap_pan()
-            self.gui.canvas.update_cycle_axis_layout()
+            self.gui.canvas.render()
             self.gui.log_text("Run simulation for " + str(self.cycles) + " cycles")
 
         except ValueError:
@@ -324,7 +323,7 @@ class RunCommand(Command):
         self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
         self.command_manager.devices.devices_list = self.initial_devices_state
         self.gui.update_cycles(self.initial_cycles)
-        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.render()
         self.gui.canvas.pan_to_right_end()
         return self.command_manager.NO_ERROR, None
 
@@ -336,7 +335,7 @@ class RunCommand(Command):
         self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
         self.command_manager.devices.devices_list = self.final_devices_state
         self.gui.update_cycles(self.cycles)
-        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.render()
         self.gui.canvas.pan_to_right_end()
         return self.command_manager.NO_ERROR, None
 
@@ -380,7 +379,7 @@ class ContinueCommand(Command):
                     return self.command_manager.OSCILLATING_NETWORK, \
                             "Cannot continue network. The network doesn't have a stable state."
             self.gui.update_cycles(self.gui.completed_cycles + self.cycles)
-            self.gui.canvas.update_cycle_axis_layout()
+            self.gui.canvas.render()
             self.gui.canvas.pan_to_right_end()
             self.gui.log_text("Continue simulation for " + str(self.cycles)
                               + " cycles. Total cycles: " + str(self.gui.completed_cycles))
@@ -402,7 +401,7 @@ class ContinueCommand(Command):
         self.command_manager.monitors.monitors_dictionary = self.initial_monitors_state
         self.command_manager.devices.devices_list = self.initial_devices_state
         self.gui.update_cycles(self.initial_cycles)
-        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.render()
         self.gui.canvas.pan_to_right_end()
         return self.command_manager.NO_ERROR, None
 
@@ -416,7 +415,7 @@ class ContinueCommand(Command):
         self.command_manager.monitors.monitors_dictionary = self.final_monitors_state
         self.command_manager.devices.devices_list = self.final_devices_state
         self.gui.update_cycles(self.initial_cycles + self.cycles)
-        self.gui.canvas.update_cycle_axis_layout()
+        self.gui.canvas.render()
         self.gui.canvas.pan_to_right_end()
         return self.command_manager.NO_ERROR, None
 
@@ -524,7 +523,6 @@ class LoadCommand(Command):
         for monitor_name in self.gui.monitors.get_signal_names()[0] + self.gui.monitors.get_signal_names()[1]:
             self.gui.monitors_select.Append(monitor_name)
         self.gui.canvas.devices = self.command_manager.devices
-        self.gui.canvas.update_cycle_axis_layout()
         self.gui.update_cycles(completed_cycles)
         self.gui.switches_select.SetValue("")
         self.gui.switches_update_toggle()
@@ -533,6 +531,7 @@ class LoadCommand(Command):
         self.gui.log_text("Load file " + self.path)
         self.gui.path = self.path
         self.gui.load_file_text_box.SetValue(self.path.split('/')[-1])
+        self.gui.canvas.render()
         return self.command_manager.NO_ERROR, None
 
     def undo(self):
