@@ -1131,7 +1131,8 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
                     self.pan_x += x * self.zoom
                     self.pan_y -= y * self.zoom
                 GL.glMultMatrixf(self.scene_rotate)
-                GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate)
+                print(
+                    GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate))
 
                 self.last_mouse_x = event.GetX()
                 self.last_mouse_y = event.GetY()
@@ -1164,9 +1165,6 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
             self.init = False
             self.gui.zoom_slider.SetValue(self.zoom * self.gui.zoom_resolution)
 
-        print(self.pan_x)
-        print(self.pan_y)
-        print(self.zoom)
         self.Refresh()  # triggers the paint event
 
     def render_text(self, text, z_pos, y_pos, x_pos,
@@ -1214,7 +1212,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
 
     def set_pan_x(self, scroll_x):
         """Set pan x to a specific value"""
-        self.pan_x = scroll_x + self.width/2 + self.cycle_width
+        self.pan_x = scroll_x + self.width/2
         self.pan_y = 0
         self.scene_rotate = self.default_rotate
         self.init = False
@@ -1234,36 +1232,31 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         # self.pan_x = min(0, self.pan_x)
         # self.pan_y = min(self.height - 50, self.pan_y)
         # self.pan_y = max(self.display_height - 18, self.pan_y)
+        pass
 
     def reset_pan(self):
         """Reset pan to start of displayed signals"""
         self.pan_x = 0
         self.pan_y = 0
         self.zoom = 1
+        self.gui.zoom_slider.SetValue(1*self.gui.zoom_resolution)
         GL.glMatrixMode(GL.GL_MODELVIEW)
+
+        # Reset to identity matrix
         GL.glLoadIdentity()
-        rotation = np.matmul(self.default_rotate, GL.glGetFloatv(
-            GL.GL_MODELVIEW_MATRIX, self.scene_rotate))
 
-        # GL.glRotatef()
-        GL.glMultMatrixf(*(self.default_rotate)*self.scene_rotate*np.linalg
-                         .inv(rotation))
+        # Reset to default view
+        GL.glMultMatrixf(self.default_rotate)
 
-        print(
-            GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate))
-
-        self.scene_rotate = self.default_rotate
+        a = (GL.GLfloat * 16)()
+        self.scene_rotate = GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, a)
         self.init = False
         self.render()
 
     def pan_to_right_end(self):
         """Pan to the right of the signals"""
-
-        # x_at_end_of_signal = self.pan_x + self.zoom * (self.cycle_start_x +
-        # self.completed_cycles * self.cycle_width)
-        # self.pan_x -= x_at_end_of_signal - self.GetClientSize().width + 50
-        # if self.pan_x > 0:
-        #     self.pan_x = 0
+        self.reset_pan()
+        self.set_pan_x(-self.width-self.cycle_width)
         self.init = False
         self.render()
 
