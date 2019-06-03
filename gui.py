@@ -1478,9 +1478,11 @@ class Gui(wx.Frame):
         menuBar.Append(helpMenu, _("&Help"))
 
         LangMenu = wx.Menu()
-        LangMenu.Append(10001, "&ENGLISH")
-        LangMenu.Append(10002, "&ΕΛΛΗΝΙΚΑ")
-        menuBar.Append(LangMenu, "&ABC")
+        self.ENGLISH_BUTTON_ID = 10001
+        self.GREEK_BUTTON_ID = 10002
+        LangMenu.Append(self.ENGLISH_BUTTON_ID, "&ENGLISH")
+        LangMenu.Append(self.GREEK_BUTTON_ID, "&ΕΛΛΗΝΙΚΑ")
+        menuBar.Append(LangMenu, u"&LANGUAGE / Γλώσσα")
         self.SetMenuBar(menuBar)
         
 
@@ -1895,13 +1897,13 @@ class Gui(wx.Frame):
         """Handle the event when the user selects a menu item."""
         Id = event.GetId()
         print(Id)
-        if Id == 10001:
-            new_gui = Gui(_("Logic Simulator"), None, self.names, self.devices, self.network, self.monitors,"en")
+        if Id == self.ENGLISH_BUTTON_ID:
+            new_gui = Gui("Logic Simulator", None, self.names, self.devices, self.network, self.monitors,"en")
             new_gui.Show(True)
             self.Close(True)
 			
-        if Id == 10002:
-            new_gui = Gui(_("Λογική Προσομοιωτής"), None, self.names, self.devices, self.network, self.monitors,"el")
+        if Id == self.GREEK_BUTTON_ID:
+            new_gui = Gui("Λογική Προσομοιωτής", None, self.names, self.devices, self.network, self.monitors,"el")
             new_gui.Show(True)
             self.Close(True)
 			
