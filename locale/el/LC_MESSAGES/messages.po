@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sr 795\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-03 13:36+0100\n"
-"PO-Revision-Date: 2019-06-03 17:24+0100\n"
+"POT-Creation-Date: 2019-06-03 18:26+0100\n"
+"PO-Revision-Date: 2019-06-03 18:28+0100\n"
 "Last-Translator: S. Ravichandran <caldays.r@gmail.com>\n"
 "Language-Team: Greek\n"
 "Language: el\n"
@@ -91,107 +91,95 @@ msgstr "&Βοήθεια"
 msgid "&Help Commands"
 msgstr "& Εντολές βοήθειας"
 
-#: gui.py:1485
-msgid "&ENGLISH"
-msgstr "&ΑΓΓΛΙΚΑ"
-
-#: gui.py:1486
-msgid "&GREEK"
-msgstr "&ΕΛΛΗΝΙΚΑ"
-
-#: gui.py:1487
-msgid "&ABC"
-msgstr "&ABC"
-
-#: gui.py:1552
-#: gui.py:2121
-#: gui.py:2144
+#: gui.py:1554
+#: gui.py:2127
+#: gui.py:2150
 msgid "Load file"
 msgstr "Φόρτωση αρχείου"
 
-#: gui.py:1560
+#: gui.py:1562
 msgid "Activity log"
 msgstr "Αρχείο καταγραφής δραστηριότητας"
 
-#: gui.py:1579
+#: gui.py:1581
 msgid "HIGH"
 msgstr "ΥΨΗ"
 
-#: gui.py:1582
+#: gui.py:1584
 msgid "LOW"
 msgstr "ΧΑΜ"
 
-#: gui.py:1593
+#: gui.py:1595
 msgid "SET"
 msgstr "ΣΕΙΡΑ"
 
-#: gui.py:1596
+#: gui.py:1598
 msgid "ZAP"
 msgstr "ΑΦΑΙΡΩ."
 
-#: gui.py:1605
+#: gui.py:1607
 msgid "Run"
 msgstr "Τρέξιμο."
 
-#: gui.py:1607
+#: gui.py:1609
 msgid "Continue"
 msgstr "να συνεχίσει."
 
-#: gui.py:1619
-#: gui.py:1652
+#: gui.py:1621
+#: gui.py:1654
 msgid "Zoom"
 msgstr "Ανίπταμαι διαγωνίως"
 
-#: gui.py:1638
+#: gui.py:1640
 msgid " <- To Start"
 msgstr " <- Να ξεκινήσω"
 
-#: gui.py:1639
+#: gui.py:1641
 msgid " Reset View"
 msgstr "Επαναφορά προβολής"
 
-#: gui.py:1640
+#: gui.py:1642
 msgid " To End ->"
 msgstr "Στο τέλος ->"
 
-#: gui.py:1643
-#: gui.py:2043
+#: gui.py:1645
+#: gui.py:2049
 msgid "3D"
 msgstr "3D"
 
-#: gui.py:1646
+#: gui.py:1648
 msgid "Console"
 msgstr "Κονσόλα"
 
-#: gui.py:1647
+#: gui.py:1649
 msgid "Properties"
 msgstr "ιδιότητες."
 
-#: gui.py:1649
+#: gui.py:1651
 msgid "Change State of Switch"
 msgstr "Αλλάξτε την κατάσταση του διακόπτη"
 
-#: gui.py:1650
+#: gui.py:1652
 msgid "Set or Zap Monitors"
 msgstr "Ορίστε ή αφαιρέστε τις οθόνες"
 
-#: gui.py:1651
+#: gui.py:1653
 msgid "Simulate"
 msgstr "Προσομοιωτής"
 
-#: gui.py:1653
+#: gui.py:1655
 msgid "Pan"
 msgstr "Κίνηση"
 
-#: gui.py:1654
+#: gui.py:1656
 msgid "2D/3D View"
 msgstr "Προβολή 2D / 3D."
 
-#: gui.py:1919
+#: gui.py:1925
 msgid "Logic Simulator"
 msgstr "Λογική Προσομοιωτής"
 
-#: gui.py:1926
+#: gui.py:1932
 msgid ""
 "Logic Simulator\n"
 "Created by Team 05\n"
@@ -201,166 +189,166 @@ msgstr ""
 "Δημιουργήθηκε από την ομάδα05 \n"
 "2019"
 
-#: gui.py:1927
+#: gui.py:1933
 msgid "About Logsim"
 msgstr "Σχετικά με το Logsim"
 
-#: gui.py:1938
+#: gui.py:1944
 msgid "Undo"
 msgstr "Ξεκάνω"
 
-#: gui.py:1944
+#: gui.py:1950
 msgid "Redo"
 msgstr "Ξανακάνω"
 
-#: gui.py:2042
 #: gui.py:2048
+#: gui.py:2054
 msgid "2D"
 msgstr "2D"
 
-#: gui.py:2084
+#: gui.py:2090
 msgid "Command "
 msgstr "Εντολή"
 
-#: gui.py:2085
+#: gui.py:2091
 msgid " is invalid. Enter 'h' for help."
 msgstr "είναι άκυρο. Εισαγάγετε 'h' για βοήθεια"
 
-#: gui.py:2127
+#: gui.py:2133
 msgid "Open another definition file"
 msgstr "Ανοίξτε ένα άλλο αρχείο ορισμού"
 
-#: gui.py:2202
+#: gui.py:2210
 msgid "Current state of the simulation has not been saved! "
 msgstr "Η τρέχουσα κατάσταση της προσομοίωσης δεν έχει σωθεί!"
 
-#: gui.py:2203
+#: gui.py:2211
 msgid "Save changes?"
 msgstr "Αποθήκευσε τις αλλαγές?"
 
-#: gui.py:2210
+#: gui.py:2218
 msgid "Choose where to save the file"
 msgstr "Επιλέξτε από πού να αποθηκεύσετε το αρχείο"
 
-#: gui.py:2230
+#: gui.py:2238
 msgid "Cannot save current data in file "
 msgstr "Δεν είναι δυνατή η αποθήκευση των τρέχοντων δεδομένων στο αρχείο"
 
-#: gui.py:2241
+#: gui.py:2264
 msgid "logsim_help.txt"
 msgstr "logsim_help.txt"
 
-#: gui.py:2242
+#: gui.py:2265
 msgid "Help"
 msgstr "Βοήθεια"
 
-#: gui.py:2246
+#: gui.py:2269
 msgid "User commands:\n"
 msgstr "Εντολές χρηστών:\n"
 
-#: gui.py:2247
+#: gui.py:2270
 msgid "r N         - run the simulation for N cycles\n"
 msgstr "r N - τρέξτε τη προσομοίωση για N κύκλους \n"
 
-#: gui.py:2248
+#: gui.py:2271
 msgid "c N         - continue the simulation for N cycles\n"
 msgstr "r N - τρέχει την προσομοίωση για N κύκλους\n"
 
-#: gui.py:2249
+#: gui.py:2272
 msgid "s X N     - set switch X to N (0 or 1)\n"
 msgstr "s X N     - set switch X to N (0 or 1)\n"
 
-#: gui.py:2250
+#: gui.py:2273
 msgid "m X       - set a monitor on signal X\n"
 msgstr "m X - ορίστε μια οθόνη στο σήμα X\n"
 
-#: gui.py:2251
+#: gui.py:2274
 msgid "z X         - zap the monitor on signal X\n"
 msgstr "z X - ενεργοποιήστε την οθόνη στο σήμα X\n"
 
-#: gui.py:2252
+#: gui.py:2275
 msgid "h             - help (this command)\n"
 msgstr "h - βοήθεια (αυτή η εντολή) \n"
 
-#: gui.py:2253
+#: gui.py:2276
 msgid "q            - quit the program"
 msgstr "q - κλείστε το πρόγραμμα"
 
-#: gui.py:2254
+#: gui.py:2277
 msgid "Help on Commands"
 msgstr "Βοήθεια στις εντολές"
 
-#: gui.py:2357
+#: gui.py:2380
 msgid "Quit"
 msgstr "Εγκαταλείπω"
 
-#: gui.py:2368
+#: gui.py:2391
 msgid "Invalid Command Error"
 msgstr "Μη έγκυρο σφάλμα εντολών"
 
-#: gui.py:2371
-#: gui.py:2386
+#: gui.py:2394
+#: gui.py:2409
 msgid "Invalid Argument Error"
 msgstr "Μη έγκυρο σφάλμα Argument"
 
-#: gui.py:2374
+#: gui.py:2397
 msgid "Monitor Present Error"
 msgstr "Παρακολούθηση σφάλματος παρουσίας"
 
-#: gui.py:2377
+#: gui.py:2400
 msgid "Signal Not Monitored Error"
 msgstr "Σφάλμα μη παρακολουθούμενου σήματος"
 
-#: gui.py:2380
+#: gui.py:2403
 msgid "Monitor On Input Signal Error"
 msgstr "Παρακολούθηση σφάλματος σήματος εισόδου"
 
-#: gui.py:2383
+#: gui.py:2406
 msgid "Device Absent Error"
 msgstr "Απουσία σφάλματος συσκευής"
 
-#: gui.py:2389
+#: gui.py:2412
 msgid "Oscillating Network Error"
 msgstr "Σφάλμα δικτύου που ταλαντώνεται"
 
-#: gui.py:2392
+#: gui.py:2415
 msgid "Cannot Open File Error"
 msgstr "Δεν είναι δυνατό το άνοιγμα του σφάλματος αρχείου"
 
-#: gui.py:2397
-#: gui.py:2403
+#: gui.py:2420
+#: gui.py:2426
 msgid "simulation."
 msgstr "προσομοίωση."
 
-#: gui.py:2398
+#: gui.py:2421
 msgid "Nothing To Undo"
 msgstr "Δεν υπάρχει τίποτα να ανακληθεί"
 
-#: gui.py:2402
+#: gui.py:2425
 msgid "No command left to redo. This is the last state of the "
 msgstr "Δεν έχει απομείνει καμία εντολή για επαναφορά. Αυτή είναι η τελευταία κατάσταση του"
 
-#: gui.py:2404
+#: gui.py:2427
 msgid "Nothing To Redo"
 msgstr "Τίποτα για να επαναλάβω"
 
-#: gui.py:2407
+#: gui.py:2430
 msgid "Nothing to continue. Run first."
 msgstr "Τίποτα δεν θα συνεχιστεί. Εκτελέστε πρώτα."
 
-#: gui.py:2408
+#: gui.py:2431
 msgid "Simulation Not Started"
 msgstr "Η προσομοίωση δεν ξεκίνησε"
 
-#: gui.py:2411
+#: gui.py:2434
 msgid "No network avilable. Load a valid definition file."
 msgstr "Δεν υπάρχει διαθέσιμο δίκτυο. Τοποθετήστε ένα έγκυρο αρχείο ορισμού."
 
-#: gui.py:2412
+#: gui.py:2435
 msgid "No network available"
 msgstr "Δεν υπάρχει διαθέσιμο δίκτυο"
 
-#: gui.py:2416
+#: gui.py:2439
 msgid ""
 "\n"
 "Please check the activity log or the terminal."
@@ -368,11 +356,19 @@ msgstr ""
 "\n"
 "Ελέγξτε το αρχείο καταγραφής δραστηριοτήτων ή το τερματικό."
 
-#: gui.py:2417
+#: gui.py:2440
 msgid "Invalid definition file"
 msgstr "Μη έγκυρο αρχείο ορισμού"
 
-#: gui.py:2420
+#: gui.py:2443
 msgid "Unknown Error"
 msgstr "Αγνωστο σφάλμα"
 
+#~ msgid "&ENGLISH"
+#~ msgstr "&ΑΓΓΛΙΚΑ"
+
+#~ msgid "&GREEK"
+#~ msgstr "&ΕΛΛΗΝΙΚΑ"
+
+#~ msgid "&ABC"
+#~ msgstr "&ABC"

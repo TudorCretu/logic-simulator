@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Implement the graphical user interface for the Logic Simulator.
 
 Used in the Logic Simulator project to enable the user to run the simulation
@@ -1485,7 +1486,7 @@ class Gui(wx.Frame):
         self.ENGLISH_BUTTON_ID = 10001
         self.GREEK_BUTTON_ID = 10002
         LangMenu.Append(self.ENGLISH_BUTTON_ID, "&ENGLISH")
-        LangMenu.Append(self.GREEK_BUTTON_ID, "&ΕΛΛΗΝΙΚΑ")
+        LangMenu.Append(self.GREEK_BUTTON_ID, u"&ΕΛΛΗΝΙΚΑ")
         menuBar.Append(LangMenu, u"&LANGUAGE / Γλώσσα")
         self.SetMenuBar(menuBar)
         
@@ -2241,6 +2242,21 @@ class Gui(wx.Frame):
 
     def log_text(self, text):
         """Handle the logging in activity_log of an event"""
+        
+        if (self.lang_code == "el"):
+            lines = text.split("\n")
+            translated_lines = []
+            for line in lines:
+			
+                words = line.split(" ")
+                for word in words:
+                    word = _(word)
+                    print(word)
+                translated_line = " ".join(words)
+                translated_lines.append(translated_line)
+            text = "\n".join(translated_lines)
+		
+
         text = "".join([datetime.datetime.now().strftime("%H:%M:%S: "), text])
         self.activity_log_text.AppendText(text + '\n')
         self.is_saved = False
@@ -2435,3 +2451,19 @@ class Gui(wx.Frame):
             self.ShowFullScreen(False)
         else:
             event.Skip()
+            
+        string  = u"Lettice name in chinese is Wei Lai"
+        lines = string.split("\n")
+        translated_lines = []
+        for line in lines:
+			
+            words = line.split(" ")
+            for word in words:
+                word = _(word)
+                print(word)
+            translated_line = " ".join(words)
+            translated_lines.append(translated_line)
+        string = "\n".join(translated_lines)
+
+
+

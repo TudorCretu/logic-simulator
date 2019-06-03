@@ -8,7 +8,10 @@ Classes
 Scanner - reads definition file and translates characters into symbols.
 Symbol - encapsulates a symbol and stores its properties.
 """
+import wx
 import sys
+import builtins
+builtins.__dict__['_'] = wx.GetTranslation
 
 
 class Symbol:
@@ -252,7 +255,7 @@ class Scanner:
                 line = line[:-1]
 
         # obtain the first line of the error location information output
-        out1 = 'Line ' + str(line_number) + ': ' + line + '\n'
+        out1 = _("Line ") + str(line_number) + ': ' + line + '\n'
 
         # obtain the second line of the output (here the caret is placed
         # at after an appropriately sized displacement string of spaces

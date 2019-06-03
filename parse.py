@@ -6,13 +6,15 @@ Classes
 -------
 Parser - parses the definition file and builds the logic network.
 """
+import wx
 import sys
+import builtins
+builtins.__dict__['_'] = wx.GetTranslation
 from names import Names
 from scanner import Symbol, Scanner
 from network import Network
 from devices import Device, Devices
 from monitors import Monitors
-import builtins
 import os
 from io import StringIO
 
@@ -97,7 +99,7 @@ class Parser:
                   + "\nParsed successfully! Valid definition file!"
                   + '\033[0m')
             self.error_to_gui.append(
-                "Parsed successfully! Valid definition file!")
+                _("Parsed successfully! Valid definition file!"))
         else:
             print('\033[91m' + "\nFile '%s' contains %d error(s): "
                   % (self.scanner.file.name.split('/')[-1], self.error_count)
