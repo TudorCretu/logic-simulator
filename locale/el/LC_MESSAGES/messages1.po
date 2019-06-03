@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: sr 795\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-06-03 13:36+0100\n"
-"PO-Revision-Date: 2019-06-03 14:27+0100\n"
+"PO-Revision-Date: 2019-06-03 14:09+0100\n"
 "Last-Translator: S. Ravichandran <caldays.r@gmail.com>\n"
 "Language-Team: Greek\n"
 "Language: el\n"
@@ -39,11 +39,11 @@ msgstr "&Αρχείο"
 
 #: gui.py:1460
 msgid "&Undo\tCTRL+Z"
-msgstr "Αναίρεση\tCTRL + Z"
+msgstr "Αναίρεση \ CTRL + Z"
 
 #: gui.py:1461
 msgid "&Redo\tCTRL+SHIFT+Z"
-msgstr "& Επαναφορά \tCTRL + SHIFT + Z"
+msgstr "& Επαναφορά \ tCTRL + SHIFT + Z"
 
 #: gui.py:1462
 msgid "&Edit"
@@ -59,11 +59,11 @@ msgstr "Πραγματικό μέγεθος"
 
 #: gui.py:1468
 msgid "Zoom &In\tCTRL++"
-msgstr "Μεγέθυνση & In\tCTRL ++"
+msgstr "Μεγέθυνση & In \ tCTRL ++"
 
 #: gui.py:1469
 msgid "Zoom &Out\tCTRL+-"
-msgstr "Μεγέθυνση & έξοδος\tCTRL + -"
+msgstr "Μεγέθυνση & έξοδος \ tCTRL + -"
 
 #: gui.py:1470
 msgid "&View"
@@ -152,7 +152,7 @@ msgstr "Επαναφορά προβολής"
 
 #: gui.py:1640
 msgid " To End ->"
-msgstr "Στο τέλος ->"
+msgstr "Στο τέλος"
 
 #: gui.py:1643
 #: gui.py:2043
@@ -197,8 +197,8 @@ msgid ""
 "Created by Team 05\n"
 "2019"
 msgstr ""
-"Λογική Προσομοιωτής \n"
-"Δημιουργήθηκε από την ομάδα05 \n"
+"Λογική Προσομοιωτής\n"
+"Δημιουργήθηκε από την ομάδα05\n"
 "2019"
 
 #: gui.py:1927
@@ -260,119 +260,117 @@ msgstr "Εντολές χρηστών:\n"
 
 #: gui.py:2247
 msgid "r N         - run the simulation for N cycles\n"
-msgstr "r N - τρέξτε τη προσομοίωση για N κύκλους \n"
+msgstr ""
 
 #: gui.py:2248
 msgid "c N         - continue the simulation for N cycles\n"
-msgstr "r N - τρέχει την προσομοίωση για N κύκλους\n"
+msgstr ""
 
 #: gui.py:2249
 msgid "s X N     - set switch X to N (0 or 1)\n"
-msgstr "s X N     - set switch X to N (0 or 1)\n"
+msgstr ""
 
 #: gui.py:2250
 msgid "m X       - set a monitor on signal X\n"
-msgstr "m X - ορίστε μια οθόνη στο σήμα X\n"
+msgstr ""
 
 #: gui.py:2251
 msgid "z X         - zap the monitor on signal X\n"
-msgstr "z X - ενεργοποιήστε την οθόνη στο σήμα X\n"
+msgstr ""
 
 #: gui.py:2252
 msgid "h             - help (this command)\n"
-msgstr "h - βοήθεια (αυτή η εντολή) \n"
+msgstr ""
 
 #: gui.py:2253
 msgid "q            - quit the program"
-msgstr "q - κλείστε το πρόγραμμα"
+msgstr ""
 
 #: gui.py:2254
 msgid "Help on Commands"
-msgstr "Βοήθεια στις εντολές"
+msgstr ""
 
 #: gui.py:2357
 msgid "Quit"
-msgstr "Εγκαταλείπω"
+msgstr ""
 
 #: gui.py:2368
 msgid "Invalid Command Error"
-msgstr "Μη έγκυρο σφάλμα εντολών"
+msgstr ""
 
 #: gui.py:2371
 #: gui.py:2386
 msgid "Invalid Argument Error"
-msgstr "Μη έγκυρο σφάλμα Argument"
+msgstr ""
 
 #: gui.py:2374
 msgid "Monitor Present Error"
-msgstr "Παρακολούθηση σφάλματος παρουσίας"
+msgstr ""
 
 #: gui.py:2377
 msgid "Signal Not Monitored Error"
-msgstr "Σφάλμα μη παρακολουθούμενου σήματος"
+msgstr ""
 
 #: gui.py:2380
 msgid "Monitor On Input Signal Error"
-msgstr "Παρακολούθηση σφάλματος σήματος εισόδου"
+msgstr ""
 
 #: gui.py:2383
 msgid "Device Absent Error"
-msgstr "Απουσία σφάλματος συσκευής"
+msgstr ""
 
 #: gui.py:2389
 msgid "Oscillating Network Error"
-msgstr "Σφάλμα δικτύου που ταλαντώνεται"
+msgstr ""
 
 #: gui.py:2392
 msgid "Cannot Open File Error"
-msgstr "Δεν είναι δυνατό το άνοιγμα του σφάλματος αρχείου"
+msgstr ""
 
 #: gui.py:2397
 #: gui.py:2403
 msgid "simulation."
-msgstr "προσομοίωση."
+msgstr ""
 
 #: gui.py:2398
 msgid "Nothing To Undo"
-msgstr "Δεν υπάρχει τίποτα να ανακληθεί"
+msgstr ""
 
 #: gui.py:2402
 msgid "No command left to redo. This is the last state of the "
-msgstr "Δεν έχει απομείνει καμία εντολή για επαναφορά. Αυτή είναι η τελευταία κατάσταση του"
+msgstr ""
 
 #: gui.py:2404
 msgid "Nothing To Redo"
-msgstr "Τίποτα για να επαναλάβω"
+msgstr ""
 
 #: gui.py:2407
 msgid "Nothing to continue. Run first."
-msgstr "Τίποτα δεν θα συνεχιστεί. Εκτελέστε πρώτα."
+msgstr ""
 
 #: gui.py:2408
 msgid "Simulation Not Started"
-msgstr "Η προσομοίωση δεν ξεκίνησε"
+msgstr ""
 
 #: gui.py:2411
 msgid "No network avilable. Load a valid definition file."
-msgstr "Δεν υπάρχει διαθέσιμο δίκτυο. Τοποθετήστε ένα έγκυρο αρχείο ορισμού."
+msgstr ""
 
 #: gui.py:2412
 msgid "No network available"
-msgstr "Δεν υπάρχει διαθέσιμο δίκτυο"
+msgstr ""
 
 #: gui.py:2416
 msgid ""
 "\n"
 "Please check the activity log or the terminal."
 msgstr ""
-"\n"
-"Ελέγξτε το αρχείο καταγραφής δραστηριοτήτων ή το τερματικό."
 
 #: gui.py:2417
 msgid "Invalid definition file"
-msgstr "Μη έγκυρο αρχείο ορισμού"
+msgstr ""
 
 #: gui.py:2420
 msgid "Unknown Error"
-msgstr "Αγνωστο σφάλμα"
+msgstr ""
 

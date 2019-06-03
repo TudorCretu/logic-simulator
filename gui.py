@@ -1482,9 +1482,9 @@ class Gui(wx.Frame):
         menuBar.Append(helpMenu, _("&Help"))
 
         LangMenu = wx.Menu()
-        LangMenu.Append(10001, _("&ENGLISH"))
-        LangMenu.Append(10002, _("&GREEK"))
-        menuBar.Append(LangMenu, _("&ABC"))
+        LangMenu.Append(10001, "&ENGLISH")
+        LangMenu.Append(10002, "&ΕΛΛΗΝΙΚΑ")
+        menuBar.Append(LangMenu, "&ABC")
         self.SetMenuBar(menuBar)
         
 
@@ -1905,7 +1905,7 @@ class Gui(wx.Frame):
             self.Close(True)
 			
         if Id == 10002:
-            new_gui = Gui("Logic Simulator", None, self.names, self.devices, self.network, monitors,"de")
+            new_gui = Gui("Logic Simulator", None, self.names, self.devices, self.network, self.monitors,"el")
             new_gui.Show(True)
             self.Close(True)
 			
