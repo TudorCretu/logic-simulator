@@ -47,12 +47,14 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
 
     draw_monitored_signals(self): Handles monitors records drawing operations.
 
-    draw_signal(self, device_id, output_id, monitor_number): Handles each monitor record drawing operations
+    draw_signal(self, device_id, output_id, monitor_number): Handles each
+    monitor record drawing operations
 
-    render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1), thickness=1.0): Handle line drawing operations.
+    render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1),
+    thickness=1.0): Handle line drawing operations.
 
-    render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color=(0, 0, 1)): Handle transparent
-                                                                                        rectangle drawing operations.
+    render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right,
+    y_top_right, color=(0, 0, 1)): Handle transparent rectangle drawing.
 
     render_text(self, text, x_pos, y_pos): Handles text drawing operations.
 
@@ -70,9 +72,11 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
 
     pan_to_right_end(self, scroll_x): Pans to the right of the signals.
 
-    update_cycle_axis_layout(self): Handle changes in monitors or cycles counter.
+    update_cycle_axis_layout(self): Handle changes in monitors or cycles
+    counter.
 
-    text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18): Return the length of the text in pts.
+    text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18): Return the
+    length of the text in pts.
 
     rgb_to_gl(self, r, g, b): Converse an 8bit RGB colour to OpenGL format
     """
@@ -125,9 +129,9 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         # 25pt after the longest monitor name
         margin = self.monitors.get_margin()
         if margin is None:
-            longest_monitor = int(len("Cycles")*12/18)
+            longest_monitor = int(len("Cycles") * 12 / 18)
         else:
-            longest_monitor = max(int(len("Cycles")*12/18), margin)
+            longest_monitor = max(int(len("Cycles") * 12 / 18), margin)
         self.cycle_start_x = 25 + self.text_width("0") * longest_monitor
         self.cycle_axis_y = 0
         self.cycle_axis_y_padding = -7
@@ -160,9 +164,11 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         self.olive_light = self.rgb_to_gl(205, 204, 93)
         self.cyan_light = self.rgb_to_gl(109, 204, 218)
         self.gray_light = self.rgb_to_gl(162, 162, 162)
-        self.color_cycle_light = [self.blue_light, self.orange_light, self.green_light,
-                                  self.red_light, self.purple_light, self.brown_light,
-                                  self.pink_light, self.olive_light, self.cyan_light]
+        self.color_cycle_light = [self.blue_light, self.orange_light,
+                                  self.green_light, self.red_light,
+                                  self.purple_light, self.brown_light,
+                                  self.pink_light, self.olive_light,
+                                  self.cyan_light]
 
         # Line thicknesses
         self.thin_line = 1
@@ -245,82 +251,104 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
 
         if event.GetWheelRotation() > 0:  # zoom in
             if self.zoom < self.zoom_max:
-                self.zoom /= (1.0 - (event.GetWheelRotation() / (40 * event.GetWheelDelta())))
+                self.zoom /= (1.0 - (event.GetWheelRotation() /
+                                     (40 * event.GetWheelDelta())))
                 self.zoom = min(self.zoom, self.zoom_max)
             else:
                 self.zoom = self.zoom_max
             self.init = False
-            self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+            self.gui.zoom_slider.SetValue(self.zoom * self.gui.zoom_resolution)
 
         if event.GetWheelRotation() < 0:  # zoom out
             if self.zoom > self.zoom_min:
-                self.zoom /= (1.0 - (event.GetWheelRotation() / (40 * event.GetWheelDelta())))
+                self.zoom /= (1.0 - (event.GetWheelRotation() /
+                                     (40 * event.GetWheelDelta())))
                 self.zoom = max(self.zoom, self.zoom_min)
             else:
                 self.zoom = self.zoom_min
             self.init = False
-            self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+            self.gui.zoom_slider.SetValue(self.zoom * self.gui.zoom_resolution)
 
         self.render()  # triggers the paint event
 
     def draw_monitors_names(self):
         """Handle monitor names drawing operations."""
-        pan_offset = (self.pan_y - self.display_height)/self.zoom
+        pan_offset = (self.pan_y - self.display_height) / self.zoom
 
         # Draw background
-        self.render_rectangle(-self.pan_x/self.zoom,
+        self.render_rectangle(-self.pan_x / self.zoom,
                               self.cycle_axis_y - pan_offset,
-                              self.cycle_start_x - self.pan_x/self.zoom,
-                              self.cycle_axis_y - self.monitor_height * (1+len(self.monitors.monitors_dictionary)), color=self.white,
+                              self.cycle_start_x - self.pan_x / self.zoom,
+                              self.cycle_axis_y - self.monitor_height *
+                              (1 + len(self.monitors.monitors_dictionary)),
+                              color=self.white,
                               alpha=1.0)
 
         # Draw monitor names text
-        for monitor_number, (device_id, output_id) in enumerate(self.monitors.monitors_dictionary):
-            self.render_text(self.devices.get_signal_name(device_id, output_id),
-                             -self.pan_x/self.zoom + 3/self.zoom, self.cycle_axis_y - self.monitor_height * (0.7+monitor_number))
+        for monitor_number, (device_id, output_id) in enumerate(
+                self.monitors.monitors_dictionary):
+            self.render_text(self.devices.get_signal_name(device_id,
+                                                          output_id),
+                             -self.pan_x / self.zoom + 3 / self.zoom,
+                             self.cycle_axis_y - self.monitor_height *
+                             (0.7 + monitor_number))
 
         # Draw title
         self.render_rectangle(-self.pan_x / self.zoom,
                               self.cycle_axis_y - pan_offset,
                               self.cycle_start_x - self.pan_x / self.zoom,
-                              self.cycle_axis_y - pan_offset - self.monitor_height/2,
+                              self.cycle_axis_y - pan_offset -
+                              self.monitor_height / 2,
                               color=self.white, alpha=1.0)
         self.render_text("Count", (-self.pan_x + 5) / self.zoom,
-                         self.cycle_axis_y - self.cycle_axis_y_padding / 2 / self.zoom - pan_offset - 18 / self.zoom,
-                         color=self.gray, font=GLUT.GLUT_BITMAP_HELVETICA_12)
+                         self.cycle_axis_y -
+                         self.cycle_axis_y_padding / 2 / self.zoom -
+                         pan_offset - 18 / self.zoom, color=self.gray,
+                         font=GLUT.GLUT_BITMAP_HELVETICA_12)
 
         return
 
     def draw_cycles_axis(self):
         """Handle cycles count axis drawing operations."""
         char_width = self.text_width(str(0))
-        pan_offset = (self.pan_y + 18 - self.display_height)/self.zoom
+        pan_offset = (self.pan_y + 18 - self.display_height) / self.zoom
 
         # Draw background
-        self.render_rectangle(0, self.cycle_axis_y - pan_offset, self.cycle_start_x + self.cycle_width * (self.completed_cycles+1), 30, color=self.white, alpha=1.0)
+        self.render_rectangle(0, self.cycle_axis_y - pan_offset,
+                              self.cycle_start_x + self.cycle_width * (
+                                  self.completed_cycles + 1), 30,
+                              color=self.white,
+                              alpha=1.0)
 
         # Draw numbers
-        for i in range(0, self.completed_cycles + 1, self.clock_display_frequency):
+        for i in range(0, self.completed_cycles + 1,
+                       self.clock_display_frequency):
             self.render_text(str(i), self.cycle_start_x + i * self.cycle_width,
-                             self.cycle_axis_y - self.cycle_axis_y_padding/self.zoom - pan_offset,
-                             color=self.gray, font=GLUT.GLUT_BITMAP_HELVETICA_12)
+                             self.cycle_axis_y - self.cycle_axis_y_padding /
+                             self.zoom - pan_offset, color=self.gray,
+                             font=GLUT.GLUT_BITMAP_HELVETICA_12)
 
         # Draw the horizontal axis
-        GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
+        GL.glPushAttrib(GL.GL_ENABLE_BIT)
         cycle_axis_x_offset = 15
         GL.glLineWidth(1.0)
         GL.glColor4f(*self.gray_light, 0.6)
-        for i in range(1, self.completed_cycles + 1, self.clock_display_frequency):
+        for i in range(1, self.completed_cycles + 1,
+                       self.clock_display_frequency):
             GL.glBegin(GL.GL_LINES)
-            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i-1/2)+char_width/2,
-                          self.cycle_axis_y - pan_offset)
-            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i+1/2)-char_width/2,
-                          self.cycle_axis_y - pan_offset)
+            GL.glVertex2f(
+                self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (
+                    i - 1 / 2) + char_width / 2,
+                self.cycle_axis_y - pan_offset)
+            GL.glVertex2f(
+                self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (
+                    i + 1 / 2) - char_width / 2,
+                self.cycle_axis_y - pan_offset)
             GL.glEnd()
         GL.glPopAttrib()
 
         # Draw the Vertical axis
-        GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
+        GL.glPushAttrib(GL.GL_ENABLE_BIT)
         cycle_axis_x_offset = 15
         GL.glLineStipple(2, 0x000F)
         GL.glLineWidth(1.0)
@@ -328,43 +356,53 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         GL.glEnable(GL.GL_LINE_STIPPLE)
         for i in range(0, self.completed_cycles, self.clock_display_frequency):
             GL.glBegin(GL.GL_LINES)
-            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i + 1 / 2),
-                          self.cycle_axis_y - pan_offset)
-            GL.glVertex2f(self.cycle_start_x - cycle_axis_x_offset + self.cycle_width * (i + 1 / 2),
-                          self.cycle_axis_y - self.monitor_height * self.monitors_number)
+            GL.glVertex2f(
+                self.cycle_start_x - cycle_axis_x_offset +
+                self.cycle_width * (i + 1 / 2),
+                self.cycle_axis_y - pan_offset)
+            GL.glVertex2f(
+                self.cycle_start_x - cycle_axis_x_offset +
+                self.cycle_width * (i + 1 / 2),
+                self.cycle_axis_y - self.monitor_height * self.monitors_number)
             GL.glEnd()
         GL.glPopAttrib()
         return
 
     def draw_monitored_signals(self):
         """Handle monitors output drawing operations."""
-        for monitor_number, (device_id, output_id) in enumerate(self.monitors.monitors_dictionary):
+        for monitor_number, (device_id, output_id) in enumerate(
+                self.monitors.monitors_dictionary):
             self.draw_signal(device_id, output_id, monitor_number)
 
     def draw_signal(self, device_id, output_id, monitor_number):
         """Handle each monitor output drawing operations."""
         signal_list = self.monitors.monitors_dictionary[(device_id, output_id)]
-        monitors_start_x = self.cycle_start_x + self.text_width(str(0))/2
+        monitors_start_x = self.cycle_start_x + self.text_width(str(0)) / 2
         x_0 = monitors_start_x
-        y_0 = -self.monitor_height * monitor_number + self.cycle_axis_y - self.monitor_height
+        y_0 = -self.monitor_height * monitor_number + self.cycle_axis_y - \
+            self.monitor_height
         y_low = y_0 + self.monitors_padding
         y_high = y_0 + self.monitor_height - self.monitors_padding
 
         color = self.color_cycle[monitor_number % len(self.color_cycle)]
-        color_light = self.color_cycle_light[monitor_number % len(self.color_cycle_light)]
+        color_light = self.color_cycle_light[monitor_number % len(
+            self.color_cycle_light)]
         signal_thickness = 2
 
         # Draw thin black horizontal delimiter between monitors
         self.render_line(monitors_start_x, y_0,
-                         monitors_start_x + self.cycle_width * self.completed_cycles, y_0,
+                         monitors_start_x + self.cycle_width *
+                         self.completed_cycles, y_0,
                          self.black, self.thin_line)
 
         # Draw thin gray LOW and HIGH
         self.render_line(monitors_start_x, y_low,
-                         monitors_start_x + self.cycle_width * self.completed_cycles, y_low,
+                         monitors_start_x + self.cycle_width *
+                         self.completed_cycles, y_low,
                          self.gray, self.thin_line)
         self.render_line(monitors_start_x, y_high,
-                         monitors_start_x + self.cycle_width * self.completed_cycles, y_high,
+                         monitors_start_x + self.cycle_width *
+                         self.completed_cycles, y_high,
                          self.gray, self.thin_line)
 
         # Draw signals
@@ -372,28 +410,36 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         for signal in signal_list:
             if signal == self.devices.HIGH:
                 # Draw light shading
-                self.render_rectangle(x_0, y_low, x_0 + self.cycle_width, y_high, color_light)
+                self.render_rectangle(
+                    x_0, y_low, x_0 + self.cycle_width, y_high, color_light)
 
                 # Draw horizontal HIGH line
-                self.render_line(x_0, y_high, x_0 + self.cycle_width, y_high, color, signal_thickness)
+                self.render_line(x_0, y_high, x_0 + self.cycle_width, y_high,
+                                 color,
+                                 signal_thickness)
                 if prev_signal == self.devices.LOW:
                     # Draw a rising edge
-                    self.render_line(x_0, y_low, x_0, y_high, color, signal_thickness)
+                    self.render_line(x_0, y_low, x_0, y_high,
+                                     color, signal_thickness)
 
                 x_0 += self.cycle_width
                 # print("-", end="")
             elif signal == self.devices.LOW:
-                self.render_line(x_0, y_low, x_0 + self.cycle_width, y_low, color, signal_thickness)
+                self.render_line(x_0, y_low, x_0 + self.cycle_width, y_low,
+                                 color, signal_thickness)
                 if prev_signal == self.devices.HIGH:
                     # Draw a falling edge
-                    self.render_line(x_0, y_high, x_0, y_low, color, signal_thickness)
+                    self.render_line(x_0, y_high, x_0, y_low,
+                                     color, signal_thickness)
                 x_0 += self.cycle_width
                 # print("_", end="")
             elif signal == self.devices.RISING:
-                self.render_line(x_0, y_low, x_0, y_high, color, signal_thickness)
+                self.render_line(x_0, y_low, x_0, y_high,
+                                 color, signal_thickness)
                 # print("/", end="")
             elif signal == self.devices.FALLING:
-                self.render_line(x_0, y_high, x_0, y_low, color, signal_thickness)
+                self.render_line(x_0, y_high, x_0, y_low,
+                                 color, signal_thickness)
                 # print("\\", end="")
             elif signal == self.devices.BLANK:
                 x_0 += self.cycle_width
@@ -401,9 +447,11 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
             prev_signal = signal
         # print("\n", end="")
 
-    def render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1), thickness=1.0):
+    def render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1),
+                    thickness=1.0):
         """Handle line drawing operations."""
-        GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
+        GL.glPushAttrib(
+            GL.GL_ENABLE_BIT)
         GL.glColor3f(*color)
         GL.glLineWidth(thickness)
         GL.glBegin(GL.GL_LINE_STRIP)
@@ -412,10 +460,14 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         GL.glEnd()
         GL.glPopAttrib()
 
-    def render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color=(0, 0, 1), alpha=0.75):
+    def render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right,
+                         y_top_right,
+                         color=(0, 0, 1), alpha=0.75):
         """Handle transparent rectangle drawing operations."""
-        GL.glPushAttrib(GL.GL_ENABLE_BIT)  # glPushAttrib is done to return everything to normal after drawing
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)  # enables transparency
+        GL.glPushAttrib(
+            GL.GL_ENABLE_BIT)
+        # enables transparency
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
         GL.glEnable(GL.GL_BLEND)
         GL.glColor4f(*color, alpha)  # slightly transparent with alpha 0.75
         GL.glBegin(GL.GL_TRIANGLES)  # a rectangle made of 2 triangles
@@ -428,7 +480,8 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         GL.glEnd()
         GL.glPopAttrib()
 
-    def render_text(self, text, x_pos, y_pos, color=(0, 0, 0), font=GLUT.GLUT_BITMAP_HELVETICA_18):
+    def render_text(self, text, x_pos, y_pos, color=(0, 0, 0),
+                    font=GLUT.GLUT_BITMAP_HELVETICA_18):
         """Handle text drawing operations."""
         GL.glColor3f(*color)
         GL.glRasterPos2f(x_pos, y_pos)
@@ -445,7 +498,7 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         self.zoom *= 1.25
         self.zoom = min(self.zoom, self.zoom_max)
         self.init = False
-        self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+        self.gui.zoom_slider.SetValue(self.zoom * self.gui.zoom_resolution)
         self.render()
 
     def zoom_out(self):
@@ -454,7 +507,7 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         self.zoom /= 1.25
         self.zoom = max(self.zoom, self.zoom_min)
         self.init = False
-        self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+        self.gui.zoom_slider.SetValue(self.zoom * self.gui.zoom_resolution)
         self.render()
 
     def set_zoom(self, zoom):
@@ -464,7 +517,7 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         self.zoom = min(self.zoom, self.zoom_max)
         self.zoom = max(self.zoom, self.zoom_min)
         self.init = False
-        self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+        self.gui.zoom_slider.SetValue(self.zoom * self.gui.zoom_resolution)
         self.render()
 
     def set_pan_x(self, scroll_x):
@@ -497,7 +550,8 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
     def pan_to_right_end(self):
         """Pan to the right of the signals"""
 
-        x_at_end_of_signal = self.pan_x + self.zoom * (self.cycle_start_x + self.completed_cycles * self.cycle_width)
+        x_at_end_of_signal = self.pan_x + self.zoom * (
+            self.cycle_start_x + self.completed_cycles * self.cycle_width)
         self.pan_x -= x_at_end_of_signal - self.GetClientSize().width + 50
         if self.pan_x > 0:
             self.pan_x = 0
@@ -509,12 +563,15 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         self.monitors_number = len(self.monitors.monitors_dictionary)
         margin = self.monitors.get_margin()
         if margin is None:
-            longest_monitor = int(len("Cycles")*12/18)
+            longest_monitor = int(len("Cycles") * 12 / 18)
         else:
-            longest_monitor = max(int(len("Cycles")*12/18), margin)
-        self.cycle_start_x = (25 + self.text_width("0") * longest_monitor) / self.zoom
-        self.width = (self.cycle_start_x + self.completed_cycles*self.cycle_width + 30) * self.zoom
-        self.height = ((self.monitors_number+1) * self.monitor_height + 30) * self.zoom
+            longest_monitor = max(int(len("Cycles") * 12 / 18), margin)
+        self.cycle_start_x = (25 + self.text_width("0")
+                              * longest_monitor) / self.zoom
+        self.width = (self.cycle_start_x + self.completed_cycles *
+                      self.cycle_width + 30) * self.zoom
+        self.height = ((self.monitors_number + 1) *
+                       self.monitor_height + 30) * self.zoom
         size = self.GetClientSize()
         self.display_width = size.width
         self.display_height = size.height
@@ -536,7 +593,7 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
 
         Return a list of the RGB float values.
         """
-        return [c/256 for c in (r, g, b)]
+        return [c / 256 for c in (r, g, b)]
 
 
 class My3DGLCanvas(wxcanvas.GLCanvas):
@@ -569,12 +626,15 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
 
     draw_monitored_signals(self): Handles monitors records drawing operations.
 
-    draw_signal(self, device_id, output_id, monitor_number): Handles each monitor record drawing operations
+    draw_signal(self, device_id, output_id, monitor_number): Handles each
+    monitor record drawing operations
 
-    render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1), thickness=1.0): Handle line drawing operations.
+    render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1),
+    thickness=1.0): Handle line drawing operations.
 
-    render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right, y_top_right, color=(0, 0, 1)): Handle transparent
-                                                                                        rectangle drawing operations.
+    render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right,
+    y_top_right, color=(0, 0, 1)): Handle transparent rectangle drawing
+    operations.
 
     render_text(self, text, x_pos, y_pos): Handles text drawing operations.
 
@@ -592,9 +652,11 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
 
     pan_to_right_end(self, scroll_x): Pans to the right of the signals.
 
-    update_cycle_axis_layout(self): Handle changes in monitors or cycles counter.
+    update_cycle_axis_layout(self): Handle changes in monitors or cycles
+    counter.
 
-    text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18): Return the length of the text in pts.
+    text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18): Return the
+    length of the text in pts.
 
     rgb_to_gl(self, r, g, b): Converse an 8bit RGB colour to OpenGL format
     """
@@ -631,7 +693,11 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         self.last_mouse_y = 0  # previous mouse y position
 
         # Initialise the scene rotation matrix
-        self.scene_rotate = np.identity(4, 'f')
+        self.default_rotate = np.array([[0, 0, 1, 0],
+                               [0, -1, 0, 0],
+                               [1, 0, 0, 0],
+                               [0, 0, 0, 1]], 'f')
+        self.scene_rotate = self.default_rotate
 
         # Initialise variables for zooming
         self.zoom = 1
@@ -674,9 +740,9 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         # 25pt after the longest monitor name
         margin = self.monitors.get_margin()
         if margin is None:
-            longest_monitor = int(len("Cycles")*12/18)
+            longest_monitor = int(len("Cycles") * 12 / 18)
         else:
-            longest_monitor = max(int(len("Cycles")*12/18), margin)
+            longest_monitor = max(int(len("Cycles") * 12 / 18), margin)
         self.cycle_start_x = 25 + self.text_width("0") * longest_monitor
         self.cycle_axis_y = 0
         self.cycle_axis_y_padding = -7
@@ -709,9 +775,12 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         self.olive_light = self.rgb_to_gl(205, 204, 93)
         self.cyan_light = self.rgb_to_gl(109, 204, 218)
         self.gray_light = self.rgb_to_gl(162, 162, 162)
-        self.color_cycle_light = [self.blue_light, self.orange_light, self.green_light,
-                                  self.red_light, self.purple_light, self.brown_light,
-                                  self.pink_light, self.olive_light, self.cyan_light]
+        self.color_cycle_light = [self.blue_light, self.orange_light,
+                                  self.green_light,
+                                  self.red_light, self.purple_light,
+                                  self.brown_light,
+                                  self.pink_light, self.olive_light,
+                                  self.cyan_light]
 
         # Line thicknesses
         self.thin_line = 1
@@ -797,7 +866,8 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
 
     def draw_monitored_signals(self):
         """Handle monitors output drawing operations."""
-        for monitor_number, (device_id, output_id) in enumerate(self.monitors.monitors_dictionary):
+        for monitor_number, (device_id, output_id) in enumerate(
+                self.monitors.monitors_dictionary):
             self.draw_signal(device_id, output_id, monitor_number)
 
     def draw_signal(self, device_id, output_id, monitor_number):
@@ -805,14 +875,17 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         signal_list = self.monitors.monitors_dictionary[(device_id, output_id)]
         monitors_start_x = self.cycle_start_x + self.text_width(str(0)) / 2
         x_0 = monitors_start_x - self.cycle_width * self.completed_cycles / 2
-        y_0 = self.monitor_width * (monitor_number+1-len(self.monitors.monitors_dictionary)/2)
+        y_0 = self.monitor_width * (
+            monitor_number + 1 - len(
+                self.monitors.monitors_dictionary) / 2)
         z_low = -6
         z_high = z_low + self.signal_height
         y_start = y_0 + self.monitors_padding
         y_end = y_0 + self.monitor_width - self.monitors_padding
 
         color = self.color_cycle[monitor_number % len(self.color_cycle)]
-        color_light = self.color_cycle_light[monitor_number % len(self.color_cycle_light)]
+        color_light = self.color_cycle_light[monitor_number % len(
+            self.color_cycle_light)]
         signal_thickness = 8
         alpha = 0.6
 
@@ -821,29 +894,45 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         for signal in signal_list:
             if signal == self.devices.HIGH:
                 # Draw light shading
-                self.render_cuboid(x_0, y_start, z_low, x_0 + self.cycle_width, y_end, z_high, color_light, alpha)
+                self.render_cuboid(x_0, y_start, z_low, x_0 + self.cycle_width,
+                                   y_end, z_high,
+                                   color_light, alpha)
 
                 # Draw horizontal HIGH line
-                self.render_cuboid(x_0, y_start, z_high, x_0 + self.cycle_width, y_end, z_high+signal_thickness, color)
+                self.render_cuboid(x_0, y_start, z_high,
+                                   x_0 + self.cycle_width, y_end,
+                                   z_high + signal_thickness, color)
                 if prev_signal == self.devices.LOW:
                     # Draw a rising edge
-                    self.render_cuboid(x_0, y_start, z_low, x_0+signal_thickness, y_end, z_high, color)
+                    self.render_cuboid(x_0, y_start, z_low + signal_thickness,
+                                       x_0 + signal_thickness, y_end, z_high,
+                                       color)
                     pass
                 x_0 += self.cycle_width
                 # print("-", end="")
             elif signal == self.devices.LOW:
-                self.render_cuboid(x_0, y_start, z_low, x_0 + self.cycle_width, y_end, z_low + signal_thickness, color_light)
+                self.render_cuboid(x_0, y_start, z_low, x_0 + self.cycle_width,
+                                   y_end,
+                                   z_low + signal_thickness, color_light)
                 if prev_signal == self.devices.HIGH:
                     # Draw a falling edge
-                    self.render_cuboid(x_0, y_start, z_high+signal_thickness, x_0+signal_thickness, y_end, z_low, color)
+                    self.render_cuboid(x_0 - signal_thickness, y_start,
+                                       z_low + signal_thickness,
+                                       x_0, y_end, z_high + signal_thickness,
+                                       color)
                     pass
                 x_0 += self.cycle_width
                 # print("_", end="")
             elif signal == self.devices.RISING:
-                self.render_cuboid(x_0, y_start, x_0, y_end, color, signal_thickness)
+                self.render_cuboid(x_0, y_start, z_low + signal_thickness,
+                                   x_0 + signal_thickness, y_end, z_high,
+                                   color)
                 # print("/", end="")
             elif signal == self.devices.FALLING:
-                self.render_cuboid(x_0, y_end, x_0, y_start, color, signal_thickness)
+                self.render_cuboid(x_0 - signal_thickness, y_start,
+                                   z_low + signal_thickness,
+                                   x_0, y_end,
+                                   z_high + signal_thickness, color)
                 # print("\\", end="")
             elif signal == self.devices.BLANK:
                 x_0 += self.cycle_width
@@ -851,24 +940,13 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
             prev_signal = signal
         # print("\n", end="")
 
-    def render_cuboid(self, z_start, y_start, x_start, z_end, y_end, x_end, color, alpha=1.0):
+    def render_cuboid(self, z_start, y_start, x_start, z_end, y_end, x_end,
+                      color, alpha=1.0):
         """Draw a cuboid.
 
         Draw a cuboid at the specified position, with the specified
         dimensions.
         """
-        if x_start>x_end:
-            tmp = x_end
-            x_end = x_start
-            x_start = tmp
-        if y_start>y_end:
-            tmp = y_end
-            y_end = y_start
-            y_start = tmp
-        if z_start > z_end:
-            tmp = z_end
-            z_end = z_start
-            z_start = tmp
         GL.glPushAttrib(GL.GL_ENABLE_BIT)
         GL.glColor4f(*color, alpha)
         GL.glBegin(GL.GL_QUADS)
@@ -906,14 +984,98 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         GL.glPopAttrib()
 
     def draw_cycles_axis(self):
-        
-        pass
+        """Handle cycles count axis drawing operations."""
+        char_width = self.text_width(str(0))
+        if self.completed_cycles == 0:
+            return
+        # Draw numbers
+        for i in range(0, self.completed_cycles + 1,
+                       self.clock_display_frequency):
+            self.render_text(str(i), self.cycle_start_x + (
+                i - self.completed_cycles / 2) * self.cycle_width,
+                self.monitor_width *
+                (len(self.monitors.monitors_dictionary) / 2 + 1),
+                0, font=GLUT.GLUT_BITMAP_HELVETICA_12)
+
+        for i in range(0, self.completed_cycles + 1,
+                       self.clock_display_frequency):
+            self.render_text(str(i), self.cycle_start_x + (
+                i - self.completed_cycles / 2) * self.cycle_width,
+                -self.monitor_width *
+                (len(self.monitors.monitors_dictionary) / 2 - 1),
+                0, font=GLUT.GLUT_BITMAP_HELVETICA_12)
+
+        # Draw the horizontal axis
+        GL.glPushAttrib(
+            GL.GL_ENABLE_BIT)
+        cycle_axis_x_offset = 15
+        GL.glLineWidth(3.0)
+        GL.glColor4f(*self.white, 0.6)
+        for i in np.linspace(-self.completed_cycles / 2 + 0.5,
+                             self.completed_cycles / 2 - 0.5,
+                             self.completed_cycles):
+            GL.glBegin(GL.GL_LINES)
+            GL.glVertex3f(0,
+                          self.monitor_width *
+                          (len(self.monitors.monitors_dictionary) / 2 + 1),
+                          self.cycle_start_x - cycle_axis_x_offset / 2 +
+                          self.cycle_width * (i - 1 / 2) + char_width / 2)
+            GL.glVertex3f(0,
+                          self.monitor_width *
+                          (len(self.monitors.monitors_dictionary) / 2 + 1),
+                          self.cycle_start_x - cycle_axis_x_offset / 2 +
+                          self.cycle_width * (i + 1 / 2) - char_width / 2)
+            GL.glEnd()
+            GL.glBegin(GL.GL_LINES)
+            GL.glVertex3f(0,
+                          -self.monitor_width *
+                          (len(self.monitors.monitors_dictionary) / 2 - 1),
+                          self.cycle_start_x - cycle_axis_x_offset / 2 +
+                          self.cycle_width * (i - 1 / 2) + char_width / 2)
+            GL.glVertex3f(0,
+                          -self.monitor_width *
+                          (len(self.monitors.monitors_dictionary) / 2 - 1),
+                          self.cycle_start_x - cycle_axis_x_offset / 2 +
+                          self.cycle_width * (i + 1 / 2) - char_width / 2)
+            GL.glEnd()
+        GL.glPopAttrib()
+
+        # # Draw the Vertical axis
+        GL.glPushAttrib(
+            GL.GL_ENABLE_BIT)
+        cycle_axis_x_offset = 15
+        GL.glLineStipple(2, 0x000F)
+        GL.glLineWidth(3.0)
+        GL.glColor4f(*self.white, 0.6)
+        GL.glEnable(GL.GL_LINE_STIPPLE)
+        for i in np.linspace(-self.completed_cycles / 2 - 0.5,
+                             self.completed_cycles / 2 - 0.5,
+                             self.completed_cycles + 1):
+            GL.glBegin(GL.GL_LINES)
+            GL.glVertex3f(0,
+                          -self.monitor_width *
+                          (len(self.monitors.monitors_dictionary) / 2 - 1),
+                          self.cycle_start_x - cycle_axis_x_offset / 2 +
+                          self.cycle_width * (i + 1 / 2))
+            GL.glVertex3f(0,
+                          self.monitor_width *
+                          (len(self.monitors.monitors_dictionary) / 2 + 1),
+                          self.cycle_start_x - cycle_axis_x_offset +
+                          self.cycle_width * (i + 1 / 2))
+            GL.glEnd()
+        GL.glPopAttrib()
+        # return
 
     def draw_monitors_names(self):
-        for monitor_number, (device_id, output_id) in enumerate(self.monitors.monitors_dictionary):
-            self.render_text(self.devices.get_signal_name(device_id, output_id),
-                             -self.pan_x/self.zoom + 3/self.zoom, self.cycle_axis_y - self.monitor_width * (monitor_number - 0.5 - len(self.monitors.monitors_dictionary)/2), self.signal_height + 5 + self.cycle_start_x)
-        pass
+        for monitor_number, (device_id, output_id) in enumerate(
+                self.monitors.monitors_dictionary):
+            self.render_text(
+                self.devices.get_signal_name(device_id, output_id),
+                -self.pan_x / self.zoom + 3 / self.zoom,
+                self.cycle_axis_y - self.monitor_width * (
+                    monitor_number - 0.5 - len(
+                        self.monitors.monitors_dictionary) / 2),
+                self.signal_height + 5 + self.cycle_start_x)
 
     def on_paint(self, event):
         """Handle the paint event."""
@@ -954,24 +1116,27 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
                 if event.MiddleIsDown():
                     GL.glRotatef((x + y), 0, 0, 1)
                 if event.RightIsDown():
-                    self.pan_x += x
-                    self.pan_y -= y
+                    self.pan_x += x * self.zoom
+                    self.pan_y -= y * self.zoom
                 GL.glMultMatrixf(self.scene_rotate)
-                GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate)
+                print(
+                    GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate))
+
                 self.last_mouse_x = event.GetX()
                 self.last_mouse_y = event.GetY()
                 self.init = False
             else:
                 # if CTRL is pushed, pan
-                self.pan_x += (event.GetX() - self.last_mouse_x)*self.zoom
-                self.pan_y -= (event.GetY() - self.last_mouse_y)*self.zoom
+                self.pan_x += (event.GetX() - self.last_mouse_x) * self.zoom
+                self.pan_y -= (event.GetY() - self.last_mouse_y) * self.zoom
                 self.last_mouse_x = event.GetX()
                 self.last_mouse_y = event.GetY()
                 self.init = False
 
         if event.GetWheelRotation() > 0:  # zoom in
             if self.zoom < self.zoom_max:
-                self.zoom /= (1.0 - (event.GetWheelRotation() / (40 * event.GetWheelDelta())))
+                self.zoom /= (1.0 - (event.GetWheelRotation() /
+                                     (40 * event.GetWheelDelta())))
                 self.zoom = min(self.zoom, self.zoom_max)
             else:
                 self.zoom = self.zoom_max
@@ -980,16 +1145,21 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
 
         if event.GetWheelRotation() < 0:  # zoom out
             if self.zoom > self.zoom_min:
-                self.zoom /= (1.0 - (event.GetWheelRotation() / (40 * event.GetWheelDelta())))
+                self.zoom /= (1.0 - (event.GetWheelRotation() /
+                                     (40 * event.GetWheelDelta())))
                 self.zoom = max(self.zoom, self.zoom_min)
             else:
                 self.zoom = self.zoom_min
             self.init = False
             self.gui.zoom_slider.SetValue(self.zoom * self.gui.zoom_resolution)
 
+        print(self.pan_x)
+        print(self.pan_y)
+        print(self.zoom)
         self.Refresh()  # triggers the paint event
 
-    def render_text(self, text, z_pos, y_pos, x_pos, font=GLUT.GLUT_BITMAP_HELVETICA_18):
+    def render_text(self, text, z_pos, y_pos, x_pos,
+                    font=GLUT.GLUT_BITMAP_HELVETICA_18):
         """Handle text drawing operations."""
         GL.glDisable(GL.GL_LIGHTING)
         GL.glColor3f(*self.white)
@@ -1009,7 +1179,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         self.zoom *= 1.25
         self.zoom = min(self.zoom, self.zoom_max)
         self.init = False
-        self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+        self.gui.zoom_slider.SetValue(self.zoom * self.gui.zoom_resolution)
         self.render()
 
     def zoom_out(self):
@@ -1018,7 +1188,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         self.zoom /= 1.25
         self.zoom = max(self.zoom, self.zoom_min)
         self.init = False
-        self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+        self.gui.zoom_slider.SetValue(self.zoom * self.gui.zoom_resolution)
         self.render()
 
     def set_zoom(self, zoom):
@@ -1028,18 +1198,21 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         self.zoom = min(self.zoom, self.zoom_max)
         self.zoom = max(self.zoom, self.zoom_min)
         self.init = False
-        self.gui.zoom_slider.SetValue(self.zoom*self.gui.zoom_resolution)
+        self.gui.zoom_slider.SetValue(self.zoom * self.gui.zoom_resolution)
         self.render()
 
     def set_pan_x(self, scroll_x):
         """Set pan x to a specific value"""
-        self.pan_x = -scroll_x
+        self.pan_x = scroll_x + self.width/2 + self.cycle_width
+        self.pan_y = 0
+        self.scene_rotate = self.default_rotate
         self.init = False
         self.render()
 
     def set_pan_y(self, scroll_y):
         """Set pan y to a specific value"""
         self.pan_y = scroll_y + self.display_height - 18
+        self.scene_rotate = self.default_rotate
         self.init = False
         self.render()
 
@@ -1053,15 +1226,30 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
 
     def reset_pan(self):
         """Reset pan to start of displayed signals"""
-        # self.pan_x = 0
-        # self.pan_y = 0
-        # self.init = False
-        # self.render()
+        self.pan_x = 0
+        self.pan_y = 0
+        self.zoom = 1
+        GL.glMatrixMode(GL.GL_MODELVIEW)
+        GL.glLoadIdentity()
+        rotation = np.matmul(self.default_rotate, GL.glGetFloatv(
+            GL.GL_MODELVIEW_MATRIX, self.scene_rotate))
+
+        # GL.glRotatef()
+        GL.glMultMatrixf(*(self.default_rotate)*self.scene_rotate*np.linalg
+                         .inv(rotation))
+
+        print(
+            GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate))
+
+        self.scene_rotate = self.default_rotate
+        self.init = False
+        self.render()
 
     def pan_to_right_end(self):
         """Pan to the right of the signals"""
 
-        # x_at_end_of_signal = self.pan_x + self.zoom * (self.cycle_start_x + self.completed_cycles * self.cycle_width)
+        # x_at_end_of_signal = self.pan_x + self.zoom * (self.cycle_start_x +
+        # self.completed_cycles * self.cycle_width)
         # self.pan_x -= x_at_end_of_signal - self.GetClientSize().width + 50
         # if self.pan_x > 0:
         #     self.pan_x = 0
@@ -1073,12 +1261,15 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         self.monitors_number = len(self.monitors.monitors_dictionary)
         margin = self.monitors.get_margin()
         if margin is None:
-            longest_monitor = int(len("Cycles")*12/18)
+            longest_monitor = int(len("Cycles") * 12 / 18)
         else:
-            longest_monitor = max(int(len("Cycles")*12/18), margin)
-        self.cycle_start_x = (25 + self.text_width("0") * longest_monitor) / self.zoom
-        self.width = (self.cycle_start_x + self.completed_cycles*self.cycle_width + 30) * self.zoom
-        self.height = ((self.monitors_number+1) * self.monitor_width + 30) * self.zoom
+            longest_monitor = max(int(len("Cycles") * 12 / 18), margin)
+        self.cycle_start_x = (25 + self.text_width("0")
+                              * longest_monitor) / self.zoom
+        self.width = (self.cycle_start_x + self.completed_cycles *
+                      self.cycle_width + 30) * self.zoom
+        self.height = ((self.monitors_number + 1) *
+                       self.monitor_width + 30) * self.zoom
         size = self.GetClientSize()
         self.display_width = size.width
         self.display_height = size.height
@@ -1100,7 +1291,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
 
         Return a list of the RGB float values.
         """
-        return [c/256 for c in (r, g, b)]
+        return [c / 256 for c in (r, g, b)]
 
 
 class Gui(wx.Frame):
@@ -1122,41 +1313,59 @@ class Gui(wx.Frame):
     --------------
     on_menu(self, event): Event handler for the file menu.
 
-    on_spin(self, event): Event handler for when the user changes the spin control value.
+    on_spin(self, event): Event handler for when the user changes the spin
+    control value.
 
-    on_run_button(self, event): Event handler for when the user clicks the run button.
+    on_run_button(self, event): Event handler for when the user clicks the run
+    button.
 
-    on_continue_button(self, event): Event handler for when the user clicks the continue button.
+    on_continue_button(self, event): Event handler for when the user clicks the
+    continue button.
 
-    on_console(self, event): Event handler for when the user types in the console.
+    on_console(self, event): Event handler for when the user types in the
+    console.
 
-    on_switches_select(self, event): Event handler for when the user types in the switches text box.
+    on_switches_select(self, event): Event handler for when the user types in
+    the switches box.
 
-    on_switches_set(self, event): Event handler for when the user clicks the switches set button.
+    on_switches_set(self, event): Event handler for when the user clicks the
+    switches set button.
 
-    on_switches_clear(self, event): Event handler for when the user clicks the switches clear button.
+    on_switches_clear(self, event): Event handler for when the user clicks the
+    switches clear button.
 
-    on_monitors_select(self, event): Event handler for when the user types in the monitors text box.
+    on_monitors_select(self, event): Event handler for when the user types in
+    the monitors text box.
 
-    on_monitors_set(self, event): Event handler for when the user clicks the monitors set button.
+    on_monitors_set(self, event): Event handler for when the user clicks the
+    monitors set button.
 
-    on_monitors_zap(self, event): Event handler for when the user clicks the monitors zap button.
+    on_monitors_zap(self, event): Event handler for when the user clicks the
+    monitors zap button.
 
-    on_load_file_button(self, event): Event handler for when the user clicks the load file button.
+    on_load_file_button(self, event): Event handler for when the user clicks
+    the load file button.
 
-    on_load_file_text_box(self, event): Event handler for when the user enters a filepath into load file text box.
+    on_load_file_text_box(self, event): Event handler for when the user enters
+    a filepath into load file text box.
 
-    on_scrollbar_ver(self, event): Event handler for when the user scrolls the vertical scrollbar
+    on_scrollbar_ver(self, event): Event handler for when the user scrolls the
+    vertical scrollbar
 
-    on_scrollbar_hor(self, event): Event handler for when the user scrolls the horizontal scrollbar
+    on_scrollbar_hor(self, event): Event handler for when the user scrolls the
+    horizontal scrollbar
 
-    on_zoom_minus_button(self, event): Event handler for when the user clicks the zoom minus button
+    on_zoom_minus_button(self, event): Event handler for when the user clicks
+    the zoom minus button
 
-    on_zoom_plus_button(self, event): Event handler for when the user clicks the zoom plus button
+    on_zoom_plus_button(self, event): Event handler for when the user clicks
+    the zoom plus button
 
-    on_zoom_scroll(self, event): Event handler for when the user scrolls the zoom slider
+    on_zoom_scroll(self, event): Event handler for when the user scrolls the
+    zoom slider
 
-    open_file(self, pathname): Creates a new network for another definition file.
+    open_file(self, pathname): Creates a new network for another definition
+    file.
 
     ask_to_save(self, action_title): Opens a save message box.
 
@@ -1166,15 +1375,20 @@ class Gui(wx.Frame):
 
     help_command(self): Prints a list of valid commands in activity log.
 
-    switches_update_toggle(self): Updates the visibility of the set/clear switch buttons when switches change.
+    switches_update_toggle(self): Updates the visibility of the set/clear
+    switch buttons when switches change.
 
-    monitors_update_toggle(self): Updates the visibility of the set/zap monitor buttons when monitors change.
+    monitors_update_toggle(self): Updates the visibility of the set/zap monitor
+    buttons when monitors change.
 
-    update_toolbar(self): Update undo/redo visibility buttons in toolbar display when a command is undone or redone.
+    update_toolbar(self): Update undo/redo visibility buttons in toolbar
+    display when a command is undone or redone.
 
-    update_scrollbars(self): Updates the canvas' scrollbars position, size, visibility when the users pans/zooms.
+    update_scrollbars(self): Updates the canvas' scrollbars position, size,
+    visibility when the users pans/zooms.
 
-    update_cycles(self, cycles): Updates the number of completed cycles in both the gui and the canvas.
+    update_cycles(self, cycles): Updates the number of completed cycles in both
+     the gui and the canvas.
 
     switch_command(self, switch_name, value): Set the value state to a switch.
 
@@ -1184,11 +1398,13 @@ class Gui(wx.Frame):
 
     run_command(self, cycles): Run the simulation for a number of cycles.
 
-    continue_command(self, cycles): Continue the simulation for a number of cycles.
+    continue_command(self, cycles): Continue the simulation for a number of
+    cycles.
 
     quit_command(self): Handle the quit command.
 
-    raise_error(self, error, message=None): Display a message box with the error to the user.
+    raise_error(self, error, message=None): Display a message box with the
+    error to the user.
 
     on_key(self, event): Event handler for when the user presses a key.
 
@@ -1203,7 +1419,8 @@ class Gui(wx.Frame):
 
         # Saving, loading, and undo/redo variables
         self.is_saved = True
-        self.command_manager = CommandManager(self, names, devices, network, monitors)
+        self.command_manager = CommandManager(
+            self, names, devices, network, monitors)
 
         # Configure the menu
         menuBar = wx.MenuBar()
@@ -1243,12 +1460,18 @@ class Gui(wx.Frame):
 
         # Configure the tooblar
         self.toolbar = wx.ToolBar(self)
-        self.toolbar.AddTool(wx.ID_NEW, 'New file', wx.ArtProvider.GetBitmap(wx.ART_NEW))
-        self.toolbar.AddTool(wx.ID_OPEN, 'Load', wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN))
-        self.toolbar.AddTool(wx.ID_SAVE, 'Save', wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE))
-        self.toolbar.AddTool(wx.ID_UNDO, 'Undo', wx.ArtProvider.GetBitmap(wx.ART_UNDO))
-        self.toolbar.AddTool(wx.ID_REDO, 'Redo', wx.ArtProvider.GetBitmap(wx.ART_REDO))
-        self.toolbar.AddTool(wx.ID_EXIT, 'Exit', wx.ArtProvider.GetBitmap(wx.ART_QUIT))
+        self.toolbar.AddTool(wx.ID_NEW, 'New file',
+                             wx.ArtProvider.GetBitmap(wx.ART_NEW))
+        self.toolbar.AddTool(wx.ID_OPEN, 'Load',
+                             wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN))
+        self.toolbar.AddTool(wx.ID_SAVE, 'Save',
+                             wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE))
+        self.toolbar.AddTool(wx.ID_UNDO, 'Undo',
+                             wx.ArtProvider.GetBitmap(wx.ART_UNDO))
+        self.toolbar.AddTool(wx.ID_REDO, 'Redo',
+                             wx.ArtProvider.GetBitmap(wx.ART_REDO))
+        self.toolbar.AddTool(wx.ID_EXIT, 'Exit',
+                             wx.ArtProvider.GetBitmap(wx.ART_QUIT))
 
         self.toolbar.Realize()
         self.toolbar.EnableTool(wx.ID_UNDO, False)
@@ -1256,16 +1479,25 @@ class Gui(wx.Frame):
         self.SetToolBar(self.toolbar)
 
         # Configure the hotkeys
-        self.accel_tbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, ord('N'), wx.ID_NEW),
-                                              (wx.ACCEL_CTRL, ord('O'), wx.ID_OPEN),
-                                              (wx.ACCEL_CTRL, ord('S'), wx.ID_SAVE),
-                                              (wx.ACCEL_CTRL, ord('Z'), wx.ID_UNDO),
-                                              (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord('Z'), wx.ID_REDO),
-                                              (wx.ACCEL_CTRL, ord('Y'), wx.ID_REDO),
-                                              (wx.ACCEL_CTRL, ord('H'), wx.ID_HELP),
-                                              (wx.ACCEL_CTRL, ord('+'), wx.ID_ZOOM_IN),
-                                              (wx.ACCEL_CTRL, ord('-'), wx.ID_ZOOM_OUT)
-                                              ])
+        self.accel_tbl = wx.AcceleratorTable(
+            [(wx.ACCEL_CTRL, ord('N'), wx.ID_NEW),
+             (wx.ACCEL_CTRL, ord(
+                 'O'), wx.ID_OPEN),
+             (wx.ACCEL_CTRL, ord(
+                 'S'), wx.ID_SAVE),
+             (wx.ACCEL_CTRL, ord(
+                 'Z'), wx.ID_UNDO),
+             (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord('Z'),
+              wx.ID_REDO),
+             (wx.ACCEL_CTRL, ord(
+                 'Y'), wx.ID_REDO),
+             (wx.ACCEL_CTRL, ord(
+                 'H'), wx.ID_HELP),
+             (wx.ACCEL_CTRL, ord(
+                 '+'), wx.ID_ZOOM_IN),
+             (wx.ACCEL_CTRL, ord(
+                 '-'), wx.ID_ZOOM_OUT)
+             ])
         self.SetAcceleratorTable(self.accel_tbl)
 
         # Instances of the classes
@@ -1282,62 +1514,100 @@ class Gui(wx.Frame):
         self.canvas_3D = My3DGLCanvas(self, devices, monitors)
         self.canvas = self.canvas_2D
         self.canvas_scrollbar_hor = wx.ScrollBar(self, wx.ID_ANY)
-        self.canvas_scrollbar_ver = wx.ScrollBar(self, wx.ID_ANY, style=wx.SB_VERTICAL)
+        self.canvas_scrollbar_ver = wx.ScrollBar(
+            self, wx.ID_ANY, style=wx.SB_VERTICAL)
         self.update_scrollbars()
 
         #  Top sizer
         self.load_file_button = wx.Button(self, wx.ID_ANY, "Load file")
-        self.load_file_text_box = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
+        self.load_file_text_box = wx.TextCtrl(
+            self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
         if path is not None:
             self.load_file_text_box.SetValue(path.split('/')[-1])
 
         #  Activity log sizer
-        self.activity_log_title = wx.StaticText(self, wx.ID_ANY, "Activity log")
-        self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY | wx.ALIGN_TOP)
+        self.activity_log_title = wx.StaticText(
+            self, wx.ID_ANY, "Activity log")
+        self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, "",
+                                             style=wx.TE_MULTILINE |
+                                             wx.TE_READONLY |
+                                             wx.ALIGN_TOP)
         font = wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL)
         self.activity_log_text.SetFont(font)
 
         #  Console sizer
-        self.console = wx.TextCtrl(self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
+        self.console = wx.TextCtrl(
+            self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
 
         #  Side Sizer
         #   Switches
         toggle_button_size = wx.Size(50, wx.DefaultSize.GetHeight())
-        switches_names = [names.get_name_string(switch_id) for switch_id in self.switches]
-        self.switches_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT, choices=switches_names)
-        self.switches_set_button = wx.ToggleButton(self, wx.ID_ANY, "HIGH", style=wx.BORDER_NONE, size=toggle_button_size)
-        self.switches_clear_button = wx.ToggleButton(self, wx.ID_ANY, "LOW", style=wx.BORDER_NONE, size=toggle_button_size)
+        switches_names = [names.get_name_string(
+            switch_id) for switch_id in self.switches]
+        self.switches_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT,
+                                           choices=switches_names)
+        self.switches_set_button = wx.ToggleButton(self, wx.ID_ANY, "HIGH",
+                                                   style=wx.BORDER_NONE,
+                                                   size=toggle_button_size)
+        self.switches_clear_button = wx.ToggleButton(self, wx.ID_ANY, "LOW",
+                                                     style=wx.BORDER_NONE,
+                                                     size=toggle_button_size)
         self.switches_set_button.Disable()
         self.switches_clear_button.Disable()
 
         #   Monitors
+        monitor_names = self.monitors.get_signal_names()[0] + \
+            self.monitors.get_signal_names()[1]
         self.monitors_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT,
-                                           choices=self.monitors.get_signal_names()[0] + self.monitors.get_signal_names()[1])
-        self.monitors_set_button = wx.ToggleButton(self, wx.ID_ANY, "SET", style=wx.BORDER_NONE, size=toggle_button_size)
-        self.monitors_zap_button = wx.ToggleButton(self, wx.ID_ANY, "ZAP", style=wx.BORDER_NONE, size=toggle_button_size)
+                                           choices=monitor_names)
+        self.monitors_set_button = wx.ToggleButton(self, wx.ID_ANY, "SET",
+                                                   style=wx.BORDER_NONE,
+                                                   size=toggle_button_size)
+        self.monitors_zap_button = wx.ToggleButton(self, wx.ID_ANY, "ZAP",
+                                                   style=wx.BORDER_NONE,
+                                                   size=toggle_button_size)
         self.monitors_set_button.Disable()
         self.monitors_zap_button.Disable()
 
         #   Simulation
-        self.simulation_cycles_spin = wx.SpinCtrl(self, wx.ID_ANY, "10", max=10**10)
+        self.simulation_cycles_spin = wx.SpinCtrl(
+            self, wx.ID_ANY, "10", max=10 ** 10)
         self.simulation_run_button = wx.Button(self, wx.ID_ANY, "Run")
-        self.simulation_continue_button = wx.Button(self, wx.ID_ANY, "Continue")
+        self.simulation_continue_button = wx.Button(
+            self, wx.ID_ANY, "Continue")
 
         #   Zoom
         zoom_button_size = wx.Size(25, 25)
         self.zoom_resolution = 100
-        self.zoom_slider = wx.Slider(self, wx.ID_ANY, value=1*self.zoom_resolution, minValue=self.zoom_resolution*self.canvas.zoom_min,
-                                     maxValue=self.zoom_resolution*self.canvas.zoom_max, style=wx.SL_LABELS | wx.SL_TICKS, name="Zoom")
+        self.zoom_slider = wx.Slider(self, wx.ID_ANY,
+                                     value=1 * self.zoom_resolution,
+                                     minValue=self.zoom_resolution *
+                                     self.canvas.zoom_min,
+                                     maxValue=self.zoom_resolution *
+                                     self.canvas.zoom_max,
+                                     style=wx.SL_LABELS | wx.SL_TICKS,
+                                     name="Zoom")
         self.zoom_slider.SetTickFreq(250)
         if wx.Platform == '__WXGTK__':  # If available, use zoom bitmaps
-            plus = wx.ArtProvider.GetBitmap("gtk-zoom-in", wx.ART_MENU, size=zoom_button_size)
-            self.zoom_plus_button = wx.BitmapButton(self, wx.ID_ANY, plus, size=zoom_button_size)
-            minus = wx.ArtProvider.GetBitmap("gtk-zoom-out", wx.ART_MENU, size=zoom_button_size)
-            self.zoom_minus_button = wx.BitmapButton(self, wx.ID_ANY, minus, size=zoom_button_size)
+            plus = wx.ArtProvider.GetBitmap(
+                "gtk-zoom-in", wx.ART_MENU, size=zoom_button_size)
+            self.zoom_plus_button = wx.BitmapButton(
+                self, wx.ID_ANY, plus, size=zoom_button_size)
+            minus = wx.ArtProvider.GetBitmap(
+                "gtk-zoom-out", wx.ART_MENU, size=zoom_button_size)
+            self.zoom_minus_button = wx.BitmapButton(self, wx.ID_ANY, minus,
+                                                     size=zoom_button_size)
 
         else:  # otherwise, just use +/- string
-            self.zoom_plus_button = wx.Button(self, wx.ID_ANY, "+", size=zoom_button_size)
-            self.zoom_minus_button = wx.Button(self, wx.ID_ANY, "-", size=zoom_button_size)
+            self.zoom_plus_button = wx.Button(
+                self, wx.ID_ANY, "+", size=zoom_button_size)
+            self.zoom_minus_button = wx.Button(
+                self, wx.ID_ANY, "-", size=zoom_button_size)
+
+        #   Pan
+        self.pan_left_button = wx.Button(self, wx.ID_ANY, " <- To Start")
+        self.pan_reset_button = wx.Button(self, wx.ID_ANY, " Reset View")
+        self.pan_right_button = wx.Button(self, wx.ID_ANY, " To End ->")
 
         #   2D/3D
         self.two_dim_button = wx.Button(self, wx.ID_ANY, "3D")
@@ -1345,10 +1615,12 @@ class Gui(wx.Frame):
         #  Static Strings
         console_title = wx.StaticText(self, wx.ID_ANY, "Console")
         side_title = wx.StaticText(self, wx.ID_ANY, "Properties")
-        switches_title = wx.StaticText(self, wx.ID_ANY, "Change State of Switch")
+        switches_title = wx.StaticText(
+            self, wx.ID_ANY, "Change State of Switch")
         monitors_title = wx.StaticText(self, wx.ID_ANY, "Set or Zap Monitors")
         run_simulation_title = wx.StaticText(self, wx.ID_ANY, "Simulate")
         zoom_title = wx.StaticText(self, wx.ID_ANY, "Zoom")
+        pan_title = wx.StaticText(self, wx.ID_ANY, "Pan")
         two_dim_title = wx.StaticText(self, wx.ID_ANY, "2D/3D View")
 
         #  Lines
@@ -1357,10 +1629,14 @@ class Gui(wx.Frame):
         line_switches_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
         line_monitors = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
         line_monitors_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
-        line_run_simulation = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
-        line_run_simulation_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_run_simulation = wx.StaticLine(
+            self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_run_simulation_end = wx.StaticLine(
+            self, wx.ID_ANY, style=wx.HORIZONTAL)
         line_zoom = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
         line_zoom_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_pan = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
+        line_pan_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
         line_two_dim = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
         line_two_dim_end = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
 
@@ -1373,7 +1649,8 @@ class Gui(wx.Frame):
 
         #  Load file
         self.load_file_button.Bind(wx.EVT_BUTTON, self.on_load_file_button)
-        self.load_file_text_box.Bind(wx.EVT_TEXT_ENTER, self.on_load_file_text_box)
+        self.load_file_text_box.Bind(
+            wx.EVT_TEXT_ENTER, self.on_load_file_text_box)
 
         #  Scrollbars
         self.canvas_scrollbar_ver.Bind(wx.EVT_SCROLL, self.on_scrollbar_ver)
@@ -1384,23 +1661,33 @@ class Gui(wx.Frame):
 
         #  Switches
         self.switches_select.Bind(wx.EVT_TEXT, self.on_switches_select)
-        self.switches_set_button.Bind(wx.EVT_TOGGLEBUTTON, self.on_switches_set)
-        self.switches_clear_button.Bind(wx.EVT_TOGGLEBUTTON, self.on_switches_clear)
+        self.switches_set_button.Bind(
+            wx.EVT_TOGGLEBUTTON, self.on_switches_set)
+        self.switches_clear_button.Bind(
+            wx.EVT_TOGGLEBUTTON, self.on_switches_clear)
 
         #  Monitors
         self.monitors_select.Bind(wx.EVT_TEXT, self.on_monitors_select)
-        self.monitors_set_button.Bind(wx.EVT_TOGGLEBUTTON, self.on_monitors_set)
-        self.monitors_zap_button.Bind(wx.EVT_TOGGLEBUTTON, self.on_monitors_zap)
+        self.monitors_set_button.Bind(
+            wx.EVT_TOGGLEBUTTON, self.on_monitors_set)
+        self.monitors_zap_button.Bind(
+            wx.EVT_TOGGLEBUTTON, self.on_monitors_zap)
 
         #  Run simulation
         self.simulation_cycles_spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
         self.simulation_run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
-        self.simulation_continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
+        self.simulation_continue_button.Bind(
+            wx.EVT_BUTTON, self.on_continue_button)
 
         #  Zoom
         self.zoom_minus_button.Bind(wx.EVT_BUTTON, self.on_zoom_minus_button)
         self.zoom_slider.Bind(wx.EVT_SCROLL, self.on_zoom_scroll)
         self.zoom_plus_button.Bind(wx.EVT_BUTTON, self.on_zoom_plus_button)
+
+        #  Pan
+        self.pan_left_button.Bind(wx.EVT_BUTTON, self.on_pan_left_button)
+        self.pan_reset_button.Bind(wx.EVT_BUTTON, self.on_pan_reset_button)
+        self.pan_right_button.Bind(wx.EVT_BUTTON, self.on_pan_right_button)
 
         # 2D
         self.two_dim_button.Bind(wx.EVT_BUTTON, self.on_two_dim_button)
@@ -1423,6 +1710,8 @@ class Gui(wx.Frame):
         simulation_sizer = wx.BoxSizer(wx.HORIZONTAL)
         zoom_title_sizer = wx.BoxSizer(wx.HORIZONTAL)
         zoom_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        pan_title_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        pan_sizer = wx.BoxSizer(wx.HORIZONTAL)
         two_dim_title_sizer = wx.BoxSizer(wx.HORIZONTAL)
         two_dim_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -1431,18 +1720,23 @@ class Gui(wx.Frame):
         line_sizer_monitors = wx.BoxSizer(wx.VERTICAL)
         line_sizer_run_simulation = wx.BoxSizer(wx.VERTICAL)
         line_sizer_zoom = wx.BoxSizer(wx.VERTICAL)
+        line_sizer_pan = wx.BoxSizer(wx.VERTICAL)
         line_sizer_two_dim = wx.BoxSizer(wx.VERTICAL)
 
         main_sizer.Add(top_sizer, 0, wx.EXPAND, 5)
         main_sizer.Add(central_sizer, 10, wx.EXPAND, 5)
-        main_sizer.Add(activity_log_sizer, 3, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
-        main_sizer.Add(console_sizer, 1, wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, 5)
+        main_sizer.Add(activity_log_sizer, 3, wx.LEFT |
+                       wx.RIGHT | wx.EXPAND, 5)
+        main_sizer.Add(console_sizer, 1, wx.LEFT |
+                       wx.RIGHT | wx.BOTTOM | wx.EXPAND, 5)
 
         top_sizer.Add(self.load_file_button, 0, wx.LEFT, 5)
         top_sizer.Add(self.load_file_text_box, 1, wx.LEFT | wx.RIGHT, 5)
 
-        central_sizer.Add(self.canvas_sizer, 5, wx.EXPAND | wx.TOP | wx.LEFT | wx.BOTTOM, 5)
-        central_sizer.Add(canvas_scrollbar_ver_sizer, 0, wx.EXPAND | wx.TOP | wx.RIGHT | wx.BOTTOM, 5)
+        central_sizer.Add(self.canvas_sizer, 5, wx.EXPAND |
+                          wx.TOP | wx.LEFT | wx.BOTTOM, 5)
+        central_sizer.Add(canvas_scrollbar_ver_sizer, 0,
+                          wx.EXPAND | wx.TOP | wx.RIGHT | wx.BOTTOM, 5)
         central_sizer.Add(side_sizer, 1, wx.ALL, 5)
 
         self.canvas_sizer.Add(self.canvas_2D, 5, wx.EXPAND, 0)
@@ -1450,7 +1744,8 @@ class Gui(wx.Frame):
         self.canvas_sizer.Hide(self.canvas_3D, True)
         self.canvas_sizer.Add(self.canvas_scrollbar_hor, 0, wx.EXPAND, 0)
 
-        canvas_scrollbar_ver_sizer.Add(self.canvas_scrollbar_ver, 0, wx.EXPAND | wx.BOTTOM, 15)
+        canvas_scrollbar_ver_sizer.Add(
+            self.canvas_scrollbar_ver, 0, wx.EXPAND | wx.BOTTOM, 15)
 
         activity_log_sizer.Add(self.activity_log_title, 0, wx.TOP, 10)
         activity_log_sizer.Add(self.activity_log_text, 1, wx.EXPAND, 5)
@@ -1459,67 +1754,109 @@ class Gui(wx.Frame):
         console_sizer.Add(self.console, 1, wx.EXPAND, 5)
 
         side_sizer.Add(side_title_sizer, 0, wx.TOP | wx.EXPAND, 1)
-        side_sizer.Add(switches_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
-        side_sizer.Add(switches_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
-        side_sizer.Add(line_switches_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
-        side_sizer.Add(monitors_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
-        side_sizer.Add(monitors_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
-        side_sizer.Add(line_monitors_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
-        side_sizer.Add(simulation_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
-        side_sizer.Add(simulation_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
-        side_sizer.Add(line_run_simulation_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
-        side_sizer.Add(zoom_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(switches_title_sizer, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(switches_sizer, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(line_switches_end, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        side_sizer.Add(monitors_title_sizer, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(monitors_sizer, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(line_monitors_end, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        side_sizer.Add(simulation_title_sizer, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(simulation_sizer, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(line_run_simulation_end, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        side_sizer.Add(zoom_title_sizer, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
         side_sizer.Add(zoom_sizer, 0, wx.ALL | wx.EXPAND, 0)
-        side_sizer.Add(line_zoom_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
-        side_sizer.Add(two_dim_title_sizer, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(line_zoom_end, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        side_sizer.Add(pan_title_sizer, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
+        side_sizer.Add(pan_sizer, 0, wx.ALL | wx.EXPAND, 0)
+        side_sizer.Add(line_pan_end, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        side_sizer.Add(two_dim_title_sizer, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 1)
         side_sizer.Add(two_dim_sizer, 0, wx.ALL | wx.EXPAND, 0)
-        side_sizer.Add(line_two_dim_end, 0, wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
+        side_sizer.Add(line_two_dim_end, 0, wx.TOP |
+                       wx.LEFT | wx.RIGHT | wx.EXPAND, 10)
 
         side_title_sizer.Add(side_title, 0, wx.TOP, 0)
-        side_title_sizer.Add(line_sizer_side, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 3)
+        side_title_sizer.Add(line_sizer_side, 1, wx.TOP |
+                             wx.RIGHT | wx.EXPAND, 3)
 
         switches_title_sizer.Add(switches_title, 0, wx.LEFT | wx.TOP, 10)
-        switches_title_sizer.Add(line_sizer_switches, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
+        switches_title_sizer.Add(
+            line_sizer_switches, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
 
-        switches_sizer.Add(self.switches_select, 2, wx.TOP | wx.LEFT | wx.EXPAND, 12)
+        switches_sizer.Add(self.switches_select, 2,
+                           wx.TOP | wx.LEFT | wx.EXPAND, 12)
         switches_sizer.Add(self.switches_set_button, 0, wx.TOP | wx.LEFT, 12)
-        switches_sizer.Add(self.switches_clear_button, 0, wx.TOP | wx.RIGHT, 12)
+        switches_sizer.Add(self.switches_clear_button,
+                           0, wx.TOP | wx.RIGHT, 12)
 
         monitors_title_sizer.Add(monitors_title, 0, wx.LEFT | wx.TOP, 10)
-        monitors_title_sizer.Add(line_sizer_monitors, 1,  wx.TOP | wx.RIGHT | wx.EXPAND, 10)
+        monitors_title_sizer.Add(
+            line_sizer_monitors, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
 
-        monitors_sizer.Add(self.monitors_select, 2, wx.TOP | wx.LEFT | wx.EXPAND, 12)
+        monitors_sizer.Add(self.monitors_select, 2,
+                           wx.TOP | wx.LEFT | wx.EXPAND, 12)
         monitors_sizer.Add(self.monitors_set_button, 0, wx.TOP | wx.LEFT, 12)
         monitors_sizer.Add(self.monitors_zap_button, 0, wx.TOP | wx.RIGHT, 12)
 
-        simulation_title_sizer.Add(run_simulation_title, 0, wx.LEFT | wx.TOP, 10)
-        simulation_title_sizer.Add(line_sizer_run_simulation, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
+        simulation_title_sizer.Add(
+            run_simulation_title, 0, wx.LEFT | wx.TOP, 10)
+        simulation_title_sizer.Add(line_sizer_run_simulation, 1,
+                                   wx.TOP | wx.RIGHT | wx.EXPAND,
+                                   10)
 
-        simulation_sizer.Add(self.simulation_cycles_spin, 4, wx.LEFT | wx.TOP | wx.EXPAND, 12)
-        simulation_sizer.Add(self.simulation_run_button, 0, wx.LEFT | wx.TOP, 12)
-        simulation_sizer.Add(self.simulation_continue_button, 0, wx.LEFT | wx.TOP, 12)
+        simulation_sizer.Add(self.simulation_cycles_spin,
+                             4, wx.LEFT | wx.TOP | wx.EXPAND, 12)
+        simulation_sizer.Add(self.simulation_run_button,
+                             0, wx.LEFT | wx.TOP, 12)
+        simulation_sizer.Add(
+            self.simulation_continue_button, 0, wx.LEFT | wx.TOP, 12)
 
         zoom_title_sizer.Add(zoom_title, 0, wx.LEFT | wx.RIGHT | wx.TOP, 10)
         if wx.Platform == '__WXGTK__':
             bmp = wx.ArtProvider.GetBitmap("gtk-find", wx.ART_MENU)
             zoom_bmp = wx.StaticBitmap(self, wx.ID_ANY, bmp)
             zoom_title_sizer.Add(zoom_bmp, 0, wx.Left | wx.TOP, 10)
-        zoom_title_sizer.Add(line_sizer_zoom, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
+        zoom_title_sizer.Add(line_sizer_zoom, 1, wx.TOP |
+                             wx.RIGHT | wx.EXPAND, 10)
 
         zoom_sizer.Add(self.zoom_minus_button, 0, wx.LEFT | wx.TOP, 20)
         zoom_sizer.Add(self.zoom_slider, 1, wx.EXPAND, 0)
         zoom_sizer.Add(self.zoom_plus_button, 0, wx.RIGHT | wx.TOP, 20)
 
+        pan_title_sizer.Add(pan_title, 0, wx.LEFT | wx.TOP, 10)
+        pan_title_sizer.Add(line_sizer_pan, 1,
+                                wx.TOP | wx.RIGHT | wx.EXPAND, 10)
+
+        pan_sizer.Add(self.pan_left_button, 1, wx.ALL | wx.EXPAND, 5)
+        pan_sizer.Add(self.pan_reset_button, 1, wx.ALL | wx.EXPAND, 5)
+        pan_sizer.Add(self.pan_right_button, 1, wx.ALL | wx.EXPAND, 5)
+
         two_dim_title_sizer.Add(two_dim_title, 0, wx.LEFT | wx.TOP, 10)
-        two_dim_title_sizer.Add(line_sizer_two_dim, 1, wx.TOP | wx.RIGHT | wx.EXPAND, 10)
+        two_dim_title_sizer.Add(line_sizer_two_dim, 1,
+                                wx.TOP | wx.RIGHT | wx.EXPAND, 10)
 
         two_dim_sizer.Add(self.two_dim_button, 1, wx.ALL | wx.EXPAND, 10)
 
         line_sizer_side.Add(line_side, 0, wx.ALL | wx.EXPAND, 5)
         line_sizer_switches.Add(line_switches, 0, wx.ALL | wx.EXPAND, 5)
         line_sizer_monitors.Add(line_monitors, 0, wx.ALL | wx.EXPAND, 5)
-        line_sizer_run_simulation.Add(line_run_simulation, 0, wx.ALL | wx.EXPAND, 5)
+        line_sizer_run_simulation.Add(
+            line_run_simulation, 0, wx.ALL | wx.EXPAND, 5)
         line_sizer_zoom.Add(line_zoom, 0, wx.ALL | wx.EXPAND, 5)
+        line_sizer_pan.Add(line_pan, 0, wx.ALL | wx.EXPAND, 5)
         line_sizer_two_dim.Add(line_two_dim, 0, wx.ALL | wx.EXPAND, 5)
 
         self.SetSizeHints(900, 600)
@@ -1537,7 +1874,8 @@ class Gui(wx.Frame):
             network = Network(names, devices)
             monitors = Monitors(names, devices, network)
             app = wx.App()
-            gui = Gui("Logic Simulator", None, names, devices, network, monitors)
+            gui = Gui("Logic Simulator", None, names,
+                      devices, network, monitors)
             gui.Show(True)
             app.MainLoop()
         if Id == wx.ID_EXIT:
@@ -1613,8 +1951,9 @@ class Gui(wx.Frame):
             self.canvas_sizer.Hide(self.canvas_2D, recursive=True)
             self.canvas_sizer.Show(self.canvas_3D, recursive=True)
             self.canvas = self.canvas_3D
-        self.zoom_slider.SetMin(self.canvas.zoom_min*self.zoom_resolution)
-        self.zoom_slider.SetMax(self.canvas.zoom_max*self.zoom_resolution)
+        self.zoom_slider.SetMin(self.canvas.zoom_min * self.zoom_resolution)
+        self.zoom_slider.SetMax(self.canvas.zoom_max * self.zoom_resolution)
+        self.canvas.completed_cycles = self.completed_cycles
         self.canvas.init = False
         self.canvas_sizer.Layout()
         self.canvas.render()
@@ -1643,7 +1982,9 @@ class Gui(wx.Frame):
             elif command == "q":
                 self.quit_command()
             else:
-                self.raise_error(self.command_manager.INVALID_COMMAND, "Command " + command_arg + " is invalid. Enter 'h' for help.")
+                self.raise_error(self.command_manager.INVALID_COMMAND,
+                                 "Command " + command_arg +
+                                 " is invalid. Enter 'h' for help.")
                 break
 
         self.console.SetValue("")
@@ -1685,8 +2026,12 @@ class Gui(wx.Frame):
             elif answer == wx.YES:
                 self.save_file()
         # otherwise ask the user what new file to open
-        with wx.FileDialog(self, "Open another definition file", wildcard="Definiton file (*.def)|*.def|Network file (*.defb)|*.defb|Text file (*.txt)|*.txt|All files (*)|*",
-                           style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
+        with wx.FileDialog(self, "Open another definition file",
+                           wildcard="Definiton file (*.def)|*.def|"
+                                    "Network file (*.defb)|*.defb|"
+                                    "Text file (*.txt)|*.txt|All files (*)|*",
+                           style=wx.FD_OPEN |
+                                 wx.FD_FILE_MUST_EXIST) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
                 return  # the user changed their mind
@@ -1696,7 +2041,7 @@ class Gui(wx.Frame):
             self.open_file(path)
 
     def on_load_file_text_box(self, event):
-        """Handle the event when user enters a filepath into load_file_text_box"""
+        """Handle the event when user enters filepath into load_text_box"""
         if not self.is_saved:
             answer = self.ask_to_save("Load file")
             if answer == wx.CANCEL:
@@ -1729,8 +2074,20 @@ class Gui(wx.Frame):
 
     def on_zoom_scroll(self, event):
         """Handle the event when users scroll the zoom slider"""
-        zoom_value = self.zoom_slider.GetValue()/self.zoom_resolution
+        zoom_value = self.zoom_slider.GetValue() / self.zoom_resolution
         self.canvas.set_zoom(zoom_value)
+
+    def on_pan_left_button(self, event):
+        """Handle the event when users press the pan left button"""
+        self.canvas.set_pan_x(0)
+
+    def on_pan_reset_button(self, event):
+        """Handle the event when users press the pan Reset button"""
+        self.canvas.reset_pan()
+
+    def on_pan_right_button(self, event):
+        """Handle the event when users press the pan Right button"""
+        self.canvas.pan_to_right_end()
 
     def open_file(self, pathname):
         """Create a new network for another definition file"""
@@ -1738,18 +2095,24 @@ class Gui(wx.Frame):
             with open(pathname, 'r') as _:
                 self.command_manager.execute_command(LoadCommand(pathname))
         except IOError:
-            self.raise_error(self.command_manager.CANNOT_OPEN_FILE, "Cannot open file '%s'." % pathname)
+            self.raise_error(self.command_manager.CANNOT_OPEN_FILE,
+                             "Cannot open file '%s'." % pathname)
 
     def ask_to_save(self, action_title):
         """Handle the quit or load actions if the state is not save"""
-        save_dlg = wx.MessageBox("Current state of the simulation has not been saved! Save changes?", action_title,
-                                 wx.ICON_QUESTION | wx.YES_NO | wx.CANCEL | wx.CANCEL_DEFAULT, self)
+        save_dlg = wx.MessageBox(
+            "Current state of the simulation has not been saved! "
+            "Save changes?",
+            action_title,
+            wx.ICON_QUESTION | wx.YES_NO | wx.CANCEL | wx.CANCEL_DEFAULT, self)
         return save_dlg
 
     def save_file(self):
         """Handle file dialog for choosing the saving file destination"""
-        with wx.FileDialog(self, "Choose where to save the file", wildcard="Network files (*.defb)|*.defb",
-                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
+        with wx.FileDialog(self, "Choose where to save the file",
+                           wildcard="Network files (*.defb)|*.defb",
+                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as \
+                fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
                 return  # the user changed their mind
@@ -1757,20 +2120,23 @@ class Gui(wx.Frame):
             # save the current contents in the file
             pathname = fileDialog.GetPath()
             try:
-                error_code, error_message = self.command_manager.execute_command(SaveCommand(pathname))
+                error_code, error_message = \
+                    self.command_manager.execute_command(
+                        SaveCommand(pathname))
                 if error_code == self.command_manager.NO_ERROR:
                     self.is_saved = True
                 else:
                     self.raise_error(error_code, error_message)
             except IOError:
-                wx.LogError("Cannot save current data in file '%s'." % pathname)
+                wx.LogError(
+                    "Cannot save current data in file '%s'." % pathname)
                 return
         return
 
     def log_text(self, text):
         """Handle the logging in activity_log of an event"""
         text = "".join([datetime.datetime.now().strftime("%H:%M:%S: "), text])
-        self.activity_log_text.AppendText(text+'\n')
+        self.activity_log_text.AppendText(text + '\n')
         self.is_saved = False
 
     def display_help(self):
@@ -1780,20 +2146,21 @@ class Gui(wx.Frame):
     def help_command(self):
         """Print a list of valid commands."""
         text = "User commands:\n" + \
-            "r N         - run the simulation for N cycles\n" + \
-            "c N         - continue the simulation for N cycles\n" + \
-            "s X N     - set switch X to N (0 or 1)\n" + \
-            "m X       - set a monitor on signal X\n" + \
-            "z X         - zap the monitor on signal X\n" + \
-            "h             - help (this command)\n" + \
-            "q            - quit the program"
+               "r N         - run the simulation for N cycles\n" + \
+               "c N         - continue the simulation for N cycles\n" + \
+               "s X N     - set switch X to N (0 or 1)\n" + \
+               "m X       - set a monitor on signal X\n" + \
+               "z X         - zap the monitor on signal X\n" + \
+               "h             - help (this command)\n" + \
+               "q            - quit the program"
         wx.MessageBox(text, "Help on Commands", wx.ICON_INFORMATION | wx.OK)
 
     def switches_update_toggle(self):
         """Handle a change in switches."""
 
-        # If the text in the switches box matches the name of a switch, then the set
-        # and clear buttons enable according to the current value of the switch.
+        # If the text in the switches box matches the name of a switch,
+        # then the set and clear buttons enable according to the current
+        # value of the switch.
         device_name = self.switches_select.GetValue()
         device_id = self.names.query(device_name)
         if device_id is not None and device_id in self.switches:
@@ -1851,13 +2218,15 @@ class Gui(wx.Frame):
         range_x = self.canvas.width
         thumb_x = self.canvas.display_width
         position_x = self.canvas.pan_x
-        self.canvas_scrollbar_hor.SetScrollbar(-position_x, thumb_x, range_x, thumb_x, True)
+        self.canvas_scrollbar_hor.SetScrollbar(
+            -position_x, thumb_x, range_x, thumb_x, True)
 
         # Update vertical scrollbar
         position_y = self.canvas.pan_y - self.canvas.display_height + 18
         range_y = self.canvas.height - 50
         thumb_y = self.canvas.display_height
-        self.canvas_scrollbar_ver.SetScrollbar(position_y, thumb_y, range_y, thumb_y, True)
+        self.canvas_scrollbar_ver.SetScrollbar(
+            position_y, thumb_y, range_y, thumb_y, True)
 
     def update_cycles(self, cycles):
         """Update the number of completed cycles"""
@@ -1894,46 +2263,68 @@ class Gui(wx.Frame):
                 self.save_file()
         self.Close(True)
 
-    def raise_error(self, error, message="Unknown error. Send an email to group 05 for support."):
+    def raise_error(self, error,
+                    message="Unknown error. Send an email to group 05 for "
+                            "support."):
         """Handle user's errors in GUI"""
         if error == self.command_manager.INVALID_COMMAND:
-            wx.MessageBox(message, "Invalid Command Error", wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(message, "Invalid Command Error",
+                          wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.INVALID_ARGUMENT:
-            wx.MessageBox(message, "Invalid Argument Error", wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(message, "Invalid Argument Error",
+                          wx.ICON_ERROR | wx.OK)
         elif error == self.monitors.MONITOR_PRESENT:
-            wx.MessageBox(message, "Monitor Present Error", wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(message, "Monitor Present Error",
+                          wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.SIGNAL_NOT_MONITORED:
-            wx.MessageBox(message, "Signal Not Monitored Error", wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(message, "Signal Not Monitored Error",
+                          wx.ICON_ERROR | wx.OK)
         elif error == self.monitors.NOT_OUTPUT:
-            wx.MessageBox(message, "Monitor On Input Signal Error", wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(message, "Monitor On Input Signal Error",
+                          wx.ICON_ERROR | wx.OK)
         elif error == self.network.DEVICE_ABSENT:
-            wx.MessageBox(message, "Device Absent Error", wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(message, "Device Absent Error",
+                          wx.ICON_ERROR | wx.OK)
         elif error == self.devices.INVALID_QUALIFIER:
-            wx.MessageBox(message, "Invalid Argument Error", wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(message, "Invalid Argument Error",
+                          wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.OSCILLATING_NETWORK:
-            wx.MessageBox(message, "Oscillating Network Error", wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(message, "Oscillating Network Error",
+                          wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.CANNOT_OPEN_FILE:
-            wx.MessageBox(message, "Cannot Open File Error", wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(message, "Cannot Open File Error",
+                          wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.NOTHING_TO_UNDO:
-            wx.MessageBox("No command left to undo. This is the initial state of the simulation.", "Nothing To Undo",
-                          wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(
+                "No command left to undo. This is the initial state of the "
+                "simulation.",
+                "Nothing To Undo",
+                wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.NOTHING_TO_REDO:
-            wx.MessageBox("No command left to redo. This is the last state of the simulation.", "Nothing To Redo",
-                          wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(
+                "No command left to redo. This is the last state of the "
+                "simulation.",
+                "Nothing To Redo",
+                wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.SIMULATION_NOT_STARTED:
-            wx.MessageBox("Nothing to continue. Run first.", "Simulation Not Started",
+            wx.MessageBox("Nothing to continue. Run first.",
+                          "Simulation Not Started",
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.NO_FILE:
-            wx.MessageBox("No network avilable. Load a valid definition file.", "No network available",
+            wx.MessageBox("No network avilable. Load a valid definition file.",
+                          "No network available",
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.INVALID_DEFINITION_FILE:
-            wx.MessageBox(message + "\nPlease check the activity log or the terminal.", "Invalid definition file",
-                          wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(
+                message + "\nPlease check the activity log or the terminal.",
+                "Invalid definition file",
+                wx.ICON_ERROR | wx.OK)
         else:
             wx.MessageBox(message, "Unknown Error", wx.ICON_ERROR | wx.OK)
 
     def on_key(self, event):
-        """Handle generic key press. Used for exiting the fullscreen mode by pressing ESCAPE."""
+        """Handle generic key press. Used for exiting the fullscreen mode by
+        pressing ESCAPE."""
         key_code = event.GetKeyCode()
         if key_code == wx.WXK_ESCAPE:
             self.ShowFullScreen(False)
