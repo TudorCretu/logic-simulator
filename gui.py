@@ -9,13 +9,25 @@ MyGLCanvas - handles all canvas drawing operations.
 Gui - configures the main window and all the widgets.
 """
 import wx
+import sys
+import os
+
 import wx.glcanvas as wxcanvas
 import datetime
 import numpy as np
 import math
 from OpenGL import GL, GLU, GLUT
 from command_manager import *
+import builtins
+builtins.__dict__['_'] = wx.GetTranslation
 
+import app_const as appC
+
+from wx.lib.mixins.inspection import InspectionMixin
+
+def _displayHook(obj):
+    if obj is not None:
+        print (repr(obj))
 
 class My2DGLCanvas(wxcanvas.GLCanvas):
     """Handle all drawing operations.
@@ -1401,10 +1413,20 @@ class Gui(wx.Frame):
     on_key(self, event): Event handler for when the user presses a key.
 
     """
-
+    
     def __init__(self, title, path, names, devices, network, monitors):
         """Initialise widgets and layout."""
         super().__init__(parent=None, title=title, size=(800, 600))
+        
+        sys.displayhook = _displayHook
+        
+        self.appName = "I18N sample application"
+        
+        self.doConfig()
+        
+        self.locale = None
+        wx.Locale.AddCatalogLookupPathPrefix('locale')
+        self.updateLanguage(self.appConfig.Read(u"Language"))
 
         # Simulation variables
         self.completed_cycles = 0
@@ -1418,36 +1440,36 @@ class Gui(wx.Frame):
         menuBar = wx.MenuBar()
 
         fileMenu = wx.Menu()
-        fileMenu.Append(wx.ID_NEW, "&New")
-        fileMenu.Append(wx.ID_OPEN, "&Load")
-        fileMenu.Append(wx.ID_SAVE, "&Save")
-        fileMenu.Append(wx.ID_EXIT, "&Exit")
-        menuBar.Append(fileMenu, "&File")
+        fileMenu.Append(wx.ID_NEW, _("&New"))
+        fileMenu.Append(wx.ID_OPEN, _("&Load"))
+        fileMenu.Append(wx.ID_SAVE, _("&Save"))
+        fileMenu.Append(wx.ID_EXIT, _("&Exit"))
+        menuBar.Append(fileMenu, _("&File"))
 
         editMenu = wx.Menu()
-        editMenu.Append(wx.ID_UNDO, "&Undo\tCTRL+Z")
-        editMenu.Append(wx.ID_REDO, "&Redo\tCTRL+SHIFT+Z")
-        menuBar.Append(editMenu, "&Edit")
+        editMenu.Append(wx.ID_UNDO, _("&Undo\tCTRL+Z"))
+        editMenu.Append(wx.ID_REDO, _("&Redo\tCTRL+SHIFT+Z"))
+        menuBar.Append(editMenu, _("&Edit"))
 
         viewMenu = wx.Menu()
         wx.ID_FULLSCREEN = wx.NewId()
-        viewMenu.Append(wx.ID_FULLSCREEN, "&Fullscreen")
-        viewMenu.Append(wx.ID_ZOOM_100, "&Actual Size")
-        viewMenu.Append(wx.ID_ZOOM_IN, "Zoom &In\tCTRL++")
-        viewMenu.Append(wx.ID_ZOOM_OUT, "Zoom &Out\tCTRL+-")
-        menuBar.Append(viewMenu, "&View")
+        viewMenu.Append(wx.ID_FULLSCREEN, _("&Fullscreen"))
+        viewMenu.Append(wx.ID_ZOOM_100, _("&Actual Size"))
+        viewMenu.Append(wx.ID_ZOOM_IN, _("Zoom &In\tCTRL++"))
+        viewMenu.Append(wx.ID_ZOOM_OUT, _("Zoom &Out\tCTRL+-"))
+        menuBar.Append(viewMenu, _("&View"))
 
         runMenu = wx.Menu()
         wx.ID_CONTINUE = wx.NewId()
-        runMenu.Append(wx.ID_EXECUTE, "&Run")
-        runMenu.Append(wx.ID_CONTINUE, "&Continue")
-        menuBar.Append(runMenu, "&Run")
+        runMenu.Append(wx.ID_EXECUTE, _("&Run"))
+        runMenu.Append(wx.ID_CONTINUE, _("&Continue"))
+        menuBar.Append(runMenu, _("&Run"))
 
         helpMenu = wx.Menu()
-        helpMenu.Append(wx.ID_ABOUT, "&About")
-        helpMenu.Append(wx.ID_HELP, "&Help")
-        helpMenu.Append(wx.ID_HELP_COMMANDS, "&Help Commands")
-        menuBar.Append(helpMenu, "&Help")
+        helpMenu.Append(wx.ID_ABOUT, _("&About"))
+        helpMenu.Append(wx.ID_HELP, _("&Help"))
+        helpMenu.Append(wx.ID_HELP_COMMANDS, _("&Help Commands"))
+        menuBar.Append(helpMenu, _("&Help"))
         self.SetMenuBar(menuBar)
 
         # Configure the tooblar
@@ -1511,7 +1533,7 @@ class Gui(wx.Frame):
         self.update_scrollbars()
 
         #  Top sizer
-        self.load_file_button = wx.Button(self, wx.ID_ANY, "Load file")
+        self.load_file_button = wx.Button(self, wx.ID_ANY, _("Load file"))
         self.load_file_text_box = wx.TextCtrl(
             self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER)
         if path is not None:
@@ -1519,8 +1541,8 @@ class Gui(wx.Frame):
 
         #  Activity log sizer
         self.activity_log_title = wx.StaticText(
-            self, wx.ID_ANY, "Activity log")
-        self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, "",
+            self, wx.ID_ANY, _("Activity log"))
+        self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, _(""),
                                              style=wx.TE_MULTILINE |
                                              wx.TE_READONLY |
                                              wx.ALIGN_TOP)
@@ -1538,10 +1560,10 @@ class Gui(wx.Frame):
             switch_id) for switch_id in self.switches]
         self.switches_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT,
                                            choices=switches_names)
-        self.switches_set_button = wx.ToggleButton(self, wx.ID_ANY, "HIGH",
+        self.switches_set_button = wx.ToggleButton(self, wx.ID_ANY, _("HIGH"),
                                                    style=wx.BORDER_NONE,
                                                    size=toggle_button_size)
-        self.switches_clear_button = wx.ToggleButton(self, wx.ID_ANY, "LOW",
+        self.switches_clear_button = wx.ToggleButton(self, wx.ID_ANY, _("LOW"),
                                                      style=wx.BORDER_NONE,
                                                      size=toggle_button_size)
         self.switches_set_button.Disable()
@@ -1552,10 +1574,10 @@ class Gui(wx.Frame):
             self.monitors.get_signal_names()[1]
         self.monitors_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT,
                                            choices=monitor_names)
-        self.monitors_set_button = wx.ToggleButton(self, wx.ID_ANY, "SET",
+        self.monitors_set_button = wx.ToggleButton(self, wx.ID_ANY, _("SET"),
                                                    style=wx.BORDER_NONE,
                                                    size=toggle_button_size)
-        self.monitors_zap_button = wx.ToggleButton(self, wx.ID_ANY, "ZAP",
+        self.monitors_zap_button = wx.ToggleButton(self, wx.ID_ANY, _("ZAP"),
                                                    style=wx.BORDER_NONE,
                                                    size=toggle_button_size)
         self.monitors_set_button.Disable()
@@ -1564,9 +1586,9 @@ class Gui(wx.Frame):
         #   Simulation
         self.simulation_cycles_spin = wx.SpinCtrl(
             self, wx.ID_ANY, "10", max=10 ** 10)
-        self.simulation_run_button = wx.Button(self, wx.ID_ANY, "Run")
+        self.simulation_run_button = wx.Button(self, wx.ID_ANY, _("Run"))
         self.simulation_continue_button = wx.Button(
-            self, wx.ID_ANY, "Continue")
+            self, wx.ID_ANY, _("Continue"))
 
         #   Zoom
         zoom_button_size = wx.Size(25, 25)
@@ -1578,7 +1600,7 @@ class Gui(wx.Frame):
                                      maxValue=self.zoom_resolution *
                                      self.canvas.zoom_max,
                                      style=wx.SL_LABELS | wx.SL_TICKS,
-                                     name="Zoom")
+                                     name=_("Zoom"))
         self.zoom_slider.SetTickFreq(250)
         if wx.Platform == '__WXGTK__':  # If available, use zoom bitmaps
             plus = wx.ArtProvider.GetBitmap(
@@ -1597,23 +1619,23 @@ class Gui(wx.Frame):
                 self, wx.ID_ANY, "-", size=zoom_button_size)
 
         #   Pan
-        self.pan_left_button = wx.Button(self, wx.ID_ANY, " <- To Start")
-        self.pan_reset_button = wx.Button(self, wx.ID_ANY, " Reset View")
-        self.pan_right_button = wx.Button(self, wx.ID_ANY, " To End ->")
+        self.pan_left_button = wx.Button(self, wx.ID_ANY, _(" <- To Start"))
+        self.pan_reset_button = wx.Button(self, wx.ID_ANY, _(" Reset View"))
+        self.pan_right_button = wx.Button(self, wx.ID_ANY, _(" To End ->"))
 
         #   2D/3D
-        self.two_dim_button = wx.Button(self, wx.ID_ANY, "3D")
+        self.two_dim_button = wx.Button(self, wx.ID_ANY, _("3D"))
 
         #  Static Strings
-        console_title = wx.StaticText(self, wx.ID_ANY, "Console")
-        side_title = wx.StaticText(self, wx.ID_ANY, "Properties")
+        console_title = wx.StaticText(self, wx.ID_ANY, _("Console"))
+        side_title = wx.StaticText(self, wx.ID_ANY, _("Properties"))
         switches_title = wx.StaticText(
-            self, wx.ID_ANY, "Change State of Switch")
-        monitors_title = wx.StaticText(self, wx.ID_ANY, "Set or Zap Monitors")
-        run_simulation_title = wx.StaticText(self, wx.ID_ANY, "Simulate")
-        zoom_title = wx.StaticText(self, wx.ID_ANY, "Zoom")
-        pan_title = wx.StaticText(self, wx.ID_ANY, "Pan")
-        two_dim_title = wx.StaticText(self, wx.ID_ANY, "2D/3D View")
+            self, wx.ID_ANY, _("Change State of Switch"))
+        monitors_title = wx.StaticText(self, wx.ID_ANY, _("Set or Zap Monitors"))
+        run_simulation_title = wx.StaticText(self, wx.ID_ANY, _("Simulate"))
+        zoom_title = wx.StaticText(self, wx.ID_ANY, _("Zoom"))
+        pan_title = wx.StaticText(self, wx.ID_ANY, _("Pan"))
+        two_dim_title = wx.StaticText(self, wx.ID_ANY, _("2D/3D View"))
 
         #  Lines
         line_side = wx.StaticLine(self, wx.ID_ANY, style=wx.HORIZONTAL)
@@ -1866,15 +1888,15 @@ class Gui(wx.Frame):
             network = Network(names, devices)
             monitors = Monitors(names, devices, network)
             app = wx.App()
-            gui = Gui("Logic Simulator", None, names,
+            gui = Gui(_("Logic Simulator"), None, names,
                       devices, network, monitors)
             gui.Show(True)
             app.MainLoop()
         if Id == wx.ID_EXIT:
             self.quit_command()
         if Id == wx.ID_ABOUT:
-            wx.MessageBox("Logic Simulator\nCreated by Team 05\n2019",
-                          "About Logsim", wx.ICON_INFORMATION | wx.OK)
+            wx.MessageBox(_("Logic Simulator\nCreated by Team 05\n2019"),
+                          _("About Logsim"), wx.ICON_INFORMATION | wx.OK)
         if Id == wx.ID_OPEN:
             # Same functionality as load button
             self.on_load_file_button(None)
@@ -1885,13 +1907,13 @@ class Gui(wx.Frame):
             if error_code != self.command_manager.NO_ERROR:
                 self.raise_error(error_code, error_message)
             else:
-                self.log_text("Undo")
+                self.log_text(_("Undo"))
         if Id == wx.ID_REDO:
             error_code, error_message = self.command_manager.redo_command()
             if error_code != self.command_manager.NO_ERROR:
                 self.raise_error(error_code, error_message)
             else:
-                self.log_text("Redo")
+                self.log_text(_("Redo"))
         if Id == wx.ID_MAXIMIZE_FRAME:
             self.Maximize(True)
         if Id == wx.ID_FULLSCREEN:
@@ -1915,7 +1937,61 @@ class Gui(wx.Frame):
             self.display_help()
         if Id == wx.ID_HELP_COMMANDS:
             self.help_command()
+    def doConfig(self):
+        """Setup an application configuration file"""
+        # configuration folder
+        sp = wx.StandardPaths.Get()
+        self.configLoc = sp.GetUserConfigDir()
+        self.configLoc = os.path.join(self.configLoc, self.appName)
+        # win: C:\Users\userid\AppData\Roaming\appName
+        # nix: \home\userid\appName
 
+        if not os.path.exists(self.configLoc):
+            os.mkdir(self.configLoc)
+
+        # AppConfig stuff is here
+        self.appConfig = wx.FileConfig(appName=self.appName,
+                                       vendorName=u'who you wish',
+                                       localFilename=os.path.join(
+                                       self.configLoc, "AppConfig"))
+    
+        if not self.appConfig.HasEntry(u'Language'):
+            # on first run we default to German
+            self.appConfig.Write(key=u'Language', value=u'de')
+            
+        self.appConfig.Flush()
+        
+    def updateLanguage(self, lang):
+        """
+        Update the language to the requested one.
+        
+        Make *sure* any existing locale is deleted before the new
+        one is created.  The old C++ object needs to be deleted
+        before the new one is created, and if we just assign a new
+        instance to the old Python variable, the old C++ locale will
+        not be destroyed soon enough, likely causing a crash.
+        
+        :param string `lang`: one of the supported language codes
+        
+        """
+        # if an unsupported language is requested default to English
+        if lang in appC.supLang:
+            selLang = appC.supLang[lang]
+        else:
+            selLang = wx.LANGUAGE_ENGLISH
+            
+        if self.locale:
+            assert sys.getrefcount(self.locale) <= 2
+            del self.locale
+        
+        # create a locale object for this language
+        self.locale = wx.Locale(selLang)
+        if self.locale.IsOk():
+            self.locale.AddCatalog(appC.langDomain)
+        else:
+            self.locale = None
+            
+    
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
         spin_value = self.simulation_cycles_spin.GetValue()
@@ -1933,13 +2009,13 @@ class Gui(wx.Frame):
 
     def on_two_dim_button(self, event):
         """Handle the event when the user click the 2D/3D button"""
-        if self.two_dim_button.GetLabelText() == "2D":
-            self.two_dim_button.SetLabel("3D")
+        if self.two_dim_button.GetLabelText() == _("2D"):
+            self.two_dim_button.SetLabel(_("3D"))
             self.canvas_sizer.Show(self.canvas_2D, recursive=True)
             self.canvas_sizer.Hide(self.canvas_3D, recursive=True)
             self.canvas = self.canvas_2D
         else:
-            self.two_dim_button.SetLabel("2D")
+            self.two_dim_button.SetLabel(_("2D"))
             self.canvas_sizer.Hide(self.canvas_2D, recursive=True)
             self.canvas_sizer.Show(self.canvas_3D, recursive=True)
             self.canvas = self.canvas_3D
@@ -1975,8 +2051,8 @@ class Gui(wx.Frame):
                 self.quit_command()
             else:
                 self.raise_error(self.command_manager.INVALID_COMMAND,
-                                 "Command " + command_arg +
-                                 " is invalid. Enter 'h' for help.")
+                                 _("Command ") + command_arg +
+                                 _(" is invalid. Enter 'h' for help."))
                 break
 
         self.console.SetValue("")
@@ -2012,13 +2088,13 @@ class Gui(wx.Frame):
     def on_load_file_button(self, event):
         """Handle the load file button"""
         if not self.is_saved:
-            answer = self.ask_to_save("Load file")
+            answer = self.ask_to_save(_("Load file"))
             if answer == wx.CANCEL:
                 return
             elif answer == wx.YES:
                 self.save_file()
         # otherwise ask the user what new file to open
-        with wx.FileDialog(self, "Open another definition file",
+        with wx.FileDialog(self, _("Open another definition file"),
                            wildcard="Definiton file (*.def)|*.def|"
                                     "Network file (*.defb)|*.defb|"
                                     "Text file (*.txt)|*.txt|All files (*)|*",
@@ -2035,7 +2111,7 @@ class Gui(wx.Frame):
     def on_load_file_text_box(self, event):
         """Handle the event when user enters filepath into load_text_box"""
         if not self.is_saved:
-            answer = self.ask_to_save("Load file")
+            answer = self.ask_to_save(_("Load file"))
             if answer == wx.CANCEL:
                 return
             elif answer == wx.YES:
@@ -2089,20 +2165,20 @@ class Gui(wx.Frame):
                 self.command_manager.execute_command(LoadCommand(pathname))
         except IOError:
             self.raise_error(self.command_manager.CANNOT_OPEN_FILE,
-                             "Cannot open file '%s'." % pathname)
+                             "Cannot open file " + pathname)
 
     def ask_to_save(self, action_title):
         """Handle the quit or load actions if the state is not save"""
         save_dlg = wx.MessageBox(
-            "Current state of the simulation has not been saved! "
-            "Save changes?",
+            _("Current state of the simulation has not been saved! ")
+            + _("Save changes?"),
             action_title,
             wx.ICON_QUESTION | wx.YES_NO | wx.CANCEL | wx.CANCEL_DEFAULT, self)
         return save_dlg
 
     def save_file(self):
         """Handle file dialog for choosing the saving file destination"""
-        with wx.FileDialog(self, "Choose where to save the file",
+        with wx.FileDialog(self, _("Choose where to save the file"),
                            wildcard="Network files (*.defb)|*.defb",
                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as \
                 fileDialog:
@@ -2122,7 +2198,7 @@ class Gui(wx.Frame):
                     self.raise_error(error_code, error_message)
             except IOError:
                 wx.LogError(
-                    "Cannot save current data in file '%s'." % pathname)
+                    _("Cannot save current data in file ") + pathname)
                 return
         return
 
@@ -2133,20 +2209,20 @@ class Gui(wx.Frame):
         self.is_saved = False
 
     def display_help(self):
-        with open("logsim_help.txt", 'r') as help_fp:
-            wx.MessageBox(help_fp.read(), "Help", wx.ICON_INFORMATION | wx.OK)
+        with open(_("logsim_help.txt"), 'r') as help_fp:
+            wx.MessageBox(help_fp.read(), _("Help"), wx.ICON_INFORMATION | wx.OK)
 
     def help_command(self):
         """Print a list of valid commands."""
-        text = "User commands:\n" + \
-               "r N         - run the simulation for N cycles\n" + \
-               "c N         - continue the simulation for N cycles\n" + \
-               "s X N     - set switch X to N (0 or 1)\n" + \
-               "m X       - set a monitor on signal X\n" + \
-               "z X         - zap the monitor on signal X\n" + \
-               "h             - help (this command)\n" + \
-               "q            - quit the program"
-        wx.MessageBox(text, "Help on Commands", wx.ICON_INFORMATION | wx.OK)
+        text = _("User commands:\n") + \
+               _("r N         - run the simulation for N cycles\n") + \
+               _("c N         - continue the simulation for N cycles\n") + \
+               _("s X N     - set switch X to N (0 or 1)\n") + \
+               _("m X       - set a monitor on signal X\n") + \
+               _("z X         - zap the monitor on signal X\n") + \
+               _("h             - help (this command)\n") + \
+               _("q            - quit the program")
+        wx.MessageBox(text, _("Help on Commands"), wx.ICON_INFORMATION | wx.OK)
 
     def switches_update_toggle(self):
         """Handle a change in switches."""
@@ -2249,7 +2325,7 @@ class Gui(wx.Frame):
     def quit_command(self):
         """Handle the quit command"""
         if not self.is_saved:
-            answer = self.ask_to_save("Quit")
+            answer = self.ask_to_save(_("Quit"))
             if answer == wx.CANCEL:
                 return
             elif answer == wx.YES:
@@ -2257,63 +2333,62 @@ class Gui(wx.Frame):
         self.Close(True)
 
     def raise_error(self, error,
-                    message="Unknown error. Send an email to group 05 for "
-                            "support."):
+                    message="Unknown error. Send an email to group 05 for support"):
         """Handle user's errors in GUI"""
         if error == self.command_manager.INVALID_COMMAND:
-            wx.MessageBox(message, "Invalid Command Error",
+            wx.MessageBox(message, _("Invalid Command Error"),
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.INVALID_ARGUMENT:
-            wx.MessageBox(message, "Invalid Argument Error",
+            wx.MessageBox(message, _("Invalid Argument Error"),
                           wx.ICON_ERROR | wx.OK)
         elif error == self.monitors.MONITOR_PRESENT:
-            wx.MessageBox(message, "Monitor Present Error",
+            wx.MessageBox(message, _("Monitor Present Error"),
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.SIGNAL_NOT_MONITORED:
-            wx.MessageBox(message, "Signal Not Monitored Error",
+            wx.MessageBox(message, _("Signal Not Monitored Error"),
                           wx.ICON_ERROR | wx.OK)
         elif error == self.monitors.NOT_OUTPUT:
-            wx.MessageBox(message, "Monitor On Input Signal Error",
+            wx.MessageBox(message, _("Monitor On Input Signal Error"),
                           wx.ICON_ERROR | wx.OK)
         elif error == self.network.DEVICE_ABSENT:
-            wx.MessageBox(message, "Device Absent Error",
+            wx.MessageBox(message, _("Device Absent Error"),
                           wx.ICON_ERROR | wx.OK)
         elif error == self.devices.INVALID_QUALIFIER:
-            wx.MessageBox(message, "Invalid Argument Error",
+            wx.MessageBox(message, _("Invalid Argument Error"),
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.OSCILLATING_NETWORK:
-            wx.MessageBox(message, "Oscillating Network Error",
+            wx.MessageBox(message, _("Oscillating Network Error"),
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.CANNOT_OPEN_FILE:
-            wx.MessageBox(message, "Cannot Open File Error",
+            wx.MessageBox(message, _("Cannot Open File Error"),
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.NOTHING_TO_UNDO:
             wx.MessageBox(
                 "No command left to undo. This is the initial state of the "
-                "simulation.",
-                "Nothing To Undo",
+                + _("simulation."),
+                + _("Nothing To Undo"),
                 wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.NOTHING_TO_REDO:
             wx.MessageBox(
-                "No command left to redo. This is the last state of the "
-                "simulation.",
-                "Nothing To Redo",
+                _("No command left to redo. This is the last state of the ")
+                +_("simulation."),
+                _("Nothing To Redo"),
                 wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.SIMULATION_NOT_STARTED:
-            wx.MessageBox("Nothing to continue. Run first.",
-                          "Simulation Not Started",
+            wx.MessageBox(_("Nothing to continue. Run first."),
+                          _("Simulation Not Started"),
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.NO_FILE:
-            wx.MessageBox("No network avilable. Load a valid definition file.",
-                          "No network available",
+            wx.MessageBox(_("No network avilable. Load a valid definition file."),
+                          _("No network available"),
                           wx.ICON_ERROR | wx.OK)
         elif error == self.command_manager.INVALID_DEFINITION_FILE:
             wx.MessageBox(
-                message + "\nPlease check the activity log or the terminal.",
-                "Invalid definition file",
+                message + _("\nPlease check the activity log or the terminal."),
+                _("Invalid definition file"),
                 wx.ICON_ERROR | wx.OK)
         else:
-            wx.MessageBox(message, "Unknown Error", wx.ICON_ERROR | wx.OK)
+            wx.MessageBox(message, _("Unknown Error"), wx.ICON_ERROR | wx.OK)
 
     def on_key(self, event):
         """Handle generic key press. Used for exiting the fullscreen mode by
