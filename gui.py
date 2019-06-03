@@ -1417,13 +1417,14 @@ class Gui(wx.Frame):
 
     """
     
-    def __init__(self, title, path, names, devices, network, monitors,lang_code):
+    def __init__(self, title, path, names, devices, network, monitors,lang_code,cycles):
         """Initialise widgets and layout."""
         super().__init__(parent=None, title =title, size=(800, 600))
         # set attributte for language code eg. "en" for English, "el"
         # for Greek 
         self.lang_code = lang_code
         self.path_name = path
+        
         
         sys.displayhook = _displayHook
         
@@ -1895,20 +1896,24 @@ class Gui(wx.Frame):
         self.update_scrollbars()
         self.Show()
         self.Maximize(True)
+        self.run_command(cycles)
 
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
         Id = event.GetId()
         print(Id)
         if Id == self.ENGLISH_BUTTON_ID:
-            new_gui = Gui("Logic Simulator", self.path_name, self.names, self.devices, self.network, self.monitors,"en")
-            new_gui.Show(True)
             self.Close(True)
+            new_gui = Gui("Logic Simulator", self.path_name, self.names, self.devices, self.network, self.monitors,"en",self.canvas.completed_cycles)
+            new_gui.Show(True)
+            
 			
         if Id == self.GREEK_BUTTON_ID:
-            new_gui = Gui("Λογική Προσομοιωτής", self.path_name, self.names, self.devices, self.network, self.monitors,"el")
-            new_gui.Show(True)
             self.Close(True)
+            new_gui = Gui("Λογική Προσομοιωτής", self.path_name, self.names, self.devices, self.network, self.monitors,"el",self.canvas.completed_cycles)
+            new_gui.Show(True)
+            
+
 			
 			
         if Id == wx.ID_NEW:
@@ -1918,7 +1923,7 @@ class Gui(wx.Frame):
             monitors = Monitors(names, devices, network)
             app = wx.App()
             gui = Gui(_("Logic Simulator"), None, names,
-                      devices, network, monitors, self.lang_code)
+                      devices, network, monitors, self.lang_code,0)
             gui.Show(True)
             app.MainLoop()
         if Id == wx.ID_EXIT:

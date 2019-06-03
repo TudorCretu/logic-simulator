@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: sr 795\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-06-03 13:36+0100\n"
-"PO-Revision-Date: 2019-06-03 14:27+0100\n"
+"PO-Revision-Date: 2019-06-03 17:24+0100\n"
 "Last-Translator: S. Ravichandran <caldays.r@gmail.com>\n"
 "Language-Team: Greek\n"
 "Language: el\n"
@@ -115,11 +115,11 @@ msgstr "Αρχείο καταγραφής δραστηριότητας"
 
 #: gui.py:1579
 msgid "HIGH"
-msgstr "ΥΨΗΛΟΣ"
+msgstr "ΥΨΗ"
 
 #: gui.py:1582
 msgid "LOW"
-msgstr "ΧΑΜΗΛΟΣ"
+msgstr "ΧΑΜ"
 
 #: gui.py:1593
 msgid "SET"
