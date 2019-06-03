@@ -316,8 +316,8 @@ def test_CONNECTIONS_device_absent_error():
     parser.parse_devices()
     assert parser.parse_connections() is False
 
-    assert parser.error_output[0] == ("DeviceAbsentError:Device 'XOR8' is not "
-                                      "defined")
+    assert parser.error_output[0] == ("DeviceAbsentError:"
+                                      " Device 'XOR8' is not defined")
 
 
 def test_CONNECTIONS_invalid_port_error():
@@ -516,7 +516,7 @@ def test_MONITORS_device_absent():
 
     assert parser.parse_monitors() is False
 
-    assert parser.error_output[0] == ("DeviceAbsentError:Device 'D3' is not "
+    assert parser.error_output[0] == ("DeviceAbsentError: Device 'D3' is not "
                                       "defined")
 
 

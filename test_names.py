@@ -22,6 +22,8 @@ def test_query():
     n.names = ["name1", "name2", "name3"]
     assert n.query("name1") == 0
     assert n.query("name4") is None
+    assert n.query(2) is None
+    assert n.query(-1) is None
 
 
 def test_lookup():
@@ -30,6 +32,8 @@ def test_lookup():
     assert n.lookup(["name1"]) == [0]
     assert n.lookup(["name2"]) == [1]
     assert n.lookup(["name2", "name3", "name1"]) == [1, 2, 0]
+    assert n.query("name1") == 0
+    assert n.query(-1) is None
 
 
 def test_get_name_string():
@@ -38,3 +42,5 @@ def test_get_name_string():
     _ = n.lookup(["name1", "name2", "name3"])
     assert n.get_name_string(1) == "name2"
     assert n.get_name_string(5) is None
+    with pytest.raises(TypeError):
+        n.get_name_string('a')

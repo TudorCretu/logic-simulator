@@ -39,7 +39,7 @@ def create_parser(path):
 
 def test_read_symbol():
     """Test the Parser.read_symbol() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/read_symbol.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
@@ -51,17 +51,18 @@ def test_read_symbol():
 
 def test_print_msg(capfd):
     """Test the Parser.print_msg(success) function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/read_symbol.txt"
     parser = create_parser(path)
     parser.print_msg(True)
     out, err = capfd.readouterr()
-    assert out == "Parsed successfully! Valid definition file!\n"
+    assert out == "\033[32m\nParsed successfully!" \
+                  " Valid definition file!\033[0m\n"
 
 
 def test_skip_erratic_part():
     """Test the Parser.skip_erratic_part() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
@@ -71,7 +72,7 @@ def test_skip_erratic_part():
 
 def test_display_error():
     """Test the Parser.display_error(error_type) function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
@@ -81,7 +82,7 @@ def test_display_error():
 
 def test_display_error_device():
     """Test the Parser.display_error_device(error_type) function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
@@ -94,7 +95,7 @@ def test_display_error_device():
 
 def test_display_error_connection():
     """Test the Parser.display_error_connection(error_type) function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
@@ -106,7 +107,7 @@ def test_display_error_connection():
 
 def test_display_error_monitor():
     """Test the Parser.display_error_monitor(error_type) function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/skip_erratic_part.txt"
     parser = create_parser(path)
     symbol1 = parser.read_symbol()
@@ -119,7 +120,7 @@ def test_display_error_monitor():
 
 def test_check_names():
     """Test the Parser.check_names() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/check_names.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
@@ -130,7 +131,7 @@ def test_check_names():
 
 def test_check_numbers():
     """Test the Parser.check_numbers() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/check_numbers.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
@@ -141,7 +142,7 @@ def test_check_numbers():
 
 def test_check_side():
     """Test the Parser.check_side() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/check_side.txt"
     parser = create_parser(path)
     parser.symbol = parser.read_symbol()
@@ -154,7 +155,7 @@ def test_check_side():
 
 def test_signame():
     """Test the Parser.signame() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/signame.txt"
     parser = create_parser(path)
     _ = parser.parse_devices()
@@ -175,7 +176,7 @@ def test_signame():
 
 def test_get_parameter():
     """Test the Parser.get_parameter() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/get_parameter.txt"
     parser = create_parser(path)
     param = parser.get_parameter()
@@ -186,7 +187,7 @@ def test_get_parameter():
 
 def test_add_device():
     """Test the Parser.add_device() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/add_device.txt"
     parser = create_parser(path)
     flag = parser.add_device()
@@ -203,7 +204,7 @@ def test_add_device():
 
 def test_parse_devices():
     """Test the Parser.parse_devices() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/parse_device.txt"
     parser = create_parser(path)
     flag = parser.parse_devices()
@@ -212,7 +213,7 @@ def test_parse_devices():
 
 def test_add_connection():
     """Test the Parser.add_connection() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/add_connection.txt"
     parser = create_parser(path)
     flag = parser.parse_devices()
@@ -234,7 +235,7 @@ def test_add_connection():
 
 def test_parse_connections():
     """Test the Parser.parse_connections() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/parse_connection.txt"
     parser = create_parser(path)
     _ = parser.parse_devices()
@@ -244,7 +245,7 @@ def test_parse_connections():
 
 def test_add_monitor():
     """Test the Parser.add_monitor() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/add_monitor.txt"
     parser = create_parser(path)
     flag = parser.parse_devices()
@@ -268,7 +269,7 @@ def test_add_monitor():
 
 def test_parse_monitors():
     """Test the Parser.parse_monitors() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/parse_monitor.txt"
     parser = create_parser(path)
     _ = parser.parse_devices()
@@ -279,7 +280,7 @@ def test_parse_monitors():
 
 def test_parse_network():
     """Test the Parser.parse_network() function"""
-    file_dir = "test_functions"
+    file_dir = "pytest_test_files/test_functions"
     path = file_dir + "/parse_network.txt"
     parser = create_parser(path)
     flag = parser.parse_network()
