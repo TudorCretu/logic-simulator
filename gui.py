@@ -1119,8 +1119,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
                     self.pan_x += x * self.zoom
                     self.pan_y -= y * self.zoom
                 GL.glMultMatrixf(self.scene_rotate)
-                print(
-                    GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate))
+                GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate)
 
                 self.last_mouse_x = event.GetX()
                 self.last_mouse_y = event.GetY()
