@@ -74,8 +74,8 @@ def main(arg_list):
                 sys.exit()
 
             # Initialise an instance of the gui.Gui() class
-            app = ab.BaseApp(redirect = False)
-            gui = Gui("Logic Simulator", path, names, devices, network, monitors, app)
+            app = wx.App()
+            gui = Gui("Logic Simulator", path, names, devices, network, monitors,"fr")
             gui.Show(True)
             app.MainLoop()
 
@@ -83,8 +83,8 @@ def main(arg_list):
 
         if len(arguments) == 0:  # Open the blank gui
             # Initialise an instance of the gui.Gui() class
-            app = ab.BaseApp(redirect = False)
-            gui = Gui("Logic Simulator", None, names, devices, network, monitors,app)
+            app = wx.App()
+            gui = Gui("Logic Simulator", None, names, devices, network, monitors,"fr")
             gui.Show(True)
             app.MainLoop()
 
@@ -94,8 +94,8 @@ def main(arg_list):
             parser = Parser(names, devices, network, monitors, scanner)
             if parser.parse_network():
                 # Initialise an instance of the gui.Gui() class
-                app = ab.BaseApp(redirect = False)
-                gui = Gui("Logic Simulator", path, names, devices, network, monitors,app)
+                app = wx.App()
+                gui = Gui("Logic Simulator", path, names, devices, network, monitors,"fr")
                 gui.Show(True)
                 app.MainLoop()
 

@@ -1165,6 +1165,9 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
             self.init = False
             self.gui.zoom_slider.SetValue(self.zoom * self.gui.zoom_resolution)
 
+        print(self.pan_x)
+        print(self.pan_y)
+        print(self.zoom)
         self.Refresh()  # triggers the paint event
 
     def render_text(self, text, z_pos, y_pos, x_pos,
@@ -1212,7 +1215,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
 
     def set_pan_x(self, scroll_x):
         """Set pan x to a specific value"""
-        self.pan_x = scroll_x + self.width/2
+        self.pan_x = scroll_x + self.width/2 + self.cycle_width
         self.pan_y = 0
         self.scene_rotate = self.default_rotate
         self.init = False
@@ -1232,32 +1235,36 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         # self.pan_x = min(0, self.pan_x)
         # self.pan_y = min(self.height - 50, self.pan_y)
         # self.pan_y = max(self.display_height - 18, self.pan_y)
-        pass
 
     def reset_pan(self):
         """Reset pan to start of displayed signals"""
         self.pan_x = 0
         self.pan_y = 0
         self.zoom = 1
-        self.gui.zoom_slider.SetValue(1*self.gui.zoom_resolution)
         GL.glMatrixMode(GL.GL_MODELVIEW)
-
-        # Reset to identity matrix
         GL.glLoadIdentity()
+        rotation = np.matmul(self.default_rotate, GL.glGetFloatv(
+            GL.GL_MODELVIEW_MATRIX, self.scene_rotate))
 
-        # Reset to default view
-        GL.glMultMatrixf(self.default_rotate)
+        # GL.glRotatef()
+        GL.glMultMatrixf(*(self.default_rotate)*self.scene_rotate*np.linalg
+                         .inv(rotation))
 
-        a = (GL.GLfloat * 16)()
-        self.scene_rotate = GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, a)
+        print(
+            GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate))
+
+        self.scene_rotate = self.default_rotate
         self.init = False
-        self.init_gl()
         self.render()
 
     def pan_to_right_end(self):
         """Pan to the right of the signals"""
-        self.reset_pan()
-        self.set_pan_x(-self.width-self.cycle_width)
+
+        # x_at_end_of_signal = self.pan_x + self.zoom * (self.cycle_start_x +
+        # self.completed_cycles * self.cycle_width)
+        # self.pan_x -= x_at_end_of_signal - self.GetClientSize().width + 50
+        # if self.pan_x > 0:
+        #     self.pan_x = 0
         self.init = False
         self.render()
 
@@ -1415,7 +1422,7 @@ class Gui(wx.Frame):
 
     """
     
-    def __init__(self, title, path, names, devices, network, monitors):
+    def __init__(self, title, path, names, devices, network, monitors,lang_code):
         """Initialise widgets and layout."""
         super().__init__(parent=None, title=title, size=(800, 600))
         
@@ -1427,7 +1434,9 @@ class Gui(wx.Frame):
         
         self.locale = None
         wx.Locale.AddCatalogLookupPathPrefix('locale')
-        self.updateLanguage(self.appConfig.Read(u"Language"))
+        self.lang_code = lang_code
+
+        self.updateLanguage(lang_code)
 
         # Simulation variables
         self.completed_cycles = 0
@@ -1471,7 +1480,13 @@ class Gui(wx.Frame):
         helpMenu.Append(wx.ID_HELP, _("&Help"))
         helpMenu.Append(wx.ID_HELP_COMMANDS, _("&Help Commands"))
         menuBar.Append(helpMenu, _("&Help"))
+
+        LangMenu = wx.Menu()
+        LangMenu.Append(10001, _("&ENGLISH"))
+        LangMenu.Append(10002, _("&GREEK"))
+        menuBar.Append(LangMenu, _("&ABC"))
         self.SetMenuBar(menuBar)
+        
 
         # Configure the tooblar
         self.toolbar = wx.ToolBar(self)
@@ -1543,7 +1558,7 @@ class Gui(wx.Frame):
         #  Activity log sizer
         self.activity_log_title = wx.StaticText(
             self, wx.ID_ANY, _("Activity log"))
-        self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, _(""),
+        self.activity_log_text = wx.TextCtrl(self, wx.ID_ANY, "",
                                              style=wx.TE_MULTILINE |
                                              wx.TE_READONLY |
                                              wx.ALIGN_TOP)
@@ -1883,6 +1898,18 @@ class Gui(wx.Frame):
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
         Id = event.GetId()
+        print(Id)
+        if Id == 10001:
+            new_gui = Gui("Logic Simulator", None, self.names, self.devices, self.network, self.monitors,"en")
+            new_gui.Show(True)
+            self.Close(True)
+			
+        if Id == 10002:
+            new_gui = Gui("Logic Simulator", None, self.names, self.devices, self.network, monitors,"de")
+            new_gui.Show(True)
+            self.Close(True)
+			
+			
         if Id == wx.ID_NEW:
             names = Names()
             devices = Devices(names)
@@ -1938,6 +1965,7 @@ class Gui(wx.Frame):
             self.display_help()
         if Id == wx.ID_HELP_COMMANDS:
             self.help_command()
+            
     def doConfig(self):
         """Setup an application configuration file"""
         # configuration folder
@@ -1980,6 +2008,7 @@ class Gui(wx.Frame):
             selLang = appC.supLang[lang]
         else:
             selLang = wx.LANGUAGE_ENGLISH
+            
             
         if self.locale:
             assert sys.getrefcount(self.locale) <= 2
@@ -2148,7 +2177,6 @@ class Gui(wx.Frame):
 
     def on_pan_left_button(self, event):
         """Handle the event when users press the pan left button"""
-        self.canvas.reset_pan()
         self.canvas.set_pan_x(0)
 
     def on_pan_reset_button(self, event):
