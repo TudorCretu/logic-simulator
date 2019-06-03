@@ -1,7 +1,7 @@
 """Define test networks of the test definition files.
 
-These functions build the network of a test definition file to be used for testing the gui whenever
-scanner or parse module is not in a working state.
+These functions build the network of a test definition file to be used for
+testing the gui whenever scanner or parse module is not in a working state.
 """
 
 from names import Names
@@ -48,7 +48,8 @@ def test_2():
     network = Network(names, devices)
     monitors = Monitors(names, devices, network)
 
-    CK1, CK2, AND1, NAND1, OR1, NOR1 = names.lookup(["CK1", "CK2", "AND1", "NAND1", "OR1", "NOR1"])
+    CK1, CK2, AND1, NAND1, OR1, NOR1 = names.lookup(["CK1", "CK2", "AND1",
+                                                     "NAND1", "OR1", "NOR1"])
     devices.make_device(CK1, devices.CLOCK, 2)
     devices.make_device(CK2, devices.CLOCK, 1)
     devices.make_device(AND1, devices.AND, 2)
@@ -96,7 +97,7 @@ def test_3():
 
 
 def test_4():
-    """Create network that matches test definition file 4, a 4-bit ripple counter"""
+    """Create network that matches test definition file 4, a ripple counter"""
     names = Names()
     devices = Devices(names)
     network = Network(names, devices)

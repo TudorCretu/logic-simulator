@@ -86,4 +86,3 @@ class Names:
             return self.names[name_id]
         except IndexError:
             return None
-
