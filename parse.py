@@ -93,41 +93,36 @@ class Parser:
         :return: no returned value.
         """
         if success is True:
-            print('\033[91m'
-                  + "Parsed successfully! Valid definition file!"
+            print('\033[32m'
+                  + "\nParsed successfully! Valid definition file!"
                   + '\033[0m')
-            self.error_to_gui.append('\033[91m'
-                                     + "Parsed successfully!"
-                                     "Valid definition file!"
-                                     + '\033[0m')
+            self.error_to_gui.append(
+                "Parsed successfully! Valid definition file!")
         else:
-            print('\033[91m' + "File '%s' contains %d error(s): "
+            print('\033[91m' + "\nFile '%s' contains %d error(s): "
                   % (self.scanner.file.name.split('/')[-1], self.error_count)
                   + '\033[0m')
-            self.error_to_gui.append('\033[91m'
-                                     + "File '%s' contains %d error(s):"
+            self.error_to_gui.append("File '%s' contains %d error(s):"
                                      % (self.scanner.file.name.split('/')[-1],
-                                        self.error_count) + '\033[0m')
+                                        self.error_count))
             n = len(self.error_cursor)
             if self.error_count > n:  # notice the unconnected input error
                 for i in range(n):
-                    print('\033[91m' + self.error_output[i] + '\033[0m')
-                    self.error_to_gui.append('\033[91m'
-                                             + self.error_output[i]
-                                             + '\033[0m')
-                    # self.out_for_gui.append(self.error_output[i])
+                    print('\033[91m' + '\n'
+                          + self.error_output[i] + '\033[0m')
+                    self.error_to_gui.append(self.error_output[i])
                     self.error_to_gui.append(self.scanner.show_error_location(
                         self.errline_num[i],
                         self.errline_pos[i],
                         self.error_cursor[i]))
-                print('\033[91m' + self.error_output[n] + '\033[0m')
-                self.error_to_gui.append('\033[91m'
-                                         + self.error_output[n] + '\033[0m')
+                print('\033[91m' + '\n'
+                      + self.error_output[n] + '\033[0m')
+                self.error_to_gui.append(self.error_output[n])
             else:
                 for i in range(n):
-                    print('\033[91m' + self.error_output[i] + '\033[0m')
-                    self.error_to_gui.append('\033[91m'
-                                             + self.error_output[i] + '\033[0m')
+                    print('\033[91m' + '\n'
+                          + self.error_output[i] + '\033[0m')
+                    self.error_to_gui.append(self.error_output[i])
                     self.error_to_gui.append(self.scanner.show_error_location(
                         self.errline_num[i],
                         self.errline_pos[i],
