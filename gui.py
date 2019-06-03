@@ -1084,7 +1084,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
                 self.cycle_axis_y - self.monitor_width * (
                     monitor_number - 0.5 - len(
                         self.monitors.monitors_dictionary) / 2),
-                self.signal_height + 5 + self.cycle_start_x)
+                self.signal_height + 5 + self.cycle_start_x/2)
 
     def on_paint(self, event):
         """Handle the paint event."""
@@ -1095,8 +1095,6 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
             self.init = True
 
         size = self.GetClientSize()
-        text = "".join(["Canvas redrawn on paint event, size is ",
-                        str(size.width), ", ", str(size.height)])
         self.render()
 
     def on_size(self, event):
@@ -1236,23 +1234,22 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
 
         GL.glMatrixMode(GL.GL_MODELVIEW)
         # Reset pan to center
-        GL.glTranslatef(-self.pan_x, -self.pan_y, 0.0)
+        self.pan_x = 0
+        self.pan_y = 0
+        self.zoom = 1
 
         # Reset to identity matrix
         GL.glLoadIdentity()
 
         # Reset to default view
-        GL.glMultMatrixf(self.default_rotate)
+        GL.glRotatef(*[90, 0, -1, 0])
+        GL.glRotatef(*[180, 1, 0, 0])
 
-        a = (GL.GLfloat * 16)()
-        self.scene_rotate = GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, a)
+        # a = (GL.GLfloat * 16)()
+        GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate)
         self.init = False
-        # self.init_gl()
-        self.pan_x = 0
-        self.pan_y = 0
-        self.zoom = 1
-        self.render()
 
+        self.render()
 
     def pan_to_right_end(self):
         """Pan to the right of the signals"""
