@@ -1416,7 +1416,10 @@ class Gui(wx.Frame):
     
     def __init__(self, title, path, names, devices, network, monitors,lang_code):
         """Initialise widgets and layout."""
-        super().__init__(parent=None, title=title, size=(800, 600))
+        super().__init__(parent=None, title =title, size=(800, 600))
+        # set attributte for language code eg. "en" for English, "el"
+        # for Greek 
+        self.lang_code = lang_code
         
         sys.displayhook = _displayHook
         
@@ -1892,12 +1895,12 @@ class Gui(wx.Frame):
         Id = event.GetId()
         print(Id)
         if Id == 10001:
-            new_gui = Gui("Logic Simulator", None, self.names, self.devices, self.network, self.monitors,"en")
+            new_gui = Gui(_("Logic Simulator"), None, self.names, self.devices, self.network, self.monitors,"en")
             new_gui.Show(True)
             self.Close(True)
 			
         if Id == 10002:
-            new_gui = Gui("Logic Simulator", None, self.names, self.devices, self.network, self.monitors,"el")
+            new_gui = Gui(_("Λογική Προσομοιωτής"), None, self.names, self.devices, self.network, self.monitors,"el")
             new_gui.Show(True)
             self.Close(True)
 			
@@ -1909,7 +1912,7 @@ class Gui(wx.Frame):
             monitors = Monitors(names, devices, network)
             app = wx.App()
             gui = Gui(_("Logic Simulator"), None, names,
-                      devices, network, monitors)
+                      devices, network, monitors, self.lang_code)
             gui.Show(True)
             app.MainLoop()
         if Id == wx.ID_EXIT:

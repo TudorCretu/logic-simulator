@@ -75,7 +75,7 @@ def main(arg_list):
 
             # Initialise an instance of the gui.Gui() class
             app = wx.App()
-            gui = Gui("Logic Simulator", path, names, devices, network, monitors,"el")
+            gui = Gui("Logic Simulator", path, names, devices, network, monitors,"en")
             gui.Show(True)
             app.MainLoop()
 
@@ -84,7 +84,7 @@ def main(arg_list):
         if len(arguments) == 0:  # Open the blank gui
             # Initialise an instance of the gui.Gui() class
             app = wx.App()
-            gui = Gui("Logic Simulator", None, names, devices, network, monitors,"el")
+            gui = Gui("Logic Simulator", None, names, devices, network, monitors,"en")
             gui.Show(True)
             app.MainLoop()
 
@@ -95,7 +95,7 @@ def main(arg_list):
             if parser.parse_network():
                 # Initialise an instance of the gui.Gui() class
                 app = wx.App()
-                gui = Gui("Logic Simulator", path, names, devices, network, monitors,"el")
+                gui = Gui("Logic Simulator", path, names, devices, network, monitors,"en")
                 gui.Show(True)
                 app.MainLoop()
 
