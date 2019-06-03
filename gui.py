@@ -1053,8 +1053,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         GL.glPopAttrib()
 
         # # Draw the Vertical axis
-        GL.glPushAttrib(
-            GL.GL_ENABLE_BIT)
+        GL.glPushAttrib(GL.GL_ENABLE_BIT)
         cycle_axis_x_offset = 15
         GL.glLineStipple(2, 0x000F)
         GL.glLineWidth(3.0)
@@ -1064,13 +1063,11 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
                              self.completed_cycles / 2 - 0.5,
                              self.completed_cycles + 1):
             GL.glBegin(GL.GL_LINES)
-            GL.glVertex3f(0,
-                          -self.monitor_width *
+            GL.glVertex3f(0, -self.monitor_width *
                           (len(self.monitors.monitors_dictionary) / 2 - 1),
                           self.cycle_start_x - cycle_axis_x_offset / 2 +
                           self.cycle_width * (i + 1 / 2))
-            GL.glVertex3f(0,
-                          self.monitor_width *
+            GL.glVertex3f(0, self.monitor_width *
                           (len(self.monitors.monitors_dictionary) / 2 + 1),
                           self.cycle_start_x - cycle_axis_x_offset +
                           self.cycle_width * (i + 1 / 2))
@@ -1118,7 +1115,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
 
         if event.Dragging():
             if not wx.GetKeyState(wx.WXK_CONTROL):
-                # if CTRL is pushed, rotate
+                # if CTRL is not pushed, rotate
                 GL.glMatrixMode(GL.GL_MODELVIEW)
                 GL.glLoadIdentity()
                 x = event.GetX() - self.last_mouse_x
@@ -1234,12 +1231,12 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         pass
 
     def reset_pan(self):
-        """Reset pan to start of displayed signals"""
-        self.pan_x = 0
-        self.pan_y = 0
-        self.zoom = 1
+        """Reset pan to center of displayed signals"""
         self.gui.zoom_slider.SetValue(1*self.gui.zoom_resolution)
+
         GL.glMatrixMode(GL.GL_MODELVIEW)
+        # Reset pan to center
+        GL.glTranslatef(-self.pan_x, -self.pan_y, 0.0)
 
         # Reset to identity matrix
         GL.glLoadIdentity()
@@ -1251,7 +1248,11 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         self.scene_rotate = GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, a)
         self.init = False
         # self.init_gl()
+        self.pan_x = 0
+        self.pan_y = 0
+        self.zoom = 1
         self.render()
+
 
     def pan_to_right_end(self):
         """Pan to the right of the signals"""
