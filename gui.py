@@ -1131,8 +1131,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
                     self.pan_x += x * self.zoom
                     self.pan_y -= y * self.zoom
                 GL.glMultMatrixf(self.scene_rotate)
-                print(
-                    GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate))
+                GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, self.scene_rotate)
 
                 self.last_mouse_x = event.GetX()
                 self.last_mouse_y = event.GetY()
@@ -1251,6 +1250,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         a = (GL.GLfloat * 16)()
         self.scene_rotate = GL.glGetFloatv(GL.GL_MODELVIEW_MATRIX, a)
         self.init = False
+        # self.init_gl()
         self.render()
 
     def pan_to_right_end(self):
@@ -2169,6 +2169,7 @@ class Gui(wx.Frame):
 
     def on_pan_left_button(self, event):
         """Handle the event when users press the pan left button"""
+        self.canvas.reset_pan()
         self.canvas.set_pan_x(0)
 
     def on_pan_reset_button(self, event):
