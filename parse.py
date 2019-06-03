@@ -674,7 +674,8 @@ class Parser:
                 % (device_str, port_str))
         elif error_type == self.network.DEVICE_ABSENT:
             self.error_output.append(
-                "DeviceAbsentError:Device '%s' is not defined" % (device_str))
+                "DeviceAbsentError: Device '%s' is not defined"
+                % (device_str))
         else:
             self.error_output.append("Unknown error occurred")
         self.error_cursor.append(self.symbol.cursor_position)
