@@ -8,344 +8,492 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-03 18:26+0100\n"
+"POT-Creation-Date: 2019-06-03 19:53+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: parse.py:80
+msgid "InputPortNotConnectedError: Input port "
+msgstr ""
+
+#: parse.py:99
+msgid ""
+"\n"
+"Parsed successfully! Valid definition file!"
+msgstr ""
+
+#: parse.py:102
+msgid "Parsed successfully! Valid definition file!"
+msgstr ""
+
+#: parse.py:104
+msgid ""
+"\n"
+"File {} contains {} error(s): "
+msgstr ""
+
+#: parse.py:107
+msgid "File {} contains {} error(s):"
+msgstr ""
+
+#: parse.py:519
+msgid "SyntaxError: Expected a keyword 'DEVICES'"
+msgstr ""
+
+#: parse.py:522
+msgid "SyntaxError: Expected a keyword 'CONNECTIONS'"
+msgstr ""
+
+#: parse.py:525
+msgid "SyntaxError: Expected a keyword 'MONITORS'"
+msgstr ""
+
+#: parse.py:528
+msgid "SyntaxError: Expected an equals sign"
+msgstr ""
+
+#: parse.py:530
+msgid "SyntaxError: Expected a semicolon"
+msgstr ""
+
+#: parse.py:532
+msgid "SyntaxError: Expected a comma"
+msgstr ""
+
+#: parse.py:534
+msgid "SyntaxError: Expected a name"
+msgstr ""
+
+#: parse.py:536
+msgid "SyntaxError: Expected a number"
+msgstr ""
+
+#: parse.py:538
+msgid "SyntaxError: Expected a legal symbol"
+msgstr ""
+
+#: parse.py:541
+msgid "SyntaxError: '.' is illegal in DEVICES"
+msgstr ""
+
+#: parse.py:544
+msgid "SyntaxError: '/' is illegal for signals"
+msgstr ""
+
+#: parse.py:546 parse.py:592 parse.py:650 parse.py:682
+msgid "Unknown error occurred"
+msgstr ""
+
+#: parse.py:568
+msgid "InvalidParameterError: Parameter value of Device {} is not valid"
+msgstr ""
+
+#: parse.py:573
+msgid "MissingParameterError: Parameter of Device {} is not specified"
+msgstr ""
+
+#: parse.py:578
+msgid "ExcessParametersError: Device {} has too many parameters specified"
+msgstr ""
+
+#: parse.py:583
+msgid ""
+"TypeNotFoundError: Device's type {} does not match one of the following:\n"
+"'CLOCK','SWITCH','AND','NAND','OR','NOR','XOR','DTYPE'"
+msgstr ""
+
+#: parse.py:589
+msgid "RepeatedIdentifierError: Device {} is already defined"
+msgstr ""
+
+#: parse.py:628
+msgid "IllegalConnectionError: Signal {}{} and {}{} are both input signals"
+msgstr ""
+
+#: parse.py:633
+msgid "IllegalConnectionError: Signal {}{} and {}{} are both output signals"
+msgstr ""
+
+#: parse.py:638
+msgid "InputPortConnectionPresentError: Signal {}{} is already connected"
+msgstr ""
+
+#: parse.py:643
+msgid "InvalidPortError: Device {} does not have port {}"
+msgstr ""
+
+#: parse.py:647 parse.py:679
+msgid "DeviceAbsentError: Device {} is not defined"
+msgstr ""
+
+#: parse.py:671
+msgid "MonitorNotOutputSignalError: Signal {}{} is not an output"
+msgstr ""
+
+#: parse.py:675
+msgid "MonitorPresentError: Signal {}{} is already monitored"
+msgstr ""
 
 #: gui.py:1453
 msgid "&New"
-msgstr ""
+msgstr "&Νέος"
 
 #: gui.py:1454
 msgid "&Load"
-msgstr ""
+msgstr "&Φορτώνω"
 
 #: gui.py:1455
 msgid "&Save"
-msgstr ""
+msgstr "&Αποθηκεύσετε"
 
 #: gui.py:1456
 msgid "&Exit"
-msgstr ""
+msgstr "&Εξοδος"
 
 #: gui.py:1457
 msgid "&File"
-msgstr ""
+msgstr "&Αρχείο"
 
 #: gui.py:1460
 msgid "&Undo\tCTRL+Z"
-msgstr ""
+msgstr "Αναίρεση\tCTRL + Z"
 
 #: gui.py:1461
 msgid "&Redo\tCTRL+SHIFT+Z"
-msgstr ""
+msgstr "& Επαναφορά \tCTRL + SHIFT + Z"
 
 #: gui.py:1462
 msgid "&Edit"
-msgstr ""
+msgstr "&Επεξεργασία"
 
 #: gui.py:1466
 msgid "&Fullscreen"
-msgstr ""
+msgstr "&ΠΛΗΡΗΣ ΟΘΟΝΗ"
 
 #: gui.py:1467
 msgid "&Actual Size"
-msgstr ""
+msgstr "Πραγματικό μέγεθος"
 
 #: gui.py:1468
 msgid "Zoom &In\tCTRL++"
-msgstr ""
+msgstr "Μεγέθυνση & In\tCTRL ++"
 
 #: gui.py:1469
 msgid "Zoom &Out\tCTRL+-"
-msgstr ""
+msgstr "Μεγέθυνση & έξοδος\tCTRL + -"
 
 #: gui.py:1470
 msgid "&View"
-msgstr ""
+msgstr "&Θέα"
 
-#: gui.py:1474 gui.py:1476
+#: gui.py:1474
+#: gui.py:1476
 msgid "&Run"
-msgstr ""
+msgstr "&Τρέξιμο"
 
 #: gui.py:1475
 msgid "&Continue"
-msgstr ""
+msgstr "&Να συνεχίσει"
 
 #: gui.py:1479
 msgid "&About"
-msgstr ""
+msgstr "&Σχετικά με"
 
-#: gui.py:1480 gui.py:1482
+#: gui.py:1480
+#: gui.py:1482
 msgid "&Help"
-msgstr ""
+msgstr "&Βοήθεια"
 
 #: gui.py:1481
 msgid "&Help Commands"
-msgstr ""
+msgstr "& Εντολές βοήθειας"
 
-#: gui.py:1554 gui.py:2127 gui.py:2150
+#: gui.py:1485
+msgid "&ENGLISH"
+msgstr "&ΑΓΓΛΙΚΑ"
+
+#: gui.py:1486
+msgid "&GREEK"
+msgstr "&ΕΛΛΗΝΙΚΑ"
+
+#: gui.py:1487
+msgid "&ABC"
+msgstr "&ABC"
+
+#: gui.py:1552
+#: gui.py:2121
+#: gui.py:2144
 msgid "Load file"
-msgstr ""
+msgstr "Φόρτωση αρχείου"
 
-#: gui.py:1562
+#: gui.py:1560
 msgid "Activity log"
-msgstr ""
+msgstr "Αρχείο καταγραφής δραστηριότητας"
 
-#: gui.py:1581
+#: gui.py:1579
 msgid "HIGH"
-msgstr ""
+msgstr "ΥΨΗ"
 
-#: gui.py:1584
+#: gui.py:1582
 msgid "LOW"
-msgstr ""
+msgstr "ΧΑΜ"
 
-#: gui.py:1595
+#: gui.py:1593
 msgid "SET"
-msgstr ""
+msgstr "ΣΕΙΡΑ"
 
-#: gui.py:1598
+#: gui.py:1596
 msgid "ZAP"
-msgstr ""
+msgstr "ΑΦΑΙΡΩ."
+
+#: gui.py:1605
+msgid "Run"
+msgstr "Τρέξιμο."
 
 #: gui.py:1607
-msgid "Run"
-msgstr ""
-
-#: gui.py:1609
 msgid "Continue"
-msgstr ""
+msgstr "να συνεχίσει."
 
-#: gui.py:1621 gui.py:1654
+#: gui.py:1619
+#: gui.py:1652
 msgid "Zoom"
-msgstr ""
+msgstr "Ανίπταμαι διαγωνίως"
+
+#: gui.py:1638
+msgid " <- To Start"
+msgstr " <- Να ξεκινήσω"
+
+#: gui.py:1639
+msgid " Reset View"
+msgstr "Επαναφορά προβολής"
 
 #: gui.py:1640
-msgid " <- To Start"
-msgstr ""
-
-#: gui.py:1641
-msgid " Reset View"
-msgstr ""
-
-#: gui.py:1642
 msgid " To End ->"
-msgstr ""
+msgstr "Στο τέλος ->"
 
-#: gui.py:1645 gui.py:2049
+#: gui.py:1643
+#: gui.py:2043
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
-#: gui.py:1648
+#: gui.py:1646
 msgid "Console"
-msgstr ""
+msgstr "Κονσόλα"
+
+#: gui.py:1647
+msgid "Properties"
+msgstr "ιδιότητες."
 
 #: gui.py:1649
-msgid "Properties"
-msgstr ""
+msgid "Change State of Switch"
+msgstr "Αλλάξτε την κατάσταση του διακόπτη"
+
+#: gui.py:1650
+msgid "Set or Zap Monitors"
+msgstr "Ορίστε ή αφαιρέστε τις οθόνες"
 
 #: gui.py:1651
-msgid "Change State of Switch"
-msgstr ""
-
-#: gui.py:1652
-msgid "Set or Zap Monitors"
-msgstr ""
+msgid "Simulate"
+msgstr "Προσομοιωτής"
 
 #: gui.py:1653
-msgid "Simulate"
-msgstr ""
-
-#: gui.py:1655
 msgid "Pan"
-msgstr ""
+msgstr "Κίνηση"
 
-#: gui.py:1656
+#: gui.py:1654
 msgid "2D/3D View"
-msgstr ""
+msgstr "Προβολή 2D / 3D."
 
-#: gui.py:1925
+#: gui.py:1919
 msgid "Logic Simulator"
-msgstr ""
+msgstr "Λογική Προσομοιωτής"
 
-#: gui.py:1932
+#: gui.py:1926
 msgid ""
 "Logic Simulator\n"
 "Created by Team 05\n"
 "2019"
 msgstr ""
+"Λογική Προσομοιωτής \n"
+"Δημιουργήθηκε από την ομάδα05 \n"
+"2019"
 
-#: gui.py:1933
+#: gui.py:1927
 msgid "About Logsim"
-msgstr ""
+msgstr "Σχετικά με το Logsim"
+
+#: gui.py:1938
+msgid "Undo"
+msgstr "Ξεκάνω"
 
 #: gui.py:1944
-msgid "Undo"
-msgstr ""
-
-#: gui.py:1950
 msgid "Redo"
-msgstr ""
+msgstr "Ξανακάνω"
 
-#: gui.py:2048 gui.py:2054
+#: gui.py:2042
+#: gui.py:2048
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
-#: gui.py:2090
+#: gui.py:2084
 msgid "Command "
-msgstr ""
+msgstr "Εντολή"
 
-#: gui.py:2091
+#: gui.py:2085
 msgid " is invalid. Enter 'h' for help."
-msgstr ""
+msgstr "είναι άκυρο. Εισαγάγετε 'h' για βοήθεια"
 
-#: gui.py:2133
+#: gui.py:2127
 msgid "Open another definition file"
-msgstr ""
+msgstr "Ανοίξτε ένα άλλο αρχείο ορισμού"
+
+#: gui.py:2202
+msgid "Current state of the simulation has not been saved! "
+msgstr "Η τρέχουσα κατάσταση της προσομοίωσης δεν έχει σωθεί!"
+
+#: gui.py:2203
+msgid "Save changes?"
+msgstr "Αποθήκευσε τις αλλαγές?"
 
 #: gui.py:2210
-msgid "Current state of the simulation has not been saved! "
-msgstr ""
-
-#: gui.py:2211
-msgid "Save changes?"
-msgstr ""
-
-#: gui.py:2218
 msgid "Choose where to save the file"
-msgstr ""
+msgstr "Επιλέξτε από πού να αποθηκεύσετε το αρχείο"
 
-#: gui.py:2238
+#: gui.py:2230
 msgid "Cannot save current data in file "
-msgstr ""
+msgstr "Δεν είναι δυνατή η αποθήκευση των τρέχοντων δεδομένων στο αρχείο"
 
-#: gui.py:2264
+#: gui.py:2241
 msgid "logsim_help.txt"
-msgstr ""
+msgstr "logsim_help.txt"
 
-#: gui.py:2265
+#: gui.py:2242
 msgid "Help"
-msgstr ""
+msgstr "Βοήθεια"
 
-#: gui.py:2269
+#: gui.py:2246
 msgid "User commands:\n"
-msgstr ""
+msgstr "Εντολές χρηστών:\n"
 
-#: gui.py:2270
+#: gui.py:2247
 msgid "r N         - run the simulation for N cycles\n"
-msgstr ""
+msgstr "r N - τρέξτε τη προσομοίωση για N κύκλους \n"
 
-#: gui.py:2271
+#: gui.py:2248
 msgid "c N         - continue the simulation for N cycles\n"
-msgstr ""
+msgstr "r N - τρέχει την προσομοίωση για N κύκλους\n"
 
-#: gui.py:2272
+#: gui.py:2249
 msgid "s X N     - set switch X to N (0 or 1)\n"
-msgstr ""
+msgstr "s X N     - set switch X to N (0 or 1)\n"
 
-#: gui.py:2273
+#: gui.py:2250
 msgid "m X       - set a monitor on signal X\n"
-msgstr ""
+msgstr "m X - ορίστε μια οθόνη στο σήμα X\n"
 
-#: gui.py:2274
+#: gui.py:2251
 msgid "z X         - zap the monitor on signal X\n"
-msgstr ""
+msgstr "z X - ενεργοποιήστε την οθόνη στο σήμα X\n"
 
-#: gui.py:2275
+#: gui.py:2252
 msgid "h             - help (this command)\n"
-msgstr ""
+msgstr "h - βοήθεια (αυτή η εντολή) \n"
 
-#: gui.py:2276
+#: gui.py:2253
 msgid "q            - quit the program"
-msgstr ""
+msgstr "q - κλείστε το πρόγραμμα"
 
-#: gui.py:2277
+#: gui.py:2254
 msgid "Help on Commands"
-msgstr ""
+msgstr "Βοήθεια στις εντολές"
+
+#: gui.py:2357
+msgid "Quit"
+msgstr "Εγκαταλείπω"
+
+#: gui.py:2368
+msgid "Invalid Command Error"
+msgstr "Μη έγκυρο σφάλμα εντολών"
+
+#: gui.py:2371
+#: gui.py:2386
+msgid "Invalid Argument Error"
+msgstr "Μη έγκυρο σφάλμα Argument"
+
+#: gui.py:2374
+msgid "Monitor Present Error"
+msgstr "Παρακολούθηση σφάλματος παρουσίας"
+
+#: gui.py:2377
+msgid "Signal Not Monitored Error"
+msgstr "Σφάλμα μη παρακολουθούμενου σήματος"
 
 #: gui.py:2380
-msgid "Quit"
-msgstr ""
+msgid "Monitor On Input Signal Error"
+msgstr "Παρακολούθηση σφάλματος σήματος εισόδου"
 
-#: gui.py:2391
-msgid "Invalid Command Error"
-msgstr ""
+#: gui.py:2383
+msgid "Device Absent Error"
+msgstr "Απουσία σφάλματος συσκευής"
 
-#: gui.py:2394 gui.py:2409
-msgid "Invalid Argument Error"
-msgstr ""
+#: gui.py:2389
+msgid "Oscillating Network Error"
+msgstr "Σφάλμα δικτύου που ταλαντώνεται"
+
+#: gui.py:2392
+msgid "Cannot Open File Error"
+msgstr "Δεν είναι δυνατό το άνοιγμα του σφάλματος αρχείου"
 
 #: gui.py:2397
-msgid "Monitor Present Error"
-msgstr ""
-
-#: gui.py:2400
-msgid "Signal Not Monitored Error"
-msgstr ""
-
 #: gui.py:2403
-msgid "Monitor On Input Signal Error"
-msgstr ""
+msgid "simulation."
+msgstr "προσομοίωση."
 
-#: gui.py:2406
-msgid "Device Absent Error"
-msgstr ""
+#: gui.py:2398
+msgid "Nothing To Undo"
+msgstr "Δεν υπάρχει τίποτα να ανακληθεί"
+
+#: gui.py:2402
+msgid "No command left to redo. This is the last state of the "
+msgstr "Δεν έχει απομείνει καμία εντολή για επαναφορά. Αυτή είναι η τελευταία κατάσταση του"
+
+#: gui.py:2404
+msgid "Nothing To Redo"
+msgstr "Τίποτα για να επαναλάβω"
+
+#: gui.py:2407
+msgid "Nothing to continue. Run first."
+msgstr "Τίποτα δεν θα συνεχιστεί. Εκτελέστε πρώτα."
+
+#: gui.py:2408
+msgid "Simulation Not Started"
+msgstr "Η προσομοίωση δεν ξεκίνησε"
+
+#: gui.py:2411
+msgid "No network avilable. Load a valid definition file."
+msgstr "Δεν υπάρχει διαθέσιμο δίκτυο. Τοποθετήστε ένα έγκυρο αρχείο ορισμού."
 
 #: gui.py:2412
-msgid "Oscillating Network Error"
-msgstr ""
-
-#: gui.py:2415
-msgid "Cannot Open File Error"
-msgstr ""
-
-#: gui.py:2420 gui.py:2426
-msgid "simulation."
-msgstr ""
-
-#: gui.py:2421
-msgid "Nothing To Undo"
-msgstr ""
-
-#: gui.py:2425
-msgid "No command left to redo. This is the last state of the "
-msgstr ""
-
-#: gui.py:2427
-msgid "Nothing To Redo"
-msgstr ""
-
-#: gui.py:2430
-msgid "Nothing to continue. Run first."
-msgstr ""
-
-#: gui.py:2431
-msgid "Simulation Not Started"
-msgstr ""
-
-#: gui.py:2434
-msgid "No network avilable. Load a valid definition file."
-msgstr ""
-
-#: gui.py:2435
 msgid "No network available"
-msgstr ""
+msgstr "Δεν υπάρχει διαθέσιμο δίκτυο"
 
-#: gui.py:2439
+#: gui.py:2416
 msgid ""
 "\n"
 "Please check the activity log or the terminal."
 msgstr ""
+"\n"
+"Ελέγξτε το αρχείο καταγραφής δραστηριοτήτων ή το τερματικό."
 
-#: gui.py:2440
+#: gui.py:2417
 msgid "Invalid definition file"
-msgstr ""
+msgstr "Μη έγκυρο αρχείο ορισμού"
 
-#: gui.py:2443
+#: gui.py:2420
 msgid "Unknown Error"
-msgstr ""
+msgstr "Αγνωστο σφάλμα"

@@ -1,0 +1,140 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-06-03 19:45+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: parse.py:80
+msgid "InputPortNotConnectedError: Input port "
+msgstr ""
+
+#: parse.py:99
+msgid ""
+"\n"
+"Parsed successfully! Valid definition file!"
+msgstr ""
+
+#: parse.py:102
+msgid "Parsed successfully! Valid definition file!"
+msgstr ""
+
+#: parse.py:104
+msgid ""
+"\n"
+"File {} contains {} error(s): "
+msgstr ""
+
+#: parse.py:107
+msgid "File {} contains {} error(s):"
+msgstr ""
+
+#: parse.py:519
+msgid "SyntaxError: Expected a keyword 'DEVICES'"
+msgstr ""
+
+#: parse.py:522
+msgid "SyntaxError: Expected a keyword 'CONNECTIONS'"
+msgstr ""
+
+#: parse.py:525
+msgid "SyntaxError: Expected a keyword 'MONITORS'"
+msgstr ""
+
+#: parse.py:528
+msgid "SyntaxError: Expected an equals sign"
+msgstr ""
+
+#: parse.py:530
+msgid "SyntaxError: Expected a semicolon"
+msgstr ""
+
+#: parse.py:532
+msgid "SyntaxError: Expected a comma"
+msgstr ""
+
+#: parse.py:534
+msgid "SyntaxError: Expected a name"
+msgstr ""
+
+#: parse.py:536
+msgid "SyntaxError: Expected a number"
+msgstr ""
+
+#: parse.py:538
+msgid "SyntaxError: Expected a legal symbol"
+msgstr ""
+
+#: parse.py:541
+msgid "SyntaxError: '.' is illegal in DEVICES"
+msgstr ""
+
+#: parse.py:544
+msgid "SyntaxError: '/' is illegal for signals"
+msgstr ""
+
+#: parse.py:546 parse.py:592 parse.py:650 parse.py:682
+msgid "Unknown error occurred"
+msgstr ""
+
+#: parse.py:568
+msgid "InvalidParameterError: Parameter value of Device {} is not valid"
+msgstr ""
+
+#: parse.py:573
+msgid "MissingParameterError: Parameter of Device {} is not specified"
+msgstr ""
+
+#: parse.py:578
+msgid "ExcessParametersError: Device {} has too many parameters specified"
+msgstr ""
+
+#: parse.py:583
+msgid ""
+"TypeNotFoundError: Device's type {} does not match one of the following:\n"
+"'CLOCK','SWITCH','AND','NAND','OR','NOR','XOR','DTYPE'"
+msgstr ""
+
+#: parse.py:589
+msgid "RepeatedIdentifierError: Device {} is already defined"
+msgstr ""
+
+#: parse.py:628
+msgid "IllegalConnectionError: Signal {}{} and {}{} are both input signals"
+msgstr ""
+
+#: parse.py:633
+msgid "IllegalConnectionError: Signal {}{} and {}{} are both output signals"
+msgstr ""
+
+#: parse.py:638
+msgid "InputPortConnectionPresentError: Signal {}{} is already connected"
+msgstr ""
+
+#: parse.py:643
+msgid "InvalidPortError: Device {} does not have port {}"
+msgstr ""
+
+#: parse.py:647 parse.py:679
+msgid "DeviceAbsentError: Device {} is not defined"
+msgstr ""
+
+#: parse.py:671
+msgid "MonitorNotOutputSignalError: Signal {}{} is not an output"
+msgstr ""
+
+#: parse.py:675
+msgid "MonitorPresentError: Signal {}{} is already monitored"
+msgstr ""
