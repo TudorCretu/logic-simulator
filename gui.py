@@ -102,6 +102,7 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         GLUT.glutInit()
         self.init = False
         self.context = wxcanvas.GLContext(self)
+        
 
         # Initialise variables for panning
         size = self.GetClientSize()
@@ -682,6 +683,8 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         GLUT.glutInit()
         self.init = False
         self.context = wxcanvas.GLContext(self)
+        
+        
 
         # Constants for OpenGL materials and lights
         self.mat_diffuse = [0.0, 0.0, 0.0, 1.0]
@@ -797,6 +800,8 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         # Line thicknesses
         self.thin_line = 1
         self.thick_line = 3
+        
+        self.Refresh()
 
     def init_gl(self):
         """Configure and initialise the OpenGL context."""
@@ -1418,6 +1423,7 @@ class Gui(wx.Frame):
         # set attributte for language code eg. "en" for English, "el"
         # for Greek 
         self.lang_code = lang_code
+        self.path_name = path
         
         sys.displayhook = _displayHook
         
@@ -1895,12 +1901,12 @@ class Gui(wx.Frame):
         Id = event.GetId()
         print(Id)
         if Id == self.ENGLISH_BUTTON_ID:
-            new_gui = Gui("Logic Simulator", None, self.names, self.devices, self.network, self.monitors,"en")
+            new_gui = Gui("Logic Simulator", self.path_name, self.names, self.devices, self.network, self.monitors,"en")
             new_gui.Show(True)
             self.Close(True)
 			
         if Id == self.GREEK_BUTTON_ID:
-            new_gui = Gui("Λογική Προσομοιωτής", None, self.names, self.devices, self.network, self.monitors,"el")
+            new_gui = Gui("Λογική Προσομοιωτής", self.path_name, self.names, self.devices, self.network, self.monitors,"el")
             new_gui.Show(True)
             self.Close(True)
 			
@@ -2188,6 +2194,7 @@ class Gui(wx.Frame):
         try:
             with open(pathname, 'r') as _:
                 self.command_manager.execute_command(LoadCommand(pathname))
+                self.path_name = pathname
         except IOError:
             self.raise_error(self.command_manager.CANNOT_OPEN_FILE,
                              "Cannot open file " + pathname)
