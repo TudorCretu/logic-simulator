@@ -48,6 +48,7 @@ def main(arg_list):
     devices = Devices(names)
     network = Network(names, devices)
     monitors = Monitors(names, devices, network)
+    import app_base as ab
     for option, path in options:
         if option == "-h":  # print the usage message
             print(usage_message)
@@ -73,8 +74,8 @@ def main(arg_list):
                 sys.exit()
 
             # Initialise an instance of the gui.Gui() class
-            app = wx.App()
-            gui = Gui("Logic Simulator", path, names, devices, network, monitors)
+            app = ab.BaseApp(redirect = False)
+            gui = Gui("Logic Simulator", path, names, devices, network, monitors, app)
             gui.Show(True)
             app.MainLoop()
 
@@ -82,8 +83,8 @@ def main(arg_list):
 
         if len(arguments) == 0:  # Open the blank gui
             # Initialise an instance of the gui.Gui() class
-            app = wx.App()
-            gui = Gui("Logic Simulator", None, names, devices, network, monitors)
+            app = ab.BaseApp(redirect = False)
+            gui = Gui("Logic Simulator", None, names, devices, network, monitors,app)
             gui.Show(True)
             app.MainLoop()
 
@@ -93,8 +94,8 @@ def main(arg_list):
             parser = Parser(names, devices, network, monitors, scanner)
             if parser.parse_network():
                 # Initialise an instance of the gui.Gui() class
-                app = wx.App()
-                gui = Gui("Logic Simulator", path, names, devices, network, monitors)
+                app = ab.BaseApp(redirect = False)
+                gui = Gui("Logic Simulator", path, names, devices, network, monitors,app)
                 gui.Show(True)
                 app.MainLoop()
 
