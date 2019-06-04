@@ -2242,11 +2242,10 @@ class Gui(wx.Frame):
 
     def log_text(self, text,date_present =True, line_end = True):
         """Handle the logging in activity_log of an event"""
-        text_tr =_(text)
-        if date_present:
-            text = "".join([datetime.datetime.now().strftime("%H:%M:%S: "), text])
-        if line_end:
-            text_tr = text_tr + '\n'            
+        text_tr =text
+
+        text_tr = "".join([datetime.datetime.now().strftime("%H:%M:%S: "), text_tr])
+        text_tr = text_tr + '\n'            
         self.activity_log_text.AppendText(text_tr)
         self.is_saved = False
 

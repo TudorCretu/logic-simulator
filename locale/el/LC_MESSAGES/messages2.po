@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: sr 795\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-06-03 19:53+0100\n"
-"PO-Revision-Date: 2019-06-04 17:19+0100\n"
+"PO-Revision-Date: 2019-06-04 17:16+0100\n"
 "Last-Translator: S. Ravichandran <sr795@tw111.eng.cam.ac.uk>\n"
 "Language-Team: Greek\n"
 "Language: el\n"
@@ -19,135 +19,129 @@ msgstr ""
 
 #: parse.py:80
 msgid "InputPortNotConnectedError: Input port "
-msgstr "ΘύραεισόδουNotConnectedΣφάλμα: Θύρα εισόδου"
+msgstr ""
 
 #: parse.py:99
 msgid ""
 "\n"
 "Parsed successfully! Valid definition file!"
 msgstr ""
-"\n"
-"Αναλύθηκε με επιτυχία! Αρχείο έγκυρου ορισμού!"
 
 #: parse.py:102
 msgid "Parsed successfully! Valid definition file!"
-msgstr "Αναλύθηκε με επιτυχία! Αρχείο έγκυρου ορισμού!"
+msgstr ""
 
 #: parse.py:104
 msgid ""
 "\n"
 "File {} contains {} error(s): "
 msgstr ""
-"\n"
-"Το αρχείο {} περιέχει {} σφάλματα:"
 
 #: parse.py:107
 msgid "File {} contains {} error(s):"
-msgstr "29/5000Το αρχείο {} περιέχει {} σφάλματα:"
+msgstr ""
 
 #: parse.py:519
 msgid "SyntaxError: Expected a keyword 'DEVICES'"
-msgstr "Σφάλμασύνταξης: Αναμενόμενη λέξη-κλειδί 'DEVICES'"
+msgstr ""
 
 #: parse.py:522
 msgid "SyntaxError: Expected a keyword 'CONNECTIONS'"
-msgstr "Σφάλμασύνταξης: Αναμένεται μια λέξη-κλειδί 'CONNECTIONS'"
+msgstr ""
 
 #: parse.py:525
 msgid "SyntaxError: Expected a keyword 'MONITORS'"
-msgstr "Σφάλμασύνταξης: Αναμενόταν μια λέξη-κλειδί 'MONITORS'"
+msgstr ""
 
 #: parse.py:528
 msgid "SyntaxError: Expected an equals sign"
-msgstr "Σφάλμασύνταξης: Αναμενόμενο σήμα ισότητας"
+msgstr ""
 
 #: parse.py:530
 msgid "SyntaxError: Expected a semicolon"
-msgstr "Σφάλμασύνταξης: Αναμενόταν ένα ερωτηματικό"
+msgstr ""
 
 #: parse.py:532
 msgid "SyntaxError: Expected a comma"
-msgstr "Σφάλμασύνταξης: Αναμενόμενο κόμμα"
+msgstr ""
 
 #: parse.py:534
 msgid "SyntaxError: Expected a name"
-msgstr "Σφάλμασύνταξης: Αναμενόμενο όνομα"
+msgstr ""
 
 #: parse.py:536
 msgid "SyntaxError: Expected a number"
-msgstr "Σφάλμα σύνταξης: Αναμενόμενος αριθμός"
+msgstr ""
 
 #: parse.py:538
 msgid "SyntaxError: Expected a legal symbol"
-msgstr "Σφάλμα σύνταξης: Αναμενόμενο νομικό σύμβολο"
+msgstr ""
 
 #: parse.py:541
 msgid "SyntaxError: '.' is illegal in DEVICES"
-msgstr "Συντακτικόλάθος: '.' είναι παράνομη στις ΣΥΣΚΕΥΕΣ"
+msgstr ""
 
 #: parse.py:544
 msgid "SyntaxError: '/' is illegal for signals"
-msgstr "Σφάλμασύνταξης: '/' είναι παράνομο για σήματα"
+msgstr ""
 
 #: parse.py:546
 #: parse.py:592
 #: parse.py:650
 #: parse.py:682
 msgid "Unknown error occurred"
-msgstr "Παρουσιάστηκε σφάλμα"
+msgstr ""
 
 #: parse.py:568
 msgid "InvalidParameterError: Parameter value of Device {} is not valid"
-msgstr "Μηέγκυροσφάλμα παραμέτρων: Η τιμή παραμέτρου της συσκευής {} δεν είναι έγκυρη"
+msgstr ""
 
 #: parse.py:573
 msgid "MissingParameterError: Parameter of Device {} is not specified"
-msgstr "Σφάλμπαραμέτρουπουλείπει: Δεν έχει καθοριστεί η παράμετρος της συσκευής {}"
+msgstr ""
 
 #: parse.py:578
 msgid "ExcessParametersError: Device {} has too many parameters specified"
-msgstr "Παράμετρος υπέρβασης παραμέτρων: Η συσκευή {} έχει καθορίσει πολλές παραμέτρους"
+msgstr ""
 
 #: parse.py:583
 msgid ""
 "TypeNotFoundError: Device's type {} does not match one of the following:\n"
 "'CLOCK','SWITCH','AND','NAND','OR','NOR','XOR','DTYPE'"
 msgstr ""
-"ΟτύποςδενβρέθηκεΣφάλμα:: Ο τύπος της συσκευής {} δεν αντιστοιχεί σε ένα από τα παρακάτω:\n"
-"'CLOCK', 'SWITCH', 'AND', 'NAND', 'OR', 'NOR', 'XOR', 'DTYPE'"
 
 #: parse.py:589
 msgid "RepeatedIdentifierError: Device {} is already defined"
-msgstr "Επαναλαμβανόμενοσφάλμααναγνωριστικού: Η συσκευή {} έχει ήδη οριστεί"
+msgstr ""
 
 #: parse.py:628
 msgid "IllegalConnectionError: Signal {}{} and {}{} are both input signals"
-msgstr "Σφάλμαπαράνομηςσύνδεσης: Τα σήματα {} {} και {} {} είναι και τα δύο σήματα εισόδου"
+msgstr ""
 
 #: parse.py:633
 msgid "IllegalConnectionError: Signal {}{} and {}{} are both output signals"
-msgstr "Σφάλμαπαράνομηςσύνδεσης: Τα σήματα {} {} και {} {} είναι και τα δύο σήματα εξόδου"
+msgstr ""
 
 #: parse.py:638
 msgid "InputPortConnectionPresentError: Signal {}{} is already connected"
-msgstr "Σύνδεσηθύραςεισόδουπαρουσίας: Το σήμα {} {} είναι ήδη συνδεδεμένο"
+msgstr ""
 
 #: parse.py:643
 msgid "InvalidPortError: Device {} does not have port {}"
-msgstr "Μηέγκυροσφάλμαθύρας: Η συσκευή {} δεν διαθέτει θύρα {}"
+msgstr ""
 
 #: parse.py:647
 #: parse.py:679
 msgid "DeviceAbsentError: Device {} is not defined"
-msgstr "ΑπουσίασυσκευήςΣφάλμα: Η συσκευή {} δεν έχει οριστεί"
+msgstr ""
 
 #: parse.py:671
 msgid "MonitorNotOutputSignalError: Signal {}{} is not an output"
-msgstr "Σφάλμασφάλματοςσφάλματοςεξόδου οθόνης: Το σήμα {} {} δεν είναι έξοδος"
+msgstr ""
 
 #: parse.py:675
 msgid "MonitorPresentError: Signal {}{} is already monitored"
-msgstr "Παρακολούθησησφάλματοςπαρακολούθησης: Το σήμα{}{} παρακολουθείται ήδη"
+msgstr ""
 
 #: gui.py:1453
 msgid "&New"
@@ -175,7 +169,7 @@ msgstr "Αναίρεση\tCTRL + Z"
 
 #: gui.py:1461
 msgid "&Redo\tCTRL+SHIFT+Z"
-msgstr "&Ξανακάνω\tCTRL+SHIFT+Z"
+msgstr ""
 
 #: gui.py:1462
 msgid "&Edit"
@@ -526,7 +520,7 @@ msgstr "Συσκευή"
 
 #: command_manager.py:126
 msgid " is not a SWITCH"
-msgstr " is not a SWITCH"
+msgstr ""
 
 #: command_manager.py:186
 msgid "Set monitor on "
