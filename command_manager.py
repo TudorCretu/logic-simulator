@@ -6,7 +6,10 @@ Classes
 Command - stores command properties.
 CommandManager - makes and stores all the devices in the logic network.
 """
-
+import wx
+import sys
+import builtins
+builtins.__dict__['_'] = wx.GetTranslation
 import abc
 import copy
 import pickle
@@ -17,11 +20,6 @@ from network import Network
 from monitors import Monitors
 from scanner import Scanner
 from parse import Parser
-
-import wx
-import sys
-import builtins
-builtins.__dict__['_'] = wx.GetTranslation
 
 
 class Command(metaclass=abc.ABCMeta):
@@ -109,10 +107,8 @@ class SwitchCommand(Command):
                         self.value == self.command_manager.devices.HIGH:
                     self.command_manager.devices.set_switch(device_id,
                                                             self.value)
-                    self.gui.log_text("Set switch ",True,False) 
-                    self.gui.log_text(self.switch_name,False,False)
-                    self.gui.log_text(" to " +str(self.value),False,True)
-                                      
+                    self.gui.log_text("Set switch " + self.switch_name +
+                                      " to  " + str(self.value))
                     self.gui.switches_update_toggle()
                 else:
                     raise ValueError
@@ -178,8 +174,7 @@ class MonitorCommand(Command):
                         make_monitor(device_id, output_id,
                                      self.gui.completed_cycles)
                     self.gui.canvas.render()
-                    self.gui.log_text("Set monitor on ",True,False) 
-                    self.gui.log_text(self.signal_name,False,True) 
+                    self.gui.log_text("Set monitor on " + self.signal_name)
                     self.gui.monitors_update_toggle()
                     # update monitors set/zap toggle button
 
@@ -249,8 +244,7 @@ class ZapCommand(Command):
                     self.command_manager.monitors.remove_monitor(
                         device_id, output_id)
                     self.gui.canvas.render()
-                    self.gui.log_text("Zap monitor on " ,True,False)
-                    self.gui.log_text(self.signal_name,False,True)
+                    self.gui.log_text("Zap monitor on " + self.signal_name)
                     self.gui.monitors_update_toggle()
                 else:
                     return self.command_manager.UNKNOWN_ERROR, \
@@ -324,20 +318,19 @@ class RunCommand(Command):
                 if self.command_manager.network.execute_network():
                     self.command_manager.monitors.record_signals()
                 else:
-                    return self.command_manager.OSCILLATING_NETWORK, \
-                        "Cannot run network. " \
-                        "The network doesn't have a stable state."
+                    return self.command_manager.OSCILLATING_NETWORK,( 
+                        _("Cannot run network. ") 
+                        +_("The network doesn't have a stable state."))
             self.gui.update_cycles(self.cycles)
             self.gui.canvas.reset_pan()
             self.gui.canvas.render()
-            self.gui.log_text("Run simulation for ",True,False)
-            self.gui.log_text(str(self.cycles),False,False)
-            self.gui.log_text(" cycles", False,True)
- 
+            self.gui.log_text(_("Run simulation for ") + str(self.cycles) 
+                              + _(" cycles"))
+
         except ValueError:
-            return self.command_manager.INVALID_ARGUMENT, \
-                "Cannot run network. " \
-                "The number of cycles is not a positive integer."
+            return self.command_manager.INVALID_ARGUMENT,( 
+                _("Cannot run network. ") 
+                +_("The number of cycles is not a positive integer."))
         self.final_monitors_state = copy.deepcopy(command_manager.
                                                   monitors.monitors_dictionary)
         self.final_devices_state = copy.deepcopy(
@@ -407,21 +400,19 @@ class ContinueCommand(Command):
                 if self.command_manager.network.execute_network():
                     self.command_manager.monitors.record_signals()
                 else:
-                    return self.command_manager.OSCILLATING_NETWORK, \
-                        "Cannot continue network. " \
-                        "The network doesn't have a stable state."
+                    return self.command_manager.OSCILLATING_NETWORK,(
+                        _("Cannot continue network. ") \
+                        + _("The network doesn't have a stable state."))
             self.gui.update_cycles(self.gui.completed_cycles + self.cycles)
             self.gui.canvas.render()
             self.gui.canvas.pan_to_right_end()
-            self.gui.log_text(_("Continue simulation for "),True,False) 
-            self.gui.log_text(str(self.cycles),False,False)
-            self.gui.log_text(" cycles. Total cycles: ",False,False)
-            self.gui.log_text(str(self.gui.completed_cycles),False,True)
-            
+            self.gui.log_text(_("Continue simulation for ") + str(self.cycles)
+                              + _(" cycles. Total cycles: ") +
+                              str(self.gui.completed_cycles))
         except ValueError:
-            return self.command_manager.INVALID_ARGUMENT, \
-                "Cannot continue network. " \
-                "The number of cycles is not a positive integer."
+            return self.command_manager.INVALID_ARGUMENT, (
+                + _("Cannot continue network. ") \
+                + _("The number of cycles is not a positive integer."))
 
         self.final_monitors_state = copy.deepcopy(
             command_manager.monitors.monitors_dictionary)
@@ -483,7 +474,7 @@ class SaveCommand(Command):
                     self.command_manager.gui.completed_cycles]
             pickle.dump(data, fp)
 
-        self.gui.log_text("Save file " + self.path)
+        self.gui.log_text(_("Save file ") + self.path)
         return self.command_manager.NO_ERROR, None
 
     def undo(self):
@@ -570,7 +561,7 @@ class LoadCommand(Command):
         self.gui.switches_update_toggle()
         self.gui.monitors_select.SetValue("")
         self.gui.monitors_update_toggle()
-        self.gui.log_text("Load file " + self.path)
+        self.gui.log_text(_("Load file ") + self.path)
         self.gui.path = self.path
         self.gui.load_file_text_box.SetValue(self.path.split('/')[-1])
         self.gui.canvas.render()
