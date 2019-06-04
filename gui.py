@@ -2251,7 +2251,11 @@ class Gui(wx.Frame):
         self.is_saved = False
 
     def display_help(self):
-        with open(_("logsim_help.txt"), 'r') as help_fp:
+        help_file = "logsim_help.txt"
+        if self.lang_code == "el":
+            help_file =  "logsim_help_gr.txt"
+
+        with open(_(help_file), 'r') as help_fp:
             wx.MessageBox(help_fp.read(), _("Help"), wx.ICON_INFORMATION | wx.OK)
 
     def help_command(self):
