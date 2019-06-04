@@ -1431,7 +1431,7 @@ class Gui(wx.Frame):
         
         self.appName = "I18N sample application"
         
-        self.doConfig()
+        #self.doConfig()
         
         self.locale = None
         wx.Locale.AddCatalogLookupPathPrefix('locale')
@@ -1972,30 +1972,6 @@ class Gui(wx.Frame):
             self.display_help()
         if Id == wx.ID_HELP_COMMANDS:
             self.help_command()
-            
-    def doConfig(self):
-        """Setup an application configuration file"""
-        # configuration folder
-        sp = wx.StandardPaths.Get()
-        self.configLoc = sp.GetUserConfigDir()
-        self.configLoc = os.path.join(self.configLoc, self.appName)
-        # win: C:\Users\userid\AppData\Roaming\appName
-        # nix: \home\userid\appName
-
-        if not os.path.exists(self.configLoc):
-            os.mkdir(self.configLoc)
-
-        # AppConfig stuff is here
-        self.appConfig = wx.FileConfig(appName=self.appName,
-                                       vendorName=u'who you wish',
-                                       localFilename=os.path.join(
-                                       self.configLoc, "AppConfig"))
-    
-        if not self.appConfig.HasEntry(u'Language'):
-            # on first run we default to German
-            self.appConfig.Write(key=u'Language', value=u'de')
-            
-        self.appConfig.Flush()
         
     def updateLanguage(self, lang):
         """
@@ -2016,7 +1992,7 @@ class Gui(wx.Frame):
         else:
             selLang = wx.LANGUAGE_ENGLISH
             
-            
+        # if a locale exists, delete it     
         if self.locale:
             assert sys.getrefcount(self.locale) <= 2
             del self.locale
@@ -2240,7 +2216,7 @@ class Gui(wx.Frame):
                 return
         return
 
-    def log_text(self, text,date_present =True, line_end = True):
+    def log_text(self, text):
         """Handle the logging in activity_log of an event"""
         text_tr =text
 
