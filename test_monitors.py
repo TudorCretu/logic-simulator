@@ -169,13 +169,13 @@ def test_display_signals(capsys, new_monitors):
     new_monitors.make_monitor(CL_ID, None)
 
     # Both switches are currently LOW
-    for _ in range(10):
+    for i in range(10):
         network.execute_network()
         new_monitors.record_signals()
 
     # Set Sw1 to HIGH
     devices.set_switch(SW1_ID, HIGH)
-    for _ in range(10):
+    for i in range(10):
         network.execute_network()
         new_monitors.record_signals()
 

@@ -18,6 +18,11 @@ from monitors import Monitors
 from scanner import Scanner
 from parse import Parser
 
+import wx
+import sys
+import builtins
+builtins.__dict__['_'] = wx.GetTranslation
+
 
 class Command(metaclass=abc.ABCMeta):
     """Abstract / Interface base class for commands."""
@@ -315,7 +320,7 @@ class RunCommand(Command):
                 raise ValueError
             self.command_manager.monitors.reset_monitors()
             self.command_manager.devices.cold_startup()
-            for _ in range(self.cycles):
+            for i in range(self.cycles):
                 if self.command_manager.network.execute_network():
                     self.command_manager.monitors.record_signals()
                 else:
@@ -398,7 +403,7 @@ class ContinueCommand(Command):
             if self.cycles < 0:
                 raise ValueError
             self.cycles = int(self.cycles)
-            for _ in range(self.cycles):
+            for i in range(self.cycles):
                 if self.command_manager.network.execute_network():
                     self.command_manager.monitors.record_signals()
                 else:
@@ -408,7 +413,7 @@ class ContinueCommand(Command):
             self.gui.update_cycles(self.gui.completed_cycles + self.cycles)
             self.gui.canvas.render()
             self.gui.canvas.pan_to_right_end()
-            self.gui.log_text("Continue simulation for ",True,False) 
+            self.gui.log_text(_("Continue simulation for "),True,False) 
             self.gui.log_text(str(self.cycles),False,False)
             self.gui.log_text(" cycles. Total cycles: ",False,False)
             self.gui.log_text(str(self.gui.completed_cycles),False,True)
