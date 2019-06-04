@@ -1,15 +1,15 @@
 # Greek translations for sr package.
 # Copyright (C) 2019 THE sr'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the sr package.
-# S. Ravichandran <CALDAYS.R@gmail.com>, 2019.
+# S. Ravichandran <sr795@tw111.eng.cam.ac.uk>, 2019.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: sr 795\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-06-03 19:53+0100\n"
-"PO-Revision-Date: 2019-06-03 20:31+0100\n"
-"Last-Translator: S. Ravichandran <CALDAYS.R@gmail.com>\n"
+"PO-Revision-Date: 2019-06-04 12:23+0100\n"
+"Last-Translator: S. Ravichandran <sr795@tw111.eng.cam.ac.uk>\n"
 "Language-Team: Greek\n"
 "Language: el\n"
 "MIME-Version: 1.0\n"
@@ -19,31 +19,35 @@ msgstr ""
 
 #: parse.py:80
 msgid "InputPortNotConnectedError: Input port "
-msgstr ""
+msgstr "ΗθύραεισόδουδενείναισυνδεδεμένηΣφάλμα: Θύρα εισόδου"
 
 #: parse.py:99
 msgid ""
 "\n"
 "Parsed successfully! Valid definition file!"
 msgstr ""
+"\n"
+"Αναλύθηκε με επιτυχία! Αρχείο έγκυρου ορισμού!"
 
 #: parse.py:102
 msgid "Parsed successfully! Valid definition file!"
-msgstr ""
+msgstr "Αναλύθηκε με επιτυχία! Αρχείο έγκυρου ορισμού!"
 
 #: parse.py:104
 msgid ""
 "\n"
 "File {} contains {} error(s): "
 msgstr ""
+"\n"
+"Το αρχείο {} περιέχει {} σφάλματα:"
 
 #: parse.py:107
 msgid "File {} contains {} error(s):"
-msgstr ""
+msgstr "29/5000Το αρχείο {} περιέχει {} σφάλματα:"
 
 #: parse.py:519
 msgid "SyntaxError: Expected a keyword 'DEVICES'"
-msgstr ""
+msgstr "Σφάλμασύνταξης: Αναμενόμενη λέξη-κλειδί 'DEVICES'"
 
 #: parse.py:522
 msgid "SyntaxError: Expected a keyword 'CONNECTIONS'"
@@ -85,7 +89,10 @@ msgstr ""
 msgid "SyntaxError: '/' is illegal for signals"
 msgstr ""
 
-#: parse.py:546 parse.py:592 parse.py:650 parse.py:682
+#: parse.py:546
+#: parse.py:592
+#: parse.py:650
+#: parse.py:682
 msgid "Unknown error occurred"
 msgstr ""
 
@@ -127,7 +134,8 @@ msgstr ""
 msgid "InvalidPortError: Device {} does not have port {}"
 msgstr ""
 
-#: parse.py:647 parse.py:679
+#: parse.py:647
+#: parse.py:679
 msgid "DeviceAbsentError: Device {} is not defined"
 msgstr ""
 
@@ -191,7 +199,8 @@ msgstr "Μεγέθυνση & έξοδος\tCTRL + -"
 msgid "&View"
 msgstr "&Θέα"
 
-#: gui.py:1474 gui.py:1476
+#: gui.py:1474
+#: gui.py:1476
 msgid "&Run"
 msgstr "&Τρέξιμο"
 
@@ -203,7 +212,8 @@ msgstr "&Να συνεχίσει"
 msgid "&About"
 msgstr "&Σχετικά με"
 
-#: gui.py:1480 gui.py:1482
+#: gui.py:1480
+#: gui.py:1482
 msgid "&Help"
 msgstr "&Βοήθεια"
 
@@ -223,7 +233,9 @@ msgstr "&ΕΛΛΗΝΙΚΑ"
 msgid "&ABC"
 msgstr "&ABC"
 
-#: gui.py:1552 gui.py:2121 gui.py:2144
+#: gui.py:1552
+#: gui.py:2121
+#: gui.py:2144
 msgid "Load file"
 msgstr "Φόρτωση αρχείου"
 
@@ -255,7 +267,8 @@ msgstr "Τρέξιμο."
 msgid "Continue"
 msgstr "να συνεχίσει."
 
-#: gui.py:1619 gui.py:1652
+#: gui.py:1619
+#: gui.py:1652
 msgid "Zoom"
 msgstr "Ανίπταμαι διαγωνίως"
 
@@ -271,7 +284,8 @@ msgstr "Επαναφορά προβολής"
 msgid " To End ->"
 msgstr "Στο τέλος ->"
 
-#: gui.py:1643 gui.py:2043
+#: gui.py:1643
+#: gui.py:2043
 msgid "3D"
 msgstr "3D"
 
@@ -329,7 +343,8 @@ msgstr "Ξεκάνω"
 msgid "Redo"
 msgstr "Ξανακάνω"
 
-#: gui.py:2042 gui.py:2048
+#: gui.py:2042
+#: gui.py:2048
 msgid "2D"
 msgstr "2D"
 
@@ -413,7 +428,8 @@ msgstr "Εγκαταλείπω"
 msgid "Invalid Command Error"
 msgstr "Μη έγκυρο σφάλμα εντολών"
 
-#: gui.py:2371 gui.py:2386
+#: gui.py:2371
+#: gui.py:2386
 msgid "Invalid Argument Error"
 msgstr "Μη έγκυρο σφάλμα Argument"
 
@@ -441,7 +457,8 @@ msgstr "Σφάλμα δικτύου που ταλαντώνεται"
 msgid "Cannot Open File Error"
 msgstr "Δεν είναι δυνατό το άνοιγμα του σφάλματος αρχείου"
 
-#: gui.py:2397 gui.py:2403
+#: gui.py:2397
+#: gui.py:2403
 msgid "simulation."
 msgstr "προσομοίωση."
 
@@ -451,9 +468,7 @@ msgstr "Δεν υπάρχει τίποτα να ανακληθεί"
 
 #: gui.py:2402
 msgid "No command left to redo. This is the last state of the "
-msgstr ""
-"Δεν έχει απομείνει καμία εντολή για επαναφορά. Αυτή είναι η τελευταία "
-"κατάσταση του"
+msgstr "Δεν έχει απομείνει καμία εντολή για επαναφορά. Αυτή είναι η τελευταία κατάσταση του"
 
 #: gui.py:2404
 msgid "Nothing To Redo"
@@ -490,3 +505,101 @@ msgstr "Μη έγκυρο αρχείο ορισμού"
 #: gui.py:2420
 msgid "Unknown Error"
 msgstr "Αγνωστο σφάλμα"
+
+#: command_manager.py:116
+msgid "Set switch "
+msgstr "Ορισμός διακόπτη"
+
+#: command_manager.py:117
+msgid " to  "
+msgstr "προς το"
+
+#: command_manager.py:123
+msgid "Switch can be set to only 0 or 1."
+msgstr ""
+
+#: command_manager.py:125
+msgid "Device "
+msgstr ""
+
+#: command_manager.py:126
+msgid " is not a SWITCH"
+msgstr ""
+
+#: command_manager.py:186
+msgid "Set monitor on "
+msgstr "Ενεργοποιήστε την οθόνη"
+
+#: command_manager.py:192
+msgid "Failed in executing Monitor Command. ids is None."
+msgstr ""
+
+#: command_manager.py:195
+msgid " is already monitored"
+msgstr ""
+
+#: command_manager.py:197
+msgid "Error: "
+msgstr ""
+
+#: command_manager.py:198
+#: command_manager.py:269
+msgid " is not an output signal"
+msgstr ""
+
+#: command_manager.py:259
+msgid "Zap monitor on "
+msgstr "Ενεργοποιήστε την οθόνη On"
+
+#: command_manager.py:263
+msgid "Failed in executing Zap Command. ids is None."
+msgstr ""
+
+#: command_manager.py:266
+msgid " is not monitored"
+msgstr ""
+
+#: command_manager.py:337
+#: command_manager.py:347
+msgid "Cannot run network."
+msgstr ""
+
+#: command_manager.py:338
+#: command_manager.py:423
+msgid "The network doesn't have a stable state."
+msgstr ""
+
+#: command_manager.py:342
+msgid "Run simulation for "
+msgstr "Εκτελέστε προσομοίωση για "
+
+#: command_manager.py:343
+msgid " cycles"
+msgstr "κύκλους"
+
+#: command_manager.py:348
+#: command_manager.py:433
+msgid "The number of cycles is not a positive integer."
+msgstr ""
+
+#: command_manager.py:422
+#: command_manager.py:432
+msgid "Cannot continue network. "
+msgstr ""
+
+#: command_manager.py:427
+msgid "Continue simulation for "
+msgstr "Συνέχιση προσομοίωσης για"
+
+#: command_manager.py:428
+msgid " cycles. Total cycles: "
+msgstr "κύκλους. Συνολικοί κύκλοι:"
+
+#: command_manager.py:498
+msgid "Save file "
+msgstr "Αποθηκεύσετε το αρχείο"
+
+#: command_manager.py:588
+msgid "Load file "
+msgstr "Φόρτωση αρχείου"
+

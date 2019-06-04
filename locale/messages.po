@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-03 20:25+0100\n"
+"POT-Creation-Date: 2019-06-03 21:23+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,98 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: command_manager.py:116
+msgid "Set switch "
+msgstr ""
+
+#: command_manager.py:117
+msgid " to  "
+msgstr ""
+
+#: command_manager.py:123
+msgid "Switch can be set to only 0 or 1."
+msgstr ""
+
+#: command_manager.py:125
+msgid "Device "
+msgstr ""
+
+#: command_manager.py:126
+msgid " is not a SWITCH"
+msgstr ""
+
+#: command_manager.py:186
+msgid "Set monitor on "
+msgstr ""
+
+#: command_manager.py:192
+msgid "Failed in executing Monitor Command. ids is None."
+msgstr ""
+
+#: command_manager.py:195
+msgid " is already monitored"
+msgstr ""
+
+#: command_manager.py:197
+msgid "Error: "
+msgstr ""
+
+#: command_manager.py:198 command_manager.py:269
+msgid " is not an output signal"
+msgstr ""
+
+#: command_manager.py:259
+msgid "Zap monitor on "
+msgstr ""
+
+#: command_manager.py:263
+msgid "Failed in executing Zap Command. ids is None."
+msgstr ""
+
+#: command_manager.py:266
+msgid " is not monitored"
+msgstr ""
+
+#: command_manager.py:337 command_manager.py:347
+msgid "Cannot run network. "
+msgstr ""
+
+#: command_manager.py:338 command_manager.py:423
+msgid "The network doesn't have a stable state."
+msgstr ""
+
+#: command_manager.py:342
+msgid "Run simulation for "
+msgstr ""
+
+#: command_manager.py:343
+msgid " cycles"
+msgstr ""
+
+#: command_manager.py:348 command_manager.py:433
+msgid "The number of cycles is not a positive integer."
+msgstr ""
+
+#: command_manager.py:422 command_manager.py:432
+msgid "Cannot continue network. "
+msgstr ""
+
+#: command_manager.py:427
+msgid "Continue simulation for "
+msgstr ""
+
+#: command_manager.py:428
+msgid " cycles. Total cycles: "
+msgstr ""
+
+#: command_manager.py:498
+msgid "Save file "
+msgstr ""
+
+#: command_manager.py:588
+msgid "Load file "
+msgstr ""
 
 #: gui.py:1454
 msgid "&New"
@@ -224,129 +316,129 @@ msgstr ""
 msgid "Cannot save current data in file "
 msgstr ""
 
-#: gui.py:2265
+#: gui.py:2251
 msgid "logsim_help.txt"
 msgstr ""
 
-#: gui.py:2266
+#: gui.py:2252
 msgid "Help"
 msgstr ""
 
-#: gui.py:2270
+#: gui.py:2256
 msgid "User commands:\n"
 msgstr ""
 
-#: gui.py:2271
+#: gui.py:2257
 msgid "r N         - run the simulation for N cycles\n"
 msgstr ""
 
-#: gui.py:2272
+#: gui.py:2258
 msgid "c N         - continue the simulation for N cycles\n"
 msgstr ""
 
-#: gui.py:2273
+#: gui.py:2259
 msgid "s X N     - set switch X to N (0 or 1)\n"
 msgstr ""
 
-#: gui.py:2274
+#: gui.py:2260
 msgid "m X       - set a monitor on signal X\n"
 msgstr ""
 
-#: gui.py:2275
+#: gui.py:2261
 msgid "z X         - zap the monitor on signal X\n"
 msgstr ""
 
-#: gui.py:2276
+#: gui.py:2262
 msgid "h             - help (this command)\n"
 msgstr ""
 
-#: gui.py:2277
+#: gui.py:2263
 msgid "q            - quit the program"
 msgstr ""
 
-#: gui.py:2278
+#: gui.py:2264
 msgid "Help on Commands"
 msgstr ""
 
-#: gui.py:2381
+#: gui.py:2367
 msgid "Quit"
 msgstr ""
 
-#: gui.py:2392
+#: gui.py:2378
 msgid "Invalid Command Error"
 msgstr ""
 
-#: gui.py:2395 gui.py:2410
+#: gui.py:2381 gui.py:2396
 msgid "Invalid Argument Error"
 msgstr ""
 
-#: gui.py:2398
+#: gui.py:2384
 msgid "Monitor Present Error"
 msgstr ""
 
-#: gui.py:2401
+#: gui.py:2387
 msgid "Signal Not Monitored Error"
 msgstr ""
 
-#: gui.py:2404
+#: gui.py:2390
 msgid "Monitor On Input Signal Error"
 msgstr ""
 
-#: gui.py:2407
+#: gui.py:2393
 msgid "Device Absent Error"
 msgstr ""
 
-#: gui.py:2413
+#: gui.py:2399
 msgid "Oscillating Network Error"
 msgstr ""
 
-#: gui.py:2416
+#: gui.py:2402
 msgid "Cannot Open File Error"
 msgstr ""
 
-#: gui.py:2421 gui.py:2427
+#: gui.py:2407 gui.py:2413
 msgid "simulation."
 msgstr ""
 
-#: gui.py:2422
+#: gui.py:2408
 msgid "Nothing To Undo"
 msgstr ""
 
-#: gui.py:2426
+#: gui.py:2412
 msgid "No command left to redo. This is the last state of the "
 msgstr ""
 
-#: gui.py:2428
+#: gui.py:2414
 msgid "Nothing To Redo"
 msgstr ""
 
-#: gui.py:2431
+#: gui.py:2417
 msgid "Nothing to continue. Run first."
 msgstr ""
 
-#: gui.py:2432
+#: gui.py:2418
 msgid "Simulation Not Started"
 msgstr ""
 
-#: gui.py:2435
+#: gui.py:2421
 msgid "No network avilable. Load a valid definition file."
 msgstr ""
 
-#: gui.py:2436
+#: gui.py:2422
 msgid "No network available"
 msgstr ""
 
-#: gui.py:2440
+#: gui.py:2426
 msgid ""
 "\n"
 "Please check the activity log or the terminal."
 msgstr ""
 
-#: gui.py:2441
+#: gui.py:2427
 msgid "Invalid definition file"
 msgstr ""
 
-#: gui.py:2444
+#: gui.py:2430
 msgid "Unknown Error"
 msgstr ""
 

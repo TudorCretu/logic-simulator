@@ -2240,25 +2240,14 @@ class Gui(wx.Frame):
                 return
         return
 
-    def log_text(self, text):
+    def log_text(self, text,date_present =True, line_end = True):
         """Handle the logging in activity_log of an event"""
-        
-        if (self.lang_code == "el"):
-            lines = text.split("\n")
-            translated_lines = []
-            for line in lines:
-			
-                words = line.split(" ")
-                for word in words:
-                    word = _(word)
-                    print(word)
-                translated_line = " ".join(words)
-                translated_lines.append(translated_line)
-            text = "\n".join(translated_lines)
-		
-
-        text = "".join([datetime.datetime.now().strftime("%H:%M:%S: "), text])
-        self.activity_log_text.AppendText(text + '\n')
+        text_tr =_(text)
+        if date_present:
+            text = "".join([datetime.datetime.now().strftime("%H:%M:%S: "), text])
+        if line_end:
+            text_tr = text_tr + '\n'            
+        self.activity_log_text.AppendText(text_tr)
         self.is_saved = False
 
     def display_help(self):
@@ -2451,19 +2440,6 @@ class Gui(wx.Frame):
             self.ShowFullScreen(False)
         else:
             event.Skip()
-            
-        string  = u"Lettice name in chinese is Wei Lai"
-        lines = string.split("\n")
-        translated_lines = []
-        for line in lines:
-			
-            words = line.split(" ")
-            for word in words:
-                word = _(word)
-                print(word)
-            translated_line = " ".join(words)
-            translated_lines.append(translated_line)
-        string = "\n".join(translated_lines)
 
 
 

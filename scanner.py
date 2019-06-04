@@ -177,8 +177,8 @@ class Scanner:
 
             # if unclosed M-L comment present , provide warning
             if (self.current_character == ''):
-                print("** WARNING : UNCLOSED MULTILINE COMMENT PRESENT: "
-                      "IT IS RECOMMENDED THAT YOU CLOSE IT WITH A '*'")
+                print(_("** WARNING : UNCLOSED MULTILINE COMMENT PRESENT: "
+                      "IT IS RECOMMENDED THAT YOU CLOSE IT WITH A '*'"))
                 return
 
             self.advance()

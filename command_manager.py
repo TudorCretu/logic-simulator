@@ -1,8 +1,6 @@
 """Execute commands and stores system states.
-
 Used in the Logic Simulator project to execute commands, enable save/load and
 undo/redo operations in the gui.
-
 Classes
 -------
 Command - stores command properties.
@@ -47,7 +45,6 @@ class HelpCommand(Command):
 
     def execute(self, command_manager):
         """Execute help command
-
         Return NO_ERROR, None if successful.
         """
 
@@ -67,7 +64,6 @@ class HelpCommand(Command):
 
     def undo(self):
         """Attempt to undo help command. Pass the undo call to the next command
-
         Return error_code, error_message
         """
 
@@ -76,7 +72,6 @@ class HelpCommand(Command):
 
     def redo(self):
         """Attempt to redo help command. Pass the redo call to the next command
-
         Return error_code, error_message
         """
 
@@ -96,7 +91,6 @@ class SwitchCommand(Command):
 
     def execute(self, command_manager):
         """Execute set switch command
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager = command_manager
@@ -110,8 +104,10 @@ class SwitchCommand(Command):
                         self.value == self.command_manager.devices.HIGH:
                     self.command_manager.devices.set_switch(device_id,
                                                             self.value)
-                    self.gui.log_text("Set switch " + self.switch_name +
-                                      " to  " + str(self.value))
+                    self.gui.log_text("Set switch ",True,False) 
+                    self.gui.log_text(self.switch_name,False,False)
+                    self.gui.log_text(" to " +str(self.value),False,True)
+                                      
                     self.gui.switches_update_toggle()
                 else:
                     raise ValueError
@@ -125,7 +121,6 @@ class SwitchCommand(Command):
 
     def undo(self):
         """Undo set switch command
-
         Return NO_ERROR, None if successful.
         """
 
@@ -136,7 +131,6 @@ class SwitchCommand(Command):
 
     def redo(self):
         """Redo set switch command
-
         Return NO_ERROR, None if successful.
         """
 
@@ -160,7 +154,6 @@ class MonitorCommand(Command):
 
     def execute(self, command_manager):
         """Executes monitor command
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager = command_manager
@@ -180,7 +173,8 @@ class MonitorCommand(Command):
                         make_monitor(device_id, output_id,
                                      self.gui.completed_cycles)
                     self.gui.canvas.render()
-                    self.gui.log_text("Set monitor on " + self.signal_name)
+                    self.gui.log_text("Set monitor on ",True,False) 
+                    self.gui.log_text(self.signal_name,False,True) 
                     self.gui.monitors_update_toggle()
                     # update monitors set/zap toggle button
 
@@ -199,7 +193,6 @@ class MonitorCommand(Command):
 
     def undo(self):
         """Undo monitor command
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager.monitors.monitors_dictionary = \
@@ -210,7 +203,6 @@ class MonitorCommand(Command):
 
     def redo(self):
         """Redo monitor command
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager.monitors.monitors_dictionary = \
@@ -234,7 +226,6 @@ class ZapCommand(Command):
 
     def execute(self, command_manager):
         """Executes zap command
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager = command_manager
@@ -253,7 +244,8 @@ class ZapCommand(Command):
                     self.command_manager.monitors.remove_monitor(
                         device_id, output_id)
                     self.gui.canvas.render()
-                    self.gui.log_text("Zap monitor on " + self.signal_name)
+                    self.gui.log_text("Zap monitor on " ,True,False)
+                    self.gui.log_text(self.signal_name,False,True)
                     self.gui.monitors_update_toggle()
                 else:
                     return self.command_manager.UNKNOWN_ERROR, \
@@ -270,7 +262,6 @@ class ZapCommand(Command):
 
     def undo(self):
         """Undo zap command
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager.monitors.monitors_dictionary = \
@@ -281,7 +272,6 @@ class ZapCommand(Command):
 
     def redo(self):
         """Redo zap command
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager.monitors.monitors_dictionary = \
@@ -307,7 +297,6 @@ class RunCommand(Command):
 
     def execute(self, command_manager):
         """Execute run command
-
         Return NO_ERROR, None if successful.
         """
 
@@ -336,9 +325,10 @@ class RunCommand(Command):
             self.gui.update_cycles(self.cycles)
             self.gui.canvas.reset_pan()
             self.gui.canvas.render()
-            self.gui.log_text("Run simulation for " + str(self.cycles) +
-                              " cycles")
-
+            self.gui.log_text("Run simulation for ",True,False)
+            self.gui.log_text(str(self.cycles),False,False)
+            self.gui.log_text(" cycles", False,True)
+ 
         except ValueError:
             return self.command_manager.INVALID_ARGUMENT, \
                 "Cannot run network. " \
@@ -352,7 +342,6 @@ class RunCommand(Command):
 
     def undo(self):
         """Undo run command
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager.monitors.monitors_dictionary = \
@@ -365,7 +354,6 @@ class RunCommand(Command):
 
     def redo(self):
         """Redo run command
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager.monitors.monitors_dictionary =\
@@ -393,7 +381,6 @@ class ContinueCommand(Command):
 
     def execute(self, command_manager):
         """Continue simulation for a number of cycles
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager = command_manager
@@ -421,9 +408,11 @@ class ContinueCommand(Command):
             self.gui.update_cycles(self.gui.completed_cycles + self.cycles)
             self.gui.canvas.render()
             self.gui.canvas.pan_to_right_end()
-            self.gui.log_text("Continue simulation for " + str(self.cycles)
-                              + " cycles. Total cycles: " +
-                              str(self.gui.completed_cycles))
+            self.gui.log_text("Continue simulation for ",True,False) 
+            self.gui.log_text(str(self.cycles),False,False)
+            self.gui.log_text(" cycles. Total cycles: ",False,False)
+            self.gui.log_text(str(self.gui.completed_cycles),False,True)
+            
         except ValueError:
             return self.command_manager.INVALID_ARGUMENT, \
                 "Cannot continue network. " \
@@ -437,7 +426,6 @@ class ContinueCommand(Command):
 
     def undo(self):
         """Undo continue command
-
         Return NO_ERROR, None if successful.
         """
 
@@ -453,7 +441,6 @@ class ContinueCommand(Command):
 
     def redo(self):
         """Redo continue command
-
         Return NO_ERROR, None if successful.
         """
 
@@ -478,7 +465,6 @@ class SaveCommand(Command):
 
     def execute(self, command_manager):
         """Execute save command
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager = command_manager
@@ -497,7 +483,6 @@ class SaveCommand(Command):
 
     def undo(self):
         """Attempt to undo save command. Pass the undo call to the next command
-
         Return error_code, error_message
         """
 
@@ -506,7 +491,6 @@ class SaveCommand(Command):
 
     def redo(self):
         """Attempt to redo save command. Pass the redo call to the next command
-
         Return error_code, error_message
         """
 
@@ -525,7 +509,6 @@ class LoadCommand(Command):
 
     def execute(self, command_manager):
         """Execute load command
-
         Return NO_ERROR, None if successful.
         """
         self.command_manager = command_manager
@@ -590,7 +573,6 @@ class LoadCommand(Command):
 
     def undo(self):
         """Attempt to undo load command. Pass the undo call to the next command
-
         Return error_code, error_message
         """
 
@@ -599,7 +581,6 @@ class LoadCommand(Command):
 
     def redo(self):
         """Attempt to redo load command. Pass the redo call to the next command
-
         Return error_code, error_message
         """
 
@@ -609,10 +590,8 @@ class LoadCommand(Command):
 
 class CommandManager:
     """Manages commands and executes them.
-
     This class contains functions required for executing commands
      received from gui, and handle undo/redo operations.
-
     Parameters
     ----------
     gui - instance of the gui.Gui() class.
@@ -620,14 +599,11 @@ class CommandManager:
     devices - instance of the devices.Devices() class.
     network: instance of the network.Network() class.
     monitors - instance of the monitors.Monitors() class.
-
     Public methods
     --------------
     execute_command(self, command): Executes command and return error_code
     and error_message.
-
     undo_command(self): Undo command and return error_code and error_message.
-
     redo_command(self): Redo command and return error_code and error_message.
     """
 
@@ -655,7 +631,6 @@ class CommandManager:
 
     def execute_command(self, command):
         """Execute command given as argument
-
         Return error_code, error_message
         """
         if self.gui.path is None and not isinstance(command, LoadCommand):
@@ -672,7 +647,6 @@ class CommandManager:
 
     def undo_command(self):
         """Undo last command from undo stack
-
         Return error_code, error_message
         """
         if len(self.undo_stack) > 0:
@@ -686,7 +660,6 @@ class CommandManager:
 
     def redo_command(self):
         """Undo last command from redo stack
-
         Return error_code, error_message
         """
         if len(self.redo_stack) > 0:
