@@ -582,7 +582,7 @@ class Parser:
             self.error_output.append(
                 _("TypeNotFoundError: Device's type {} does not match "
                   "one of the following:\n'CLOCK','SWITCH','AND','NAND',"
-                  "'OR','NOR','XOR','DTYPE'")
+                  "'OR','NOR','XOR','DTYPE','SIGGEN'")
                 .format(device_type_str))
         elif error_type == self.devices.DEVICE_PRESENT:
             self.error_output.append(
