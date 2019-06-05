@@ -1881,8 +1881,8 @@ class Gui(wx.Frame):
         # automatically run for number of cycles specified as argument
         # this allows resumption of session when a new window is opened
         # upon a change of language
-        # if self.path_name:
-        #     self.run_command(cycles)
+        if self.path_name:
+             self.run_command(cycles)
 
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
