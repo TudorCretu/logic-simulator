@@ -250,7 +250,7 @@ class Devices:
 
         signal should only contain HIGH or LOW
         """
-        self.add_device(device_id,self.SIGGEN)
+        self.add_device(device_id, self.SIGGEN)
         device = self.get_device(device_id)
         device.signal = signal
         self.cold_startup()
