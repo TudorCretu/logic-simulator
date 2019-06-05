@@ -64,7 +64,7 @@ def test_DEVICES_type_not_found_error():
     assert parser.parse_devices() is False
 
     assert parser.error_output[0] == ("TypeNotFoundError: Device's type "
-                                      "'SWITCHEY' does not match one of the "
+                                      "SWITCHEY does not match one of the "
                                       "following:\n'CLOCK','SWITCH','AND',"
                                       "'NAND','OR','NOR','XOR','DTYPE'")
 
@@ -98,7 +98,7 @@ def test_DEVICES_resued_name_error():
 
     assert parser.parse_devices() is False
 
-    assert parser.error_output[0] == ("RepeatedIdentifierError: Device 'SW1' "
+    assert parser.error_output[0] == ("RepeatedIdentifierError: Device SW1 "
                                       "is already defined")
 
 
@@ -166,7 +166,7 @@ def test_DEVICES_missing_parameter_error():
     assert parser.parse_devices() is False
 
     assert parser.error_output[0] == ("MissingParameterError: Parameter of "
-                                      "Device 'SW1' is not specified")
+                                      "Device SW1 is not specified")
 
 
 def test_DEVICES_invalid_parameter_error():
@@ -178,7 +178,7 @@ def test_DEVICES_invalid_parameter_error():
     assert parser.parse_devices() is False
 
     assert parser.error_output[0] == ("InvalidParameterError: Parameter value "
-                                      "of Device 'AND1' is not valid")
+                                      "of Device AND1 is not valid")
 
 
 def test_DEVICES_excess_parameter_error():
@@ -188,7 +188,7 @@ def test_DEVICES_excess_parameter_error():
     parser = create_parser(file_path)
 
     assert parser.parse_devices() is False
-    assert parser.error_output[0] == ("ExcessParametersError: Device 'XOR1' "
+    assert parser.error_output[0] == ("ExcessParametersError: Device XOR1 "
                                       "has too many parameters specified")
 
 
@@ -317,7 +317,7 @@ def test_CONNECTIONS_device_absent_error():
     assert parser.parse_connections() is False
 
     assert parser.error_output[0] == ("DeviceAbsentError:"
-                                      " Device 'XOR8' is not defined")
+                                      " Device XOR8 is not defined")
 
 
 def test_CONNECTIONS_invalid_port_error():
@@ -330,8 +330,8 @@ def test_CONNECTIONS_invalid_port_error():
     parser.parse_devices()
     assert parser.parse_connections() is False
 
-    assert parser.error_output[0] == ("InvalidPortError: Device 'XOR1' does "
-                                      "not have port '.I9'")
+    assert parser.error_output[0] == ("InvalidPortError: Device XOR1 does "
+                                      "not have port .I9")
 
 
 def test_CONNECTIONS_2sig():
@@ -345,7 +345,7 @@ def test_CONNECTIONS_2sig():
     assert parser.parse_connections() is False
 
     assert parser.error_output[0] == ("InputPortConnectionPresentError: Signal"
-                                      " 'XOR1.I1' is already connected")
+                                      " XOR1.I1 is already connected")
 
 
 def test_CONNECTIONS_input_input_error():
@@ -358,7 +358,7 @@ def test_CONNECTIONS_input_input_error():
     assert parser.parse_connections() is False
 
     assert parser.error_output[0] == ("IllegalConnectionError: Signal "
-                                      "'D1.CLEAR' and 'XOR1.I1' are both input"
+                                      "D1.CLEAR and XOR1.I1 are both input"
                                       " signals")
 
 
@@ -371,8 +371,8 @@ def test_CONNECTIONS_output_output_error():
     parser.parse_devices()
     assert parser.parse_connections() is False
 
-    assert parser.error_output[0] == ("IllegalConnectionError: Signal 'SW1' "
-                                      "and 'SW2' are both output signals")
+    assert parser.error_output[0] == ("IllegalConnectionError: Signal SW1 "
+                                      "and SW2 are both output signals")
 
 
 def test_CONNECTIONS_mutliple_errors():
@@ -385,8 +385,8 @@ def test_CONNECTIONS_mutliple_errors():
     parser.parse_devices()
     assert parser.parse_connections() is False
     assert parser.error_count == 4
-    assert parser.error_output[0] == ("InvalidPortError: Device 'XOR1' does "
-                                      "not have port '.I3'")
+    assert parser.error_output[0] == ("InvalidPortError: Device XOR1 does "
+                                      "not have port .I3")
     assert parser.error_output[1] == "SyntaxError: Expected a name"
     assert parser.error_output[2] == "SyntaxError: Expected a comma"
     assert parser.error_output[3] == "SyntaxError: Expected a semicolon"
@@ -501,7 +501,7 @@ def test_MONITORS_monitor_exists():
     assert parser.parse_monitors() is False
 
     assert parser.error_output[0] == (
-        "MonitorPresentError: Signal 'D1.Q' is already monitored")
+        "MonitorPresentError: Signal D1.Q is already monitored")
 
 
 def test_MONITORS_device_absent():
@@ -516,7 +516,7 @@ def test_MONITORS_device_absent():
 
     assert parser.parse_monitors() is False
 
-    assert parser.error_output[0] == ("DeviceAbsentError: Device 'D3' is not "
+    assert parser.error_output[0] == ("DeviceAbsentError: Device D3 is not "
                                       "defined")
 
 
@@ -533,7 +533,7 @@ def test_MONITORS_not_output():
     assert parser.parse_monitors() is False
 
     assert parser.error_output[0] == ("MonitorNotOutputSignalError: Signal "
-                                      "'D1.CLEAR' is not an output")
+                                      "D1.CLEAR is not an output")
 
 
 def test_MONITORS_mutliple_errors():
@@ -549,7 +549,7 @@ def test_MONITORS_mutliple_errors():
     parser.parse_connections()
     assert parser.parse_monitors() is False
     assert parser.error_count == 4
-    assert parser.error_output[0] == ("MonitorPresentError: Signal 'D1.Q' is "
+    assert parser.error_output[0] == ("MonitorPresentError: Signal D1.Q is "
                                       "already monitored")
     assert parser.error_output[1] == "SyntaxError: Expected a name"
     assert parser.error_output[2] == "SyntaxError: Expected a comma"
@@ -576,7 +576,7 @@ def test_full_file_multiple_errors():
     parser.parse_network()
 
     assert parser.error_output[0] == ("MissingParameterError: Parameter of "
-                                      "Device 'SW0' is not specified")
+                                      "Device SW0 is not specified")
     assert parser.error_output[1] == "SyntaxError: Expected a comma"
     assert parser.error_output[2] == "SyntaxError: Expected a semicolon"
     assert parser.error_output[3] == "SyntaxError: Expected a name"

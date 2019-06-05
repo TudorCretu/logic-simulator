@@ -1897,6 +1897,10 @@ class Gui(wx.Frame):
         self.update_scrollbars()
         self.Show()
         self.Maximize(True)
+        
+        # automatically run for number of cycles specified as argument
+        # this allows resumption of session when a new window is opened
+        # upon a change of language
         self.run_command(cycles)
 
     def on_menu(self, event):
