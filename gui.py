@@ -1554,7 +1554,7 @@ class Gui(wx.Frame):
 
         #  Side Sizer
         #   Switches
-        toggle_button_size = wx.Size(50, wx.DefaultSize.GetHeight())
+        toggle_button_size = wx.Size(70, wx.DefaultSize.GetHeight())
         switches_names = [names.get_name_string(
             switch_id) for switch_id in self.switches]
         self.switches_select = wx.ComboBox(self, wx.ID_ANY, style=wx.CB_SORT,
