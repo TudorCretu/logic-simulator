@@ -277,8 +277,8 @@ def test_show_error_location(names):
             symbol.line_number,symbol.cursor_pos_at_start_of_line,
             symbol.cursor_position)
     # checking readout information agrees with what we would expect
-    assert output == ("Line 1: Error called at the 3rd symbol in string\n"
-                      "                     ^                          ")
+    assert output == ("Line 1: Error called at the 3rd symbol in string\n"                      "                     ^                          ")
+
 
 def test_comment_between_sections(names):
     """Test if comments are ignored correctly."""
