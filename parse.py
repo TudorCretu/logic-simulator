@@ -6,17 +6,17 @@ Classes
 -------
 Parser - parses the definition file and builds the logic network.
 """
+from io import StringIO
+import os
+from monitors import Monitors
+from devices import Device, Devices
+from network import Network
+from scanner import Symbol, Scanner
+from names import Names
 import wx
 import sys
 import builtins
 builtins.__dict__['_'] = wx.GetTranslation
-from names import Names
-from scanner import Symbol, Scanner
-from network import Network
-from devices import Device, Devices
-from monitors import Monitors
-import os
-from io import StringIO
 
 
 class Parser:
@@ -79,7 +79,7 @@ class Parser:
                 self.error_output.append(
                     _("InputPortNotConnectedError: Input port ")
                     + "{} of device {} is not connected"
-                    .format (port_str, device_str))
+                    .format(port_str, device_str))
             success = (success and flag4)
         self.print_msg(success)
         return success
@@ -102,11 +102,11 @@ class Parser:
                 _(_("Parsed successfully! Valid definition file!")))
         else:
             print('\033[91m' + _("\nFile {} contains {} error(s): ")
-                  .format (self.scanner.file.name.split('/')[-1], self.error_count)
+                  .format(self.scanner.file.name.split('/')[-1], self.error_count)
                   + '\033[0m')
             self.error_to_gui.append(_("File {} contains {} error(s):")
-                                     .format (self.scanner.file.name.split('/')[-1],
-                                        self.error_count))
+                                     .format(self.scanner.file.name.split('/')[-1],
+                                             self.error_count))
             n = len(self.error_cursor)
             if self.error_count > n:  # notice the unconnected input error
                 for i in range(n):
@@ -517,13 +517,13 @@ class Parser:
         self.error_count += 1
         if error_type == self.NO_KEYWORD_DEVICES:
             self.error_output.append(_("SyntaxError: "
-                                     "Expected a keyword 'DEVICES'"))
+                                       "Expected a keyword 'DEVICES'"))
         elif error_type == self.NO_KEYWORD_CONNECTIONS:
             self.error_output.append(_("SyntaxError: "
-                                     "Expected a keyword 'CONNECTIONS'"))
+                                       "Expected a keyword 'CONNECTIONS'"))
         elif error_type == self.NO_KEYWORD_MONITORS:
-            self.error_output.append(_("SyntaxError: " 
-									"Expected a keyword 'MONITORS'"))
+            self.error_output.append(_("SyntaxError: "
+                                       "Expected a keyword 'MONITORS'"))
         elif error_type == self.NO_EQUALS:
             self.error_output.append(_("SyntaxError: Expected an equals sign"))
         elif error_type == self.NO_SEMICOLON:
@@ -566,28 +566,28 @@ class Parser:
         if error_type == self.devices.INVALID_QUALIFIER:
             self.error_output.append(
                 _("InvalidParameterError: Parameter value of "
-                 "Device {} is not valid")
-                .format (device_id_str))
+                  "Device {} is not valid")
+                .format(device_id_str))
         elif error_type == self.devices.NO_QUALIFIER:
             self.error_output.append(
                 _("MissingParameterError: Parameter of "
-                "Device {} is not specified")
-                .format (device_id_str))
+                  "Device {} is not specified")
+                .format(device_id_str))
         elif error_type == self.devices.QUALIFIER_PRESENT:
             self.error_output.append(
                 _("ExcessParametersError: Device {} has "
-                "too many parameters specified")
-                .format (device_id_str))
+                  "too many parameters specified")
+                .format(device_id_str))
         elif error_type == self.devices.BAD_DEVICE:
             self.error_output.append(
                 _("TypeNotFoundError: Device's type {} does not match "
-                "one of the following:\n'CLOCK','SWITCH','AND','NAND',"
-                "'OR','NOR','XOR','DTYPE'")
-                .format (device_type_str))
+                  "one of the following:\n'CLOCK','SWITCH','AND','NAND',"
+                  "'OR','NOR','XOR','DTYPE'")
+                .format(device_type_str))
         elif error_type == self.devices.DEVICE_PRESENT:
             self.error_output.append(
                 _("RepeatedIdentifierError: Device {} is already defined")
-                .format (device_id_str))
+                .format(device_id_str))
         else:
             self.error_output.append(_("Unknown error occurred"))
         self.error_cursor.append(self.symbol.cursor_position)
@@ -626,26 +626,26 @@ class Parser:
         if error_type == self.network.INPUT_TO_INPUT:
             self.error_output.append(
                 _("IllegalConnectionError: Signal {}{} "
-                "and {}{} are both input signals")
-                .format (device_str1, port_str1, device_str2, port_str2))
+                  "and {}{} are both input signals")
+                .format(device_str1, port_str1, device_str2, port_str2))
         elif error_type == self.network.OUTPUT_TO_OUTPUT:
             self.error_output.append(
                 _("IllegalConnectionError: Signal {}{} "
-                "and {}{} are both output signals")
-                .format (device_str1, port_str1, device_str2, port_str2))
+                  "and {}{} are both output signals")
+                .format(device_str1, port_str1, device_str2, port_str2))
         elif error_type == self.network.INPUT_CONNECTED:
             self.error_output.append(
                 _("InputPortConnectionPresentError: Signal "
-                "{}{} is already connected")
-                .format (device_str1, port_str1))
+                  "{}{} is already connected")
+                .format(device_str1, port_str1))
         elif error_type == self.network.PORT_ABSENT:
             self.error_output.append(
                 _("InvalidPortError: Device {} does not have port {}")
-                .format (device_str1, port_str1))
+                .format(device_str1, port_str1))
         elif error_type == self.network.DEVICE_ABSENT:
             self.error_output.append(
                 _("DeviceAbsentError: Device {} is not defined")
-                .format (device_str1))
+                .format(device_str1))
         else:
             self.error_output.append(_("Unknown error occurred"))
         self.error_cursor.append(self.symbol.cursor_position)
@@ -669,15 +669,15 @@ class Parser:
         if error_type == self.monitors.NOT_OUTPUT:
             self.error_output.append(
                 _("MonitorNotOutputSignalError: Signal {}{} is not an output")
-                .format (device_str, port_str))
+                .format(device_str, port_str))
         elif error_type == self.monitors.MONITOR_PRESENT:
             self.error_output.append(
                 _("MonitorPresentError: Signal {}{} is already monitored")
-                .format (device_str, port_str))
+                .format(device_str, port_str))
         elif error_type == self.network.DEVICE_ABSENT:
             self.error_output.append(
                 _("DeviceAbsentError: Device {} is not defined")
-                .format (device_str))
+                .format(device_str))
         else:
             self.error_output.append(_("Unknown error occurred"))
         self.error_cursor.append(self.symbol.cursor_position)

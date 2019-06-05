@@ -90,7 +90,7 @@ def test_display_error_device():
                                 parser.symbol.id)
     assert parser.error_output[-1] == "InvalidParameterError: " \
         "Parameter value of Device " \
-        "'AND1' is not valid"
+        "AND1 is not valid"
 
 
 def test_display_error_connection():
@@ -101,7 +101,7 @@ def test_display_error_connection():
     parser.symbol = parser.read_symbol()
     parser.display_error_connection(parser.network.INPUT_TO_INPUT)
     assert parser.error_output[-1] == "IllegalConnectionError: " \
-                                      "Signal '' and '' are " \
+                                      "Signal  and  are " \
                                       "both input signals"
 
 
@@ -115,7 +115,7 @@ def test_display_error_monitor():
     parser.display_error_monitor(parser.monitors.NOT_OUTPUT,
                                  symbol1.id, symbol2.id)
     assert parser.error_output[-1] == "MonitorNotOutputSignalError: " \
-                                      "Signal 'AND1.AND2' is not an output"
+                                      "Signal AND1.AND2 is not an output"
 
 
 def test_check_names():

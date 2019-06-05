@@ -1,3 +1,5 @@
+﻿
+
 Supported type names and port names of devices:
 
 AND (AND gate): requires a /parameter indicating how many inputs it has.
@@ -35,4 +37,3 @@ DTYPE (D-type flip-flop): It does not need any parameter.
 	For a D-flip-flop DFF:
 		Its 2 outputs are DFF.Q and DFF.Q_BAR.
 		Its 4 inputs are DFF.CLK, DFF.SET, DFF.CLEAR, DFF.DATA.
-
