@@ -6,7 +6,8 @@ or adjust the network properties.
 
 Classes:
 --------
-MyGLCanvas - handles all canvas drawing operations.
+My2DGLCanvas - handles all canvas drawing operations in 2D style.
+My3DGLCanvas - handles all canvas drawing operations in 3D style.
 Gui - configures the main window and all the widgets.
 """
 import wx
@@ -37,7 +38,7 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
     also contains handlers for events relating to the canvas.
 
     Parameters
-    ----------save
+    ----------
     parent: parent window.
     devices: instance of the devices.Devices() class.
     monitors: instance of the monitors.Monitors() class.
@@ -610,14 +611,14 @@ class My2DGLCanvas(wxcanvas.GLCanvas):
         return [c / 256 for c in (r, g, b)]
 
 
-class My3DGLCanvas(wxcanvas.GLCanvas):
+class My3DGLCanvas(My2DGLCanvas):
     """Handle all drawing operations.
 
     This class contains functions for drawing onto the canvas. It
     also contains handlers for events relating to the canvas.
 
     Parameters
-    ----------save
+    ----------
     parent: parent window.
     devices: instance of the devices.Devices() class.
     monitors: instance of the monitors.Monitors() class.
@@ -646,9 +647,9 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
     render_line(self, x_start, y_start, x_end, y_end, color=(0, 0, 1),
     thickness=1.0): Handle line drawing operations.
 
-    render_rectangle(self, x_bottom_left, y_bottom_left, x_top_right,
-    y_top_right, color=(0, 0, 1)): Handle transparent rectangle drawing
-    operations.
+    render_cuboid(self, z_start, y_start, x_start, z_end, y_end, x_end,
+                      color, alpha=1.0): Render a cuboid at the specified
+                      position, with the specified dimensions and color.
 
     render_text(self, text, x_pos, y_pos): Handles text drawing operations.
 
@@ -677,10 +678,7 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
 
     def __init__(self, parent, devices, monitors):
         """Initialise canvas properties and useful variables."""
-        super().__init__(parent, -1,
-                         attribList=[wxcanvas.WX_GL_RGBA,
-                                     wxcanvas.WX_GL_DOUBLEBUFFER,
-                                     wxcanvas.WX_GL_DEPTH_SIZE, 16, 0])
+        super().__init__(parent, devices, monitors)
         GLUT.glutInit()
         self.init = False
         self.context = wxcanvas.GLContext(self)
@@ -765,38 +763,38 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         self.completed_cycles = 0
 
         # Colors from Tableau 10 and Tableau 10 Medium
-        self.blue = self.rgb_to_gl(31, 119, 180)
-        self.orange = self.rgb_to_gl(255, 127, 14)
-        self.green = self.rgb_to_gl(44, 160, 44)
-        self.red = self.rgb_to_gl(214, 39, 40)
-        self.purple = self.rgb_to_gl(148, 103, 189)
-        self.brown = self.rgb_to_gl(140, 86, 75)
-        self.pink = self.rgb_to_gl(227, 119, 194)
-        self.olive = self.rgb_to_gl(188, 189, 34)
-        self.cyan = self.rgb_to_gl(23, 190, 207)
-        self.gray = self.rgb_to_gl(127, 127, 127)
-        self.black = (0, 0, 0)
-        self.white = (1, 1, 1)
-        self.color_cycle = [self.blue, self.orange, self.green,
-                            self.red, self.purple, self.brown,
-                            self.pink, self.olive, self.cyan]
-
-        self.blue_light = self.rgb_to_gl(114, 158, 206)
-        self.orange_light = self.rgb_to_gl(255, 158, 74)
-        self.green_light = self.rgb_to_gl(103, 191, 92)
-        self.red_light = self.rgb_to_gl(237, 102, 93)
-        self.purple_light = self.rgb_to_gl(173, 139, 201)
-        self.brown_light = self.rgb_to_gl(168, 120, 110)
-        self.pink_light = self.rgb_to_gl(237, 151, 202)
-        self.olive_light = self.rgb_to_gl(205, 204, 93)
-        self.cyan_light = self.rgb_to_gl(109, 204, 218)
-        self.gray_light = self.rgb_to_gl(162, 162, 162)
-        self.color_cycle_light = [self.blue_light, self.orange_light,
-                                  self.green_light,
-                                  self.red_light, self.purple_light,
-                                  self.brown_light,
-                                  self.pink_light, self.olive_light,
-                                  self.cyan_light]
+        # self.blue = self.rgb_to_gl(31, 119, 180)
+        # self.orange = self.rgb_to_gl(255, 127, 14)
+        # self.green = self.rgb_to_gl(44, 160, 44)
+        # self.red = self.rgb_to_gl(214, 39, 40)
+        # self.purple = self.rgb_to_gl(148, 103, 189)
+        # self.brown = self.rgb_to_gl(140, 86, 75)
+        # self.pink = self.rgb_to_gl(227, 119, 194)
+        # self.olive = self.rgb_to_gl(188, 189, 34)
+        # self.cyan = self.rgb_to_gl(23, 190, 207)
+        # self.gray = self.rgb_to_gl(127, 127, 127)
+        # self.black = (0, 0, 0)
+        # self.white = (1, 1, 1)
+        # self.color_cycle = [self.blue, self.orange, self.green,
+        #                     self.red, self.purple, self.brown,
+        #                     self.pink, self.olive, self.cyan]
+        #
+        # self.blue_light = self.rgb_to_gl(114, 158, 206)
+        # self.orange_light = self.rgb_to_gl(255, 158, 74)
+        # self.green_light = self.rgb_to_gl(103, 191, 92)
+        # self.red_light = self.rgb_to_gl(237, 102, 93)
+        # self.purple_light = self.rgb_to_gl(173, 139, 201)
+        # self.brown_light = self.rgb_to_gl(168, 120, 110)
+        # self.pink_light = self.rgb_to_gl(237, 151, 202)
+        # self.olive_light = self.rgb_to_gl(205, 204, 93)
+        # self.cyan_light = self.rgb_to_gl(109, 204, 218)
+        # self.gray_light = self.rgb_to_gl(162, 162, 162)
+        # self.color_cycle_light = [self.blue_light, self.orange_light,
+        #                           self.green_light,
+        #                           self.red_light, self.purple_light,
+        #                           self.brown_light,
+        #                           self.pink_light, self.olive_light,
+        #                           self.cyan_light]
 
         # Line thicknesses
         self.thin_line = 1
@@ -1282,24 +1280,6 @@ class My3DGLCanvas(wxcanvas.GLCanvas):
         self.display_width = size.width
         self.display_height = size.height
         self.gui.update_scrollbars()
-
-    def text_width(self, text, font=GLUT.GLUT_BITMAP_HELVETICA_18):
-        """Calculate the length in pts of a displayed text.
-
-        Return the length of text in pts.
-        """
-        width = 0
-        for character in text:
-            if character != '\n':
-                width += GLUT.glutBitmapWidth(font, ord(character))
-        return width
-
-    def rgb_to_gl(self, r, g, b):
-        """Converse an 8bit RGB color to OpenGL format
-
-        Return a list of the RGB float values.
-        """
-        return [c / 256 for c in (r, g, b)]
 
 
 class Gui(wx.Frame):
@@ -1901,6 +1881,7 @@ class Gui(wx.Frame):
         # automatically run for number of cycles specified as argument
         # this allows resumption of session when a new window is opened
         # upon a change of language
+        # if path is not None:
         self.run_command(cycles)
 
     def on_menu(self, event):

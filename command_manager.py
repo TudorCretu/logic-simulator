@@ -550,12 +550,14 @@ class LoadCommand(Command):
         self.gui.switches_select.Clear()
         for switch_name in swithces_names:
             self.gui.switches_select.Append(switch_name)
-        self.gui.canvas.monitors = self.command_manager.monitors
+        self.gui.canvas_2D.monitors = self.command_manager.monitors
+        self.gui.canvas_3D.monitors = self.command_manager.monitors
         self.gui.monitors_select.Clear()
         for monitor_name in self.gui.monitors.get_signal_names()[0] + \
                 self.gui.monitors.get_signal_names()[1]:
             self.gui.monitors_select.Append(monitor_name)
-        self.gui.canvas.devices = self.command_manager.devices
+        self.gui.canvas_2D.devices = self.command_manager.devices
+        self.gui.canvas_3D.devices = self.command_manager.devices
         self.gui.update_cycles(completed_cycles)
         self.gui.switches_select.SetValue("")
         self.gui.switches_update_toggle()
