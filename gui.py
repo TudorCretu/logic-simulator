@@ -1881,8 +1881,8 @@ class Gui(wx.Frame):
         # automatically run for number of cycles specified as argument
         # this allows resumption of session when a new window is opened
         # upon a change of language
-        if self.path_name:
-            self.run_command(cycles)
+        # if self.path_name:
+        #     self.run_command(cycles)
 
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
@@ -1892,16 +1892,11 @@ class Gui(wx.Frame):
             self.Close(True)
             new_gui = Gui("Logic Simulator", self.path_name, self.names, self.devices, self.network, self.monitors,"en",self.canvas.completed_cycles)
             new_gui.Show(True)
-            
-			
         if Id == self.GREEK_BUTTON_ID:
             self.Close(True)
             new_gui = Gui("Λογική Προσομοιωτής", self.path_name, self.names, self.devices, self.network, self.monitors,"el",self.canvas.completed_cycles)
             new_gui.Show(True)
-            
 
-			
-			
         if Id == wx.ID_NEW:
             names = Names()
             devices = Devices(names)

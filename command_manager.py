@@ -323,8 +323,7 @@ class RunCommand(Command):
                         +_("The network doesn't have a stable state."))
             self.gui.update_cycles(self.cycles)
             self.gui.canvas.reset_pan()
-            self.gui.canvas.render()
-            self.gui.log_text(_("Run simulation for ") + str(self.cycles) 
+            self.gui.log_text(_("Run simulation for ") + str(self.cycles)
                               + _(" cycles"))
 
         except ValueError:
